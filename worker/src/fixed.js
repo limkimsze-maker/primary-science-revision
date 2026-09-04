@@ -44,6 +44,32 @@ const OUTPUT_SCHEMA = {
   required: ['rating', 'verdict', 'feedback', 'strengths', 'missing', 'improvedAnswer']
 };
 
+const SELFTEST_SCHEMA = {
+  type: 'object',
+  properties: {
+    ok: { type: 'boolean' },
+    message: { type: 'string' }
+  },
+  required: ['ok', 'message']
+};
+
+async function runStructured(env, messages, schema, maxTokens = 500) {
+  const result = await env.AI.run('@cf/meta/llama-3.1-8b-instruct-fast', {
+    messages,
+    response_format: {
+      type: 'json_schema',
+      json_schema: schema
+    },
+    temperature: 0.1,
+    max_tokens: maxTokens
+  });
+
+  let out = result?.response ?? result;
+  if (typeof out === 'string') out = JSON.parse(out);
+  if (!out || typeof out !== 'object') throw new Error('Invalid structured response');
+  return out;
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -54,6 +80,18 @@ export default {
 
     if (url.pathname === '/health') {
       return reply(request, { ok: true, service: 'PSLE Science AI Marker', model: 'llama-3.1-8b-instruct-fast-json' });
+    }
+
+    if (url.pathname === '/selftest') {
+      try {
+        const out = await runStructured(env, [
+          { role: 'system', content: 'Return the requested JSON only.' },
+          { role: 'user', content: 'Set ok to true and message to Workers AI is working.' }
+        ], SELFTEST_SCHEMA, 80);
+        return reply(request, { ok: out.ok === true, message: text(out.message, 120), model: 'llama-3.1-8b-instruct-fast' });
+      } catch (err) {
+        return reply(request, { ok: false, error: 'Workers AI self-test failed', diagnostic: text(err?.message || err, 300) }, 502);
+      }
     }
 
     if (url.pathname !== '/mark' || request.method !== 'POST') {
@@ -100,22 +138,10 @@ Keep feedback concise and PSLE-appropriate.`;
     const user = `TOPIC: ${topic}\n\nQUESTION:\n${question}\n\nPUPIL ANSWER:\n${pupilAnswer}\n\nVERBATIM CORE EXPLANATION:\n${verbatim}\n\nSCORING IDEAS:\n- ${rubric.join('\n- ')}\n\nMODEL APPLICATION ANSWER:\n${modelAnswer}`;
 
     try {
-      const result = await env.AI.run('@cf/meta/llama-3.1-8b-instruct-fast', {
-        messages: [
-          { role: 'system', content: system },
-          { role: 'user', content: user }
-        ],
-        response_format: {
-          type: 'json_schema',
-          json_schema: OUTPUT_SCHEMA
-        },
-        temperature: 0.1,
-        max_tokens: 500
-      });
-
-      let out = result?.response ?? result;
-      if (typeof out === 'string') out = JSON.parse(out);
-      if (!out || typeof out !== 'object') throw new Error('Invalid structured response');
+      const out = await runStructured(env, [
+        { role: 'system', content: system },
+        { role: 'user', content: user }
+      ], OUTPUT_SCHEMA, 500);
 
       const r = rating(out.rating);
       const defaultVerdict = r === 'correct' ? 'Correct' : (r === 'de' || r === 'lr' ? 'Almost there' : 'Needs correction');
