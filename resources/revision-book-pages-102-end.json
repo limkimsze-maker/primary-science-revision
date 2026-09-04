@@ -1,0 +1,142 @@
+{
+  "source": {
+    "type": "photographed_revision_book",
+    "pages": "102-end",
+    "purpose": "Final reference section for PSLE Science terminology, process skills, commonly tested terms and precise scientific wording. Use as supporting evidence for application marking and training-model generation. Do not silently overwrite the existing 89 memorisation sentences unless explicitly approved."
+  },
+  "high_value_answering_rules": [
+    {
+      "id": "relationship_variable_language",
+      "rule": "For relationship questions, state how the measured variable changes as the changed variable increases or decreases. Name both variables explicitly.",
+      "example_pattern": "As the changed variable increases, the measured variable increases/decreases."
+    },
+    {
+      "id": "hypothesis_variable_language",
+      "rule": "A hypothesis predicts how the changed variable affects the measured variable."
+    },
+    {
+      "id": "reliability_repeat_average",
+      "rule": "To increase reliability, repeat the experiment at least three times and calculate the average of the results. Reliable results are consistent/similar, not necessarily identical."
+    },
+    {
+      "id": "accuracy_close_to_true_value",
+      "rule": "Accuracy means results are close to the actual/true value and is improved by suitable apparatus and careful procedure."
+    },
+    {
+      "id": "control_setup_compare",
+      "rule": "A control set-up is identical to the experimental set-up except for the changed variable. It allows comparison and helps confirm that the changed variable causes the measured effect."
+    },
+    {
+      "id": "state_concise",
+      "rule": "For State questions, give a concise answer with little or no supporting explanation unless the question asks for it."
+    }
+  ],
+  "commonly_tested_terms": {
+    "living_things": ["reproduce", "respond to changes around them", "grow", "need air, food and water to survive"],
+    "animal_groups": ["birds", "insects", "fish", "amphibians", "reptiles", "mammals"],
+    "processes": ["fertilisation", "pollination", "seed dispersal", "germination", "photosynthesis", "respiration", "evaporation", "boiling", "condensation", "freezing", "gaseous exchange"],
+    "body_systems": ["digestive system", "respiratory system", "circulatory system", "muscular system", "skeletal system"],
+    "body_substances": ["oxygen", "carbon dioxide", "digested food", "waste materials", "water vapour"],
+    "seed_dispersal": ["wind", "explosive action/splitting", "water", "animal"],
+    "fruit_seed_characteristics": {
+      "wind": ["small and light", "wing-like structure", "feathery-like structure"],
+      "explosive_action": ["pod-like structure with split lines"],
+      "water": ["fibrous husk", "waterproof covering"],
+      "animal_edible": ["colourful", "sweet and fleshy"],
+      "animal_inedible": ["small hooks", "stiff hairs"]
+    }
+  },
+  "plant_parts": {
+    "leaf": ["supports photosynthesis/makes food", "allows gaseous exchange"],
+    "stem": ["holds plant upright", "transports water and mineral salts", "transports food"],
+    "root": ["holds plant firmly in soil", "absorbs water and mineral salts"],
+    "flower": ["enables reproduction"],
+    "fruit": ["contains seeds"],
+    "seed": ["enables plant to reproduce"],
+    "flower_reproduction": {
+      "male": ["anther", "filament"],
+      "female": ["stigma", "style", "ovary", "ovule"],
+      "pollination": "transfer of pollen grains from the anther of one flower to the stigma of the same flower or another flower of the same type/species",
+      "fertilisation": "fusion of male and female reproductive cells"
+    }
+  },
+  "matter_and_materials": {
+    "properties_of_matter": ["has mass", "occupies space", "solid has definite shape", "solid has definite volume", "liquid has no definite shape", "liquid has definite volume", "gas has no definite shape", "gas has no definite volume", "gas can be compressed"],
+    "state_changes": ["solid to liquid", "liquid to gas", "gas to liquid", "liquid to solid"],
+    "materials": ["wood", "plastic", "metal", "rubber", "fabric", "ceramic", "glass"],
+    "physical_properties": ["waterproof", "conductors of heat", "conductors of electricity", "magnetic/non-magnetic", "flexibility", "ability to float", "ability to sink", "strength", "transparency"]
+  },
+  "physical_science_precise_definitions": {
+    "melting": "change in state of a substance from solid to liquid at a fixed temperature due to heat gain",
+    "evaporation": "change in state of a substance from liquid to gas at any temperature and takes place at the surface of the liquid",
+    "boiling": "change in state of a substance from liquid to gas at a fixed temperature and takes place throughout the whole liquid",
+    "condensation": "change in state of a substance from gas to liquid due to heat loss",
+    "freezing": "change in state of a substance from liquid to solid at a fixed temperature due to heat loss",
+    "gaseous_exchange": "taking in oxygen and removing carbon dioxide",
+    "respiration": "breaking down glucose/sugar with the release of energy in living cells",
+    "photosynthesis": "when a green plant takes in water and carbon dioxide in the presence of light trapped by chlorophyll to produce food/sugar/glucose and oxygen",
+    "force": "a push or a pull",
+    "frictional_force": "a force that opposes motion",
+    "gravitational_force": "pull that acts on objects downwards towards the centre of Earth",
+    "elastic_spring_force": "push or pull exerted by an object that is stretched or compressed",
+    "magnetic_force": "force exerted by magnets on magnetic materials or other magnets",
+    "gravitational_potential_energy": "energy possessed by an object above ground level",
+    "chemical_potential_energy": "energy stored in food, fuel or a battery",
+    "elastic_potential_energy": "energy possessed by an object that is stretched or compressed",
+    "kinetic_energy": "energy possessed by moving objects; affected by mass and speed",
+    "mass": "amount of matter in an object",
+    "volume": "amount of space an object occupies",
+    "temperature": "measure of the degree of hotness of an object",
+    "heat": "a form of energy that causes the temperature of an object to change"
+  },
+  "experimental_process_skills": {
+    "aim": "purpose of the experiment",
+    "hypothesis": "prediction of how the changed variable affects the measured variable",
+    "changed_variable": "variable changed by the scientist",
+    "same_variables": "variables kept the same",
+    "measured_variable": "variable measured in the experiment",
+    "relationship": "how the measured variable changes with the changed variable",
+    "fair_test": "only one changed variable while other relevant variables are kept constant",
+    "reliability": "repeat experiment and look for consistent/similar results; calculate average when appropriate",
+    "accuracy": "closeness to true/actual value",
+    "control_setup": "same conditions except for the changed variable"
+  },
+  "lab_apparatus": {
+    "mass": {
+      "electronic_balance": "measures mass",
+      "beam_balance": "compares masses of two objects"
+    },
+    "time": {
+      "stopwatch": "measures time taken for an experiment"
+    },
+    "length": {
+      "ruler": "measures length",
+      "measuring_tape": "measures lengths of objects/curved surfaces"
+    },
+    "temperature": {
+      "thermometer": "measures temperature",
+      "datalogger": "measures temperature, including ranges beyond a normal thermometer depending on probe"
+    },
+    "volume": {
+      "measuring_cylinder": "measures volume of liquid with greater precision than a beaker",
+      "beaker": "measures approximate/moderate or large volumes of liquid",
+      "syringe": "measures small precise amounts of liquid",
+      "measuring_jug": "measures large amounts of liquid",
+      "conical_flask": "contains/moderately measures liquid; commonly used in experiments",
+      "funnel": "pours liquid into a container with a small opening without spilling",
+      "dropper": "adds liquid slowly/dropwise"
+    },
+    "support": {
+      "retort_stand": "clamps and holds objects in a fixed position"
+    }
+  },
+  "final_reference_notes": [
+    "Weight is a force; mass is not a force.",
+    "Mass remains the same when location changes; weight can change when gravitational force changes.",
+    "Friction depends on type/roughness of surfaces and the force pressing surfaces together; in many school contexts heavier objects can experience greater friction because of greater normal contact force.",
+    "Like magnetic poles repel and unlike poles attract.",
+    "A magnet can attract magnetic materials even through some non-magnetic materials.",
+    "Heat flows from a hotter object/region to a cooler object/region until thermal conditions move toward equilibrium.",
+    "Temperature and heat are different: temperature measures hotness; heat is energy transfer/change related to temperature difference."
+  ]
+}
