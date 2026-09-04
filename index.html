@@ -10,7 +10,7 @@
 <script>
 (async()=>{
   try{
-    const res=await fetch('app.html?v=experiment-frameworks-1',{cache:'no-cache'});
+    const res=await fetch('app.html?v=full-de-sr-lr-2',{cache:'no-cache'});
     if(!res.ok) throw new Error('Could not load app.html');
     let html=await res.text();
 
@@ -106,15 +106,24 @@
     html=html.replace('the target sentence is copied VERBATIM from the original 89-bank HTML.','the target sentence/framework is learned VERBATIM.');
     html=html.replace('core 89-bank explanation is never rewritten','core mastery explanation/framework is never rewritten');
     html=html.replace('Existing progress from the earlier 89-item trainers is migrated automatically when available.','Existing 89-item progress is preserved; the 8 experiment frameworks are added alongside it.');
+    html=html.replace('Use “Show Verbatim + Applied Answer” to see both.','Use “Show Full D/E → S/R → L/R Answer” to see a complete training-safe model.');
 
     const patch=`<style>
 .ai-mark-wrap{margin-top:12px;padding:12px;border:1px solid #bfdbfe;border-radius:13px;background:#eff6ff}.ai-mark-head{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}.ai-mark-title{font-weight:800;color:#1e3a8a}.ai-state{font-size:12px;font-weight:800;padding:5px 8px;border-radius:999px;background:#dcfce7;border:1px solid #86efac;color:#166534}.ai-mark-btn{background:#1d4ed8!important;color:#fff!important;border-color:#1d4ed8!important;font-weight:800}.ai-mark-btn:disabled{opacity:.6;cursor:wait}.ai-note{font-size:12px;color:#475569;margin-top:6px;line-height:1.4}.ai-result{margin-top:10px;padding:12px;border-radius:12px;border:1px solid #cbd5e1;background:#fff;line-height:1.5}.ai-result.correct{background:#ecfdf5;border-color:#86efac}.ai-result.partial{background:#fff7ed;border-color:#fdba74}.ai-result.wrongai{background:#fef2f2;border-color:#fca5a5}.ai-verdict{font-weight:900;font-size:17px;margin-bottom:5px}.ai-section{margin-top:7px}.ai-section b{display:block;margin-bottom:2px}.ai-improved{margin-top:8px;padding:9px 10px;border-left:4px solid #6366f1;background:#f8fafc;border-radius:8px}.manual-label{font-size:12px;font-weight:800;color:#64748b;margin:12px 0 4px}
 .exact-progress-box{margin-top:10px;padding:10px 12px;border:1px solid #c7d2fe;border-radius:12px;background:#eef2ff;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.exact-progress-box.mastered{background:#dcfce7;border-color:#86efac}.exact-progress-title{font-weight:800}.exact-progress-count{font-weight:900;font-size:17px}.exact-progress-dots{display:flex;gap:5px}.exact-dot{width:18px;height:18px;border-radius:50%;border:2px solid #a5b4fc;background:#fff}.exact-dot.done{background:#22c55e;border-color:#16a34a}
 .experiment-tag{display:inline-block;margin-left:5px;padding:2px 6px;border-radius:999px;background:#dbeafe;color:#1e40af;font-size:10px;font-weight:800}
+.training-banner{margin:10px 0;padding:10px 12px;border-radius:12px;background:#eef2ff;border:1px solid #c7d2fe;color:#312e81;font-size:13px;line-height:1.45}.training-model{line-height:1.5}.tm-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}.tm-box{padding:11px;border-radius:11px;border:1px solid #dbe3ee;background:#fff}.tm-box b{display:block;margin-bottom:5px}.tm-de{border-top:5px solid #f59e0b}.tm-sr{border-top:5px solid #f97316;background:#fff7ed}.tm-lr{border-top:5px solid #8b5cf6}.tm-full{margin-top:10px;padding:12px;border-radius:12px;background:#ecfdf5;border:1px solid #86efac}.tm-full b{display:block;margin-bottom:6px;color:#065f46}.tm-keywords{margin-top:10px;padding:9px 10px;border-radius:10px;background:#f8fafc;border:1px solid #cbd5e1}.tm-verbatim{margin-top:8px;padding:10px;border-radius:10px;background:#fff7ed;border:1px solid #fed7aa;font-weight:800}.tm-direct{margin-top:10px;padding:12px;border-radius:12px;background:#ecfdf5;border:1px solid #86efac}.criteria-strip{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.criterion{font-size:12px;font-weight:800;padding:5px 7px;border-radius:999px;border:1px solid #cbd5e1;background:#fff}.criterion.yes{background:#dcfce7;border-color:#86efac;color:#166534}.criterion.no{background:#fee2e2;border-color:#fca5a5;color:#991b1b}.criterion.na{background:#f1f5f9;color:#64748b}
+@media(max-width:760px){.tm-grid{grid-template-columns:1fr}}
 <\/style>
 <script>
 (()=>{
-  const AI_ENDPOINT='https://primary-science-ai-marker.limkimsze-maker.workers.dev/mark';
+  const BASE='https://primary-science-ai-marker.limkimsze-maker.workers.dev';
+  const AI_ENDPOINT=BASE+'/mark';
+  const MODEL_ENDPOINT=BASE+'/training-model';
+  const MODEL_CACHE_KEY='psleScience97_full_training_models_v1';
+  let modelCache={};
+  try{modelCache=JSON.parse(localStorage.getItem(MODEL_CACHE_KEY)||'{}')}catch(_){modelCache={}}
+  const saveModelCache=()=>{try{localStorage.setItem(MODEL_CACHE_KEY,JSON.stringify(modelCache))}catch(_){}};
 
   const filter=document.getElementById('bankFilter');
   const search=document.getElementById('bankSearch');
@@ -173,25 +182,83 @@
   const appAnswer=document.getElementById('appAnswer');
   const actionRow=appPane?appPane.querySelector('.actions'):null;
   const rating=appPane?appPane.querySelector('.rating'):null;
+  const modelBtn=document.getElementById('modelAppBtn');
+  const modelBox=document.getElementById('modelAppBox');
   let lastMarked='';
   let aiWrap,aiBtn,aiResult;
+
+  const trainingBanner=document.createElement('div');
+  trainingBanner.className='training-banner';
+  trainingBanner.innerHTML='<b>Training answer standard:</b> For <b>Explain / Why / Evidence / Compare</b>, practise the complete <b>D/E → S/R → L/R</b> chain. The S/R keeps the memorised Science explanation and its key words. For <b>State / Name / Identify</b>, answer only what is required.';
+  const frame=document.querySelector('#appPane .frame');
+  if(frame)frame.insertAdjacentElement('afterend',trainingBanner);
+
   if(actionRow){
     aiWrap=document.createElement('div');aiWrap.className='ai-mark-wrap';
-    aiWrap.innerHTML='<div class="ai-mark-head"><div><div class="ai-mark-title">🤖 AI Application Marker</div><div class="ai-note">Marks the Science/experiment reasoning and D/E → S/R → L/R. Application wording does not need to be verbatim.</div></div><span class="ai-state">● AI ready</span></div><div class="actions" style="margin-top:9px"><button type="button" class="ai-mark-btn">🤖 AI Mark My Answer</button></div><div class="ai-result hide" aria-live="polite"></div>';
+    aiWrap.innerHTML='<div class="ai-mark-head"><div><div class="ai-mark-title">🤖 AI Application Marker</div><div class="ai-note">Checks required D/E → S/R → L/R and important scientific key words. Equivalent correct wording is accepted.</div></div><span class="ai-state">● AI ready</span></div><div class="actions" style="margin-top:9px"><button type="button" class="ai-mark-btn">🤖 AI Mark My Answer</button></div><div class="ai-result hide" aria-live="polite"></div>';
     actionRow.parentNode.insertBefore(aiWrap,actionRow);
     aiBtn=aiWrap.querySelector('.ai-mark-btn');aiResult=aiWrap.querySelector('.ai-result');
     aiBtn.addEventListener('click',markWithAI);
     appAnswer.addEventListener('input',()=>{if(appAnswer.value.trim()!==lastMarked){aiBtn.disabled=false;aiBtn.textContent='🤖 AI Mark My Answer';}});
   }
   if(rating){const lab=document.createElement('div');lab.className='manual-label';lab.textContent='Parent/Teacher override (optional):';rating.parentNode.insertBefore(lab,rating);}
+
   function safe(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
   function ratingLabel(r){return {correct:'✅ Correct',de:'🟨 D/E missing',sr:'🟧 S/R missing / wrong',lr:'🟪 L/R missing',concept:'❌ Concept not known'}[r]||'AI Mark'}
+  function criterionHtml(label,required,met){
+    const cls=!required?'na':met?'yes':'no';
+    const icon=!required?'—':met?'✓':'✗';
+    return '<span class="criterion '+cls+'">'+icon+' '+label+(!required?' not required':'')+'</span>';
+  }
+
+  async function showTrainingModel(){
+    const e=BANK[current()];
+    const key=String(e.id);
+    if(!modelBox)return;
+    if(!modelBox.classList.contains('hide')){
+      modelBox.classList.add('hide');
+      modelBtn.textContent='Show Full D/E → S/R → L/R Answer';
+      return;
+    }
+    modelBox.classList.remove('hide');
+    modelBtn.textContent='Hide Full Model Answer';
+    modelBox.className='model training-model';
+    modelBox.innerHTML='<b>Building a complete PSLE-safe model…</b><div class="small" style="margin-top:5px">The memorised S/R sentence is kept intact for Science explanations.</div>';
+    try{
+      let data=modelCache[key];
+      if(!data){
+        const res=await fetch(MODEL_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({conceptId:e.id,topic:e.topic,question:e.applicationQuestion,verbatim:e.phrase,rubric:e.rubric,modelAnswer:e.modelApplicationAnswer})});
+        data=await res.json().catch(()=>({}));
+        if(!res.ok)throw new Error(data.error||'Could not build the full model answer.');
+        modelCache[key]=data;saveModelCache();
+      }
+      let h='<b>Memorised '+(data.isExperiment?'framework':'S/R explanation')+'</b><div class="tm-verbatim">'+safe(e.phrase)+'</div>';
+      if(data.frameNeeded){
+        h+='<div class="tm-grid">';
+        h+='<div class="tm-box tm-de"><b>D/E — Data / Evidence</b>'+safe(data.de||'Use the relevant observation/comparison from the question.')+'</div>';
+        h+='<div class="tm-box tm-sr"><b>S/R — Science / Reasoning</b>'+safe(data.sr||e.phrase)+'</div>';
+        h+='<div class="tm-box tm-lr"><b>L/R — Link / Result</b>'+safe(data.lr||'Link the Science back to exactly what was asked.')+'</div>';
+        h+='</div>';
+        h+='<div class="tm-full"><b>✅ Full PSLE-safe model answer</b>'+safe(data.fullAnswer||e.modelApplicationAnswer)+'</div>';
+      }else{
+        h+='<div class="tm-direct"><b>✅ Direct answer — full D/E → S/R → L/R is not required for this question</b><br>'+safe(data.fullAnswer||e.modelApplicationAnswer)+'</div>';
+      }
+      if(data.keywords)h+='<div class="tm-keywords"><b>Key words to protect:</b> '+safe(data.keywords)+'</div>';
+      if(data.note)h+='<div class="small" style="margin-top:7px">'+safe(data.note)+'</div>';
+      modelBox.innerHTML=h;
+    }catch(err){
+      modelBox.innerHTML='<div class="wrong"><b>Full model temporarily unavailable.</b><br>'+safe(err.message||'Please try again.')+'</div>';
+    }
+  }
+
+  if(modelBtn){modelBtn.textContent='Show Full D/E → S/R → L/R Answer';modelBtn.onclick=showTrainingModel;}
+
   async function markWithAI(){
     const ans=(appAnswer.value||'').trim();
     if(!ans){aiResult.className='ai-result partial';aiResult.innerHTML='<div class="ai-verdict">Write an answer first.</div>';return;}
     if(ans===lastMarked&&aiResult&&!aiResult.classList.contains('hide'))return;
     const e=BANK[current()];
-    aiBtn.disabled=true;aiBtn.textContent='🤖 Marking…';aiResult.className='ai-result';aiResult.innerHTML='<div class="ai-verdict">AI is checking the answer…</div>';
+    aiBtn.disabled=true;aiBtn.textContent='🤖 Marking…';aiResult.className='ai-result';aiResult.innerHTML='<div class="ai-verdict">AI is checking D/E → S/R → L/R and key words…</div>';
     try{
       const res=await fetch(AI_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({conceptId:e.id,topic:e.topic,question:e.applicationQuestion,answer:ans,verbatim:e.phrase,rubric:e.rubric,modelAnswer:e.modelApplicationAnswer})});
       const data=await res.json().catch(()=>({}));
@@ -199,10 +266,13 @@
       const r=['correct','de','sr','lr','concept'].includes(data.rating)?data.rating:'concept';
       const cls=r==='correct'?'correct':(r==='de'||r==='lr'?'partial':'wrongai');
       let h='<div class="ai-verdict">'+safe(ratingLabel(r))+'</div>';
-      if(data.feedback)h+='<div>'+safe(data.feedback)+'</div>';
+      if(data.criteria){
+        h+='<div class="criteria-strip">'+criterionHtml('D/E',data.criteria.deRequired,data.criteria.deMet)+criterionHtml('S/R',data.criteria.srRequired,data.criteria.srMet)+criterionHtml('L/R',data.criteria.lrRequired,data.criteria.lrMet)+'</div>';
+      }
+      if(data.feedback)h+='<div class="ai-section">'+safe(data.feedback)+'</div>';
       if(data.strengths)h+='<div class="ai-section"><b>What you did well</b>'+safe(data.strengths)+'</div>';
       if(data.missing)h+='<div class="ai-section"><b>What is missing / wrong</b>'+safe(data.missing)+'</div>';
-      if(data.improvedAnswer)h+='<div class="ai-improved"><b>Improved PSLE answer</b><br>'+safe(data.improvedAnswer)+'</div>';
+      if(data.improvedAnswer)h+='<div class="ai-improved"><b>Fuller PSLE-safe answer</b><br>'+safe(data.improvedAnswer)+'</div>';
       aiResult.className='ai-result '+cls;aiResult.innerHTML=h;lastMarked=ans;
       rateApp(r);
       rec(current()).aiLast={rating:r,feedback:data.feedback||'',missing:data.missing||'',markedAt:new Date().toISOString()};save();
@@ -215,7 +285,15 @@
   }
 
   const originalRender=render;
-  window.render=function(){originalRender();lastMarked='';if(aiResult)aiResult.className='ai-result hide';if(aiBtn){aiBtn.disabled=false;aiBtn.textContent='🤖 AI Mark My Answer';}updateExactProgress();};
+  window.render=function(){
+    originalRender();
+    lastMarked='';
+    if(aiResult)aiResult.className='ai-result hide';
+    if(aiBtn){aiBtn.disabled=false;aiBtn.textContent='🤖 AI Mark My Answer';}
+    if(modelBtn){modelBtn.textContent='Show Full D/E → S/R → L/R Answer';modelBtn.onclick=showTrainingModel;}
+    if(modelBox){modelBox.classList.add('hide');modelBox.innerHTML='';}
+    updateExactProgress();
+  };
   const originalCheckPhrase=checkPhrase;
   window.checkPhrase=function(){originalCheckPhrase();updateExactProgress();};
   document.getElementById('checkPhrase').onclick=window.checkPhrase;
