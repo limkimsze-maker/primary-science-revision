@@ -6,7 +6,7 @@
 <title>PSLE Science Structured Mastery — Application Variants</title>
 <style>body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f4f7fb;color:#172033}.loading{min-height:100vh;display:grid;place-items:center}.loading div{background:#fff;border:1px solid #dbe3ee;border-radius:16px;padding:20px 24px;box-shadow:0 4px 18px #0f172a0d;text-align:center;line-height:1.5}</style>
 </head>
-<body><div class="loading"><div><b>Loading 180-concept trainer with fresh application questions…</b><br><small>4–6 fixed variants per concept · no-repeat cycling</small></div></div>
+<body><div class="loading"><div><b>Loading 180-concept trainer with fresh application questions…</b><br><small>4–6 fixed variants per concept · past-paper strong/focus profile</small></div></div>
 <script>
 (async()=>{
  try{
@@ -19,7 +19,7 @@
    '07-matter-materials-changes-of-state.js','08-light.js','09-heat-thermal-expansion.js',
    '10-electricity-electromagnets-magnets.js','11-energy-forces.js','engine.js'
   ];
-  const tags=files.map(f=>`<script src="resources/appvariants/${f}?v=20260904b"><\/script>`).join('');
+  const tags=files.map(f=>`<script src="resources/appvariants/${f}?v=20260904c"><\/script>`).join('');
   html=html.replace('</body>',tags+'</body>');
   document.open();document.write(html);document.close();
  }catch(err){
