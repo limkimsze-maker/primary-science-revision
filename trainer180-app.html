@@ -6,11 +6,11 @@
 <title>PSLE Science Structured Mastery — Re-audited 180</title>
 <style>body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f4f7fb;color:#172033}.loading{min-height:100vh;display:grid;place-items:center}.loading div{background:#fff;border:1px solid #dbe3ee;border-radius:16px;padding:20px 24px;box-shadow:0 4px 18px #0f172a0d;text-align:center;line-height:1.5}</style>
 </head>
-<body><div class="loading"><div><b>Loading re-audited 180-concept trainer…</b><br><small>🔴 Focus · ⚪ Not Studied Yet · 🟢 Already Good · AI marking</small></div></div>
+<body><div class="loading"><div><b>Loading re-audited 180-concept trainer…</b><br><small>🔴 Focus · ⚪ Not Studied Yet · 🟢 Already Good · smart search · AI marking</small></div></div>
 <script>
 (async()=>{
  try{
-  const res=await fetch('trainer180.html?v=20260905f',{cache:'no-cache'});
+  const res=await fetch('trainer180.html?v=20260905g',{cache:'no-cache'});
   if(!res.ok)throw new Error('Could not load trainer180.html');
   let html=await res.text();
 
@@ -23,7 +23,7 @@
    .replace('id="markAuto">🟠 Auto</button>','id="markAuto">⚪ Not Studied Yet</button>')
    .replace('id="markGood" class="btn-green">🟢 Already Good</button>','id="markGood" class="btn-green">🟢 Already Good</button>')
    .replace('🔴 Focus · 🟠 Auto/Learning · 🟢 Already Good','🔴 Focus · ⚪ Not Studied Yet · 🟢 Already Good')
-   .replace('<option value="all">All 180</option><option value="red">🔴 Focus</option><option value="green">🟢 Already Good</option><option value="auto">🟠 Auto</option>', '<option value="all">All 180 — Focus → Not Studied Yet → Already Good</option><option value="red">🔴 Focus only</option><option value="auto">⚪ Not Studied Yet only</option><option value="green">🟢 Already Good only</option>');
+   .replace('<option value="all">All 180</option><option value="red">🔴 Focus</option><option value="green">🟢 Already Good</option><option value="auto">🟠 Auto</option>', '<option value="all">All 180</option><option value="red">🔴 Focus only</option><option value="auto">⚪ Not Studied Yet only</option><option value="green">🟢 Already Good only</option>');
 
   const appFiles=[
    '01-diversity-classification.js','02-plant-structures-functions.js','03-life-cycles-reproduction.js',
@@ -38,12 +38,12 @@
    '10-electricity-electromagnets-magnets.js','11-energy-forces.js'
   ];
   const scripts=[];
-  appFiles.forEach(f=>scripts.push(`resources/appvariants/${f}?v=20260905f`));
-  scripts.push('resources/audit180/core.js?v=20260905f');
-  auditFiles.forEach(f=>scripts.push(`resources/audit180/${f}?v=20260905f`));
-  scripts.push('resources/appvariants/engine.js?v=20260905f');
-  scripts.push('resources/priority-colors.js?v=20260905f');
-  scripts.push('resources/ai-marker.js?v=20260905f');
+  appFiles.forEach(f=>scripts.push(`resources/appvariants/${f}?v=20260905g`));
+  scripts.push('resources/audit180/core.js?v=20260905g');
+  auditFiles.forEach(f=>scripts.push(`resources/audit180/${f}?v=20260905g`));
+  scripts.push('resources/appvariants/engine.js?v=20260905g');
+  scripts.push('resources/priority-colors.js?v=20260905g');
+  scripts.push('resources/ai-marker.js?v=20260905g');
   const tags=scripts.map(src=>`<script src="${src}"><\/script>`).join('');
   html=html.replace('</body>',tags+'</body>');
   document.open();document.write(html);document.close();
