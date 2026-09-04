@@ -1,0 +1,240 @@
+{
+  "source": {
+    "type": "photographed_revision_book",
+    "pages": "22-41",
+    "purpose": "Reference database for PSLE Science answering, scientific key words, causal explanation chains, comparison wording and topic coverage. This source informs application marking and training-model generation but does not overwrite the existing memorisation bank unless explicitly approved."
+  },
+  "answering_principles": [
+    {
+      "id": "gas_exchange_chain",
+      "pages": [22, 25, 26],
+      "rule": "For gaseous-exchange questions, state the substance, the exchange surface/organ and the direction of movement. Link the exchanged gas to the body process or transport outcome when the question asks why.",
+      "examples": [
+        "oxygen enters the blood and is transported to body parts",
+        "carbon dioxide is transported from body parts to the gaseous-exchange organ for removal"
+      ],
+      "protected_terms": ["oxygen", "carbon dioxide", "blood", "gaseous exchange"]
+    },
+    {
+      "id": "exercise_systems_chain",
+      "pages": [25, 26, 30, 31],
+      "rule": "For exercise questions, build the complete chain: muscles/body need more energy -> respiration increases -> more oxygen and digested food are needed -> breathing/heart rate increases -> more oxygen/digested food is delivered and carbon dioxide/waste is removed faster.",
+      "applies_to": ["exercise", "respiration", "circulatory_system", "respiratory_system"]
+    },
+    {
+      "id": "compare_circulatory_systems",
+      "pages": [24, 25, 26],
+      "rule": "For comparisons, explicitly state both sides. Similarity format: 'Both A and B ...'. Difference format: 'A ..., while B ...'. If the diagram asks for direction/richness of blood, quote the diagram labels before explaining.",
+      "protected_terms": ["blood vessels", "oxygen", "carbon dioxide", "lungs", "gills"]
+    },
+    {
+      "id": "body_systems_work_together",
+      "pages": [27, 29, 30, 31],
+      "rule": "When asked how body systems work together, explain each system's contribution and then the transport/link between them. Do not merely name the systems.",
+      "patterns": [
+        "digestive system breaks food into simple substances and absorbs them into blood -> circulatory system transports digested food",
+        "respiratory system exchanges gases -> circulatory system transports oxygen to body parts and carbon dioxide away"
+      ]
+    },
+    {
+      "id": "plant_transport_damage_chain",
+      "pages": [32, 33, 34],
+      "rule": "For stem-cut/ring-removal questions, identify which transport tubes are damaged, state what substance can no longer reach which part, then state the resulting effect on the plant.",
+      "applies_to": ["plant_transport", "explain", "experiment"]
+    },
+    {
+      "id": "photosynthesis_full_chain",
+      "pages": [35, 36],
+      "rule": "For photosynthesis explanations, protect the conditions and products: light energy, chlorophyll, water and carbon dioxide are linked to production of sugar/food and oxygen. If the question is about plant survival/growth, link food production to energy/life processes after respiration.",
+      "protected_terms": ["light", "chlorophyll", "water", "carbon dioxide", "food", "oxygen", "photosynthesis"]
+    },
+    {
+      "id": "population_change_efp",
+      "pages": [37, 38, 39, 40, 41],
+      "rule": "For population-change questions, use EFP: Event -> Food relationship -> Population change. State the event first, then how food/predator/prey availability changes, then the direction of the population change.",
+      "applies_to": ["food_chain", "food_web", "population_change", "ecosystem"]
+    },
+    {
+      "id": "food_chain_arrow_precision",
+      "pages": [38, 41],
+      "rule": "In food chains/webs, arrows show the direction of energy transfer from the organism being eaten to the organism that eats it. Use the arrow direction before deciding predator/prey relationships.",
+      "protected_terms": ["energy", "producer", "consumer", "predator", "prey"]
+    },
+    {
+      "id": "decomposer_process_wording",
+      "pages": [40, 41],
+      "rule": "When naming the process carried out by decomposers, use 'decomposition' rather than 'decomposing'. Explain that decomposers break down dead organisms/waste into simpler substances such as mineral salts, returning nutrients to the environment.",
+      "protected_terms": ["decomposition", "decomposers", "mineral salts", "nutrients"]
+    }
+  ],
+  "topics": [
+    {
+      "topic": "Air and respiratory system",
+      "pages": [22],
+      "key_ideas": [
+        "Air contains mainly nitrogen and oxygen, with smaller amounts of carbon dioxide and water vapour.",
+        "Fish take in dissolved oxygen in water through the mouth and gills; oxygen enters the blood and is transported to body parts.",
+        "Carbon dioxide from the body is transported to the gills and removed into the surrounding water.",
+        "Tiny openings/stomata allow gaseous exchange in plants.",
+        "Smaller or fewer exposed openings can reduce water loss through evaporation.",
+        "Photosynthesis takes place during daytime when light is available; chlorophyll, water and carbon dioxide are needed, and oxygen and food are produced."
+      ],
+      "answering_notes": [
+        "If the body is less active, less energy is needed, so respiration is slower and less carbon dioxide is produced.",
+        "For function questions on stomata, name gaseous exchange and, where relevant, water-vapour loss."
+      ]
+    },
+    {
+      "topic": "Circulatory system",
+      "pages": [23, 24, 25, 26],
+      "key_ideas": [
+        "The circulatory system consists of the heart, blood vessels and blood.",
+        "The heart pumps blood around the body.",
+        "Blood transports oxygen and digested food to body parts and carries carbon dioxide and waste materials away for removal.",
+        "In humans, blood flows in two circular pathways and passes through the heart twice; the photographed book contrasts this with fish circulation, where blood flows in one circular pathway and passes through the heart once.",
+        "Humans use lungs for gaseous exchange; fish use gills.",
+        "Both human and fish circulatory systems have blood vessels that carry blood throughout the body."
+      ],
+      "model_reasoning_patterns": [
+        {
+          "question_type": "exercise heart rate",
+          "chain": [
+            "body/muscles need more energy",
+            "respiration increases",
+            "more oxygen and digested food are needed",
+            "heart rate increases",
+            "oxygen/digested food are transported faster and carbon dioxide/waste removed faster"
+          ]
+        },
+        {
+          "question_type": "blood vessel diagram",
+          "rule": "Use the labelled direction and whether blood is richer in oxygen/carbon dioxide before explaining where gaseous exchange occurred."
+        }
+      ]
+    },
+    {
+      "topic": "Human body systems",
+      "pages": [27, 28, 29, 30, 31],
+      "key_ideas": [
+        "Digestive system: digestion begins in the mouth, food is broken into smaller/simple substances, digestion is completed in the small intestine, and digested food is absorbed into the blood.",
+        "Water from undigested food is absorbed in the large intestine; waste leaves through the anus.",
+        "Respiratory system enables gaseous exchange with the surroundings.",
+        "Circulatory system transports substances around the body.",
+        "Muscular system works with the skeletal system to allow movement.",
+        "Skeletal system supports the body, gives shape and protects important organs."
+      ],
+      "system_link_chains": [
+        {
+          "systems": ["digestive", "circulatory"],
+          "chain": "food is broken down into simple substances -> digested food is absorbed into blood -> circulatory system transports it to body parts"
+        },
+        {
+          "systems": ["respiratory", "circulatory"],
+          "chain": "oxygen is taken in/exchanged at lungs -> oxygen enters blood -> circulatory system transports it to body parts; carbon dioxide is carried back for removal"
+        }
+      ]
+    },
+    {
+      "topic": "Plant transport system",
+      "pages": [32, 33, 34],
+      "key_ideas": [
+        "Roots absorb water and mineral salts.",
+        "Water-carrying tubes transport water and mineral salts from roots to other parts of the plant.",
+        "Food-carrying tubes transport food made in the leaves to other parts of the plant.",
+        "During photosynthesis, carbon dioxide enters leaves and oxygen leaves through stomata.",
+        "During respiration, oxygen enters and carbon dioxide leaves through stomata."
+      ],
+      "damage_examples": [
+        {
+          "situation": "cut around stem removing food-carrying tubes below the cut",
+          "effect": "food made by leaves cannot be transported to parts below the cut; food may accumulate above the cut, causing swelling"
+        },
+        {
+          "situation": "deep cut damaging both water- and food-carrying tubes",
+          "effect": "food cannot be transported to all parts and water/mineral salts from roots cannot be transported to all parts; over time the plant may die"
+        }
+      ]
+    },
+    {
+      "topic": "Photosynthesis and respiration",
+      "pages": [35, 36],
+      "key_ideas": [
+        "The Sun is the main source of energy for organisms; plants trap light energy directly during photosynthesis and animals obtain energy indirectly through food.",
+        "Photosynthesis occurs in plants in the presence of light.",
+        "Water and carbon dioxide, with light and chlorophyll, are used to make food/sugar and oxygen.",
+        "Excess sugar may be stored as starch.",
+        "Respiration occurs in living cells, releases energy from food and occurs in plants and animals.",
+        "Respiration uses oxygen and produces carbon dioxide and water according to the book's summary."
+      ],
+      "comparison_rule": "When comparing photosynthesis and respiration, state both processes explicitly and compare timing, gases taken in/given out and where they occur."
+    },
+    {
+      "topic": "Interactions within the environment",
+      "pages": [37, 38, 39, 40, 41],
+      "key_ideas": [
+        "A population is a group of organisms of the same kind living together and reproducing in a particular place, including young and adults.",
+        "A habitat is the place where an organism lives.",
+        "A community is made of different populations living together in the same habitat.",
+        "Population size increases through reproduction or movement into an area and decreases through death or movement out of an area.",
+        "Living factors include food and other organisms; non-living factors include soil, temperature, air, light and water.",
+        "Organisms compete for limited resources such as food, water, light and space.",
+        "Only plants can trap light energy directly from the Sun during photosynthesis.",
+        "Food chains show feeding relationships and energy transfer; they begin with a producer.",
+        "Food webs are formed from interconnected food chains.",
+        "A change in one population can affect other populations through feeding relationships."
+      ],
+      "ecology_reasoning_patterns": [
+        {
+          "pattern": "predator decreases",
+          "chain": "fewer predators -> fewer prey eaten -> prey population may increase"
+        },
+        {
+          "pattern": "prey/food decreases",
+          "chain": "less food available -> more competition / less food for predator -> predator population may decrease"
+        },
+        {
+          "pattern": "submerged plant blocked from light",
+          "chain": "less light -> less photosynthesis -> less food made -> insufficient food for life processes -> plant may die"
+        },
+        {
+          "pattern": "decomposers",
+          "chain": "dead organisms/waste -> decomposers carry out decomposition -> simpler substances/mineral salts returned to environment -> nutrients can be used by plants"
+        }
+      ],
+      "population_answer_framework": {
+        "name": "EFP",
+        "steps": [
+          "E — Event: state what changed",
+          "F — Food relationship: explain how the change affects food/predator/prey availability",
+          "P — Population change: state which population increases/decreases and why"
+        ]
+      }
+    }
+  ],
+  "protected_vocabulary": [
+    "gaseous exchange",
+    "oxygen",
+    "carbon dioxide",
+    "digested food",
+    "blood vessels",
+    "respiration",
+    "water-carrying tubes",
+    "food-carrying tubes",
+    "photosynthesis",
+    "chlorophyll",
+    "producer",
+    "consumer",
+    "predator",
+    "prey",
+    "population",
+    "habitat",
+    "community",
+    "decomposition",
+    "mineral salts"
+  ],
+  "integration_policy": {
+    "memorisation_bank": "Do not replace the existing 89 memorised sentences automatically.",
+    "training_models": "Use these notes to make application models more complete, especially for causal chains, comparison questions, system-link questions and population-change questions.",
+    "ai_marker": "Use these source-derived key words and causal links as supporting evidence when deciding whether required D/E, S/R and L/R components are complete; do not require extra science that the question does not ask for."
+  }
+}
