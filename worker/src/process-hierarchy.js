@@ -28,6 +28,28 @@ function text(v, max = 3000) {
   return String(v ?? '').trim().slice(0, max);
 }
 
+function norm(v) {
+  return String(v ?? '').toLowerCase().replace(/[’‘]/g, "'").replace(/[^a-z0-9]+/g, ' ').trim().replace(/\s+/g, ' ');
+}
+
+function parseRequiredConcepts(v) {
+  if (!Array.isArray(v)) return [];
+  return v.slice(0, 10).map(g => ({
+    label: text(g?.label, 180),
+    any: Array.isArray(g?.any) ? g.any.map(x => text(x, 160)).filter(Boolean).slice(0, 12) : []
+  })).filter(g => g.label && g.any.length);
+}
+
+function checkRequiredConcepts(answer, groups) {
+  const a = norm(answer);
+  const missing = [];
+  for (const g of groups) {
+    const ok = g.any.some(p => a.includes(norm(p)));
+    if (!ok) missing.push(g.label);
+  }
+  return { ok: missing.length === 0, missing };
+}
+
 function parseBody(body) {
   return {
     skillId: Number(body.skillId || 0),
@@ -37,7 +59,8 @@ function parseBody(body) {
     bookRule: text(body.bookRule, 2500),
     modelAnswer: text(body.modelAnswer, 3000),
     rubric: Array.isArray(body.rubric) ? body.rubric.map(x => text(x, 500)).filter(Boolean).slice(0, 12) : [],
-    psleCalibration: text(body.psleCalibration, 2500)
+    psleCalibration: text(body.psleCalibration, 2500),
+    requiredConcepts: parseRequiredConcepts(body.requiredConcepts)
   };
 }
 
@@ -76,6 +99,8 @@ Use this hierarchy strictly, in this exact order:
 1. PSLE / PROCESS-SKILL RUBRIC — DECISIVE
    - First check the supplied scoring ideas against the pupil's actual answer.
    - If every required idea for THIS question is present and correct, rubricSatisfied=true.
+   - For an APPLICATION question, merely stating a generic memorised process-skill rule is not enough if the question asks the pupil to apply that rule to named variables, apparatus, data or an experimental context.
+   - The answer must address the actual variables/context named in THIS question when those are part of the scoring ideas.
    - Do not add an unstated requirement merely because a fuller model answer contains it.
    - Do not require technical labels such as "changed variable", "measured variable" or "controlled variable" when the pupil has expressed the same relationship clearly in ordinary words, unless the question specifically asks for those labels.
    - Do not penalise extra correct information.
@@ -98,7 +123,8 @@ Use this hierarchy strictly, in this exact order:
    - Your AI judgement may explain the mark but must not invent a new criterion after the first three levels are satisfied.
 
 IMPORTANT FAIR-TEST CALIBRATION:
-- For a question such as "Why must the type of plant be kept the same?" in an investigation of amount of light versus plant growth, this is sufficient for full credit:
+- Generic recall such as "A fair test changes only one variable while all other relevant variables are kept constant" shows knowledge of the rule but does NOT answer a question asking why a particular variable in a named experiment must be kept the same.
+- For "Why must the type of plant be kept the same?" in an investigation of amount of light versus plant growth, this is sufficient for full credit:
   "The type of plant must be kept the same so that only the amount of light affects plant growth."
 - The pupil does NOT have to separately say "measured variable = plant growth" when the answer already states that only the amount of light affects plant growth.
 - "To make it a fair test" alone is insufficient because it does not identify the causal control.
@@ -137,6 +163,28 @@ export default {
       return reply(request, { error: 'Missing question, answer, book rule or rubric.' }, 400);
     }
 
+    // Mechanical Level-1 gate. If the client supplies question-specific required concepts,
+    // the AI is not allowed to overrule their absence. This prevents generic recall from being
+    // mistaken for successful application.
+    if (data.requiredConcepts.length) {
+      const gate = checkRequiredConcepts(data.answer, data.requiredConcepts);
+      if (!gate.ok) {
+        return reply(request, {
+          correct: false,
+          verdict: 'Needs work',
+          hierarchy: 'PSLE/process-skill rubric -> book benchmark -> PSLE answer-pattern calibration -> AI judgement',
+          rubricSatisfied: false,
+          bookAligned: true,
+          psleAcceptable: false,
+          mechanicalRubricGate: true,
+          strengths: 'The pupil may know the general process-skill rule.',
+          missing: gate.missing.join('; '),
+          feedback: 'Apply the rule to the actual variables or context in this question. A generic process-skill definition alone is not enough for an application question.',
+          improvedAnswer: data.modelAnswer
+        });
+      }
+    }
+
     const user = `PROCESS SKILL ID: ${data.skillId}\nTOPIC: ${data.topic}\n\nQUESTION:\n${data.question}\n\nPUPIL ANSWER:\n${data.answer}\n\nLEVEL 1 — PSLE / PROCESS-SKILL RUBRIC (DECISIVE):\n- ${data.rubric.join('\n- ')}\n\nLEVEL 2 — BOOK-BACKED RULE:\n${data.bookRule}\n\nLEVEL 3 — PSLE ANSWER-PATTERN CALIBRATION:\n${data.psleCalibration || 'Accept concise Primary 6 wording that satisfies the scoring ideas; do not require exact model wording.'}\n\nREFERENCE MODEL ANSWER (illustrative, not an extra rubric):\n${data.modelAnswer}`;
 
     try {
@@ -145,7 +193,6 @@ export default {
         { role: 'user', content: user }
       ], PROCESS_SCHEMA, 850);
 
-      // Enforce hierarchy mechanically as well as in the prompt.
       const correct = out.rubricSatisfied === true && out.bookAligned === true && out.psleAcceptable === true;
       return reply(request, {
         correct,
