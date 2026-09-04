@@ -26,22 +26,25 @@ function text(v, max = 3000) {
   return String(v ?? '').trim().slice(0, max);
 }
 
-function rating(v) {
-  v = String(v || '').toLowerCase().trim();
-  return ['correct', 'de', 'sr', 'lr', 'concept'].includes(v) ? v : 'concept';
-}
-
-const OUTPUT_SCHEMA = {
+const EVAL_SCHEMA = {
   type: 'object',
   properties: {
-    rating: { type: 'string', enum: ['correct', 'de', 'sr', 'lr', 'concept'] },
-    verdict: { type: 'string' },
+    conceptCorrect: { type: 'boolean' },
+    deRequired: { type: 'boolean' },
+    deMet: { type: 'boolean' },
+    srRequired: { type: 'boolean' },
+    srMet: { type: 'boolean' },
+    lrRequired: { type: 'boolean' },
+    lrMet: { type: 'boolean' },
     feedback: { type: 'string' },
     strengths: { type: 'string' },
     missing: { type: 'string' },
     improvedAnswer: { type: 'string' }
   },
-  required: ['rating', 'verdict', 'feedback', 'strengths', 'missing', 'improvedAnswer']
+  required: [
+    'conceptCorrect','deRequired','deMet','srRequired','srMet','lrRequired','lrMet',
+    'feedback','strengths','missing','improvedAnswer'
+  ]
 };
 
 const SELFTEST_SCHEMA = {
@@ -60,7 +63,7 @@ async function runStructured(env, messages, schema, maxTokens = 500) {
       type: 'json_schema',
       json_schema: schema
     },
-    temperature: 0.1,
+    temperature: 0,
     max_tokens: maxTokens
   });
 
@@ -68,6 +71,14 @@ async function runStructured(env, messages, schema, maxTokens = 500) {
   if (typeof out === 'string') out = JSON.parse(out);
   if (!out || typeof out !== 'object') throw new Error('Invalid structured response');
   return out;
+}
+
+function deriveRating(out) {
+  if (out.conceptCorrect !== true) return 'concept';
+  if (out.deRequired === true && out.deMet !== true) return 'de';
+  if (out.srRequired === true && out.srMet !== true) return 'sr';
+  if (out.lrRequired === true && out.lrMet !== true) return 'lr';
+  return 'correct';
 }
 
 export default {
@@ -79,7 +90,7 @@ export default {
     }
 
     if (url.pathname === '/health') {
-      return reply(request, { ok: true, service: 'PSLE Science AI Marker', model: 'llama-3.1-8b-instruct-fast-json' });
+      return reply(request, { ok: true, service: 'PSLE Science AI Marker', model: 'llama-3.1-8b-instruct-fast-json', calibration: 2 });
     }
 
     if (url.pathname === '/selftest') {
@@ -124,16 +135,32 @@ export default {
     }
 
     const system = `You are a strict but fair Singapore PSLE Science open-ended answer marker for a Primary 6 pupil.
-Mark only from the supplied question, scoring ideas, verbatim core explanation and model application answer.
-Application answers do NOT need to match the verbatim wording. Accept scientifically equivalent wording when the essential concept and cause-and-effect links are correct.
-Choose exactly one rating:
-correct = all essential scientific ideas and links required by the question are present, with no scientific contradiction.
-de = required Data/Evidence or comparison from the question is missing.
-sr = Science/Reasoning mechanism or causal explanation is missing, vague or scientifically wrong.
-lr = the science is mostly correct but the final Link/Result back to what was asked is missing.
-concept = a fundamental misconception or the relevant concept is not known.
-Do not penalise grammar unless it changes the science. Do not demand extra details beyond the rubric. A shorter answer that fully satisfies the rubric is correct.
-Keep feedback concise and PSLE-appropriate.`;
+
+Your job is to judge whether the pupil has supplied the SCIENCE THAT THE QUESTION ACTUALLY REQUIRES. Mark only from the supplied question, scoring ideas, verbatim core explanation and model application answer.
+
+APPLICATION ANSWERS DO NOT NEED TO MATCH THE MODEL OR VERBATIM WORDING. Accept scientifically equivalent wording, different sentence order and concise answers when the required science is present.
+
+Use D/E -> S/R -> L/R as a DIAGNOSTIC framework, not as a rule that every answer must contain all three parts.
+- D/E (Data/Evidence) is required only when the question depends on an observation, comparison, changed condition, graph/table result or experimental evidence. If the pupil clearly states the relevant comparison/change in ordinary words, D/E is met.
+- S/R (Science/Reasoning) is required for an explain/reason question when a scientific concept or causal mechanism is needed. Equivalent science wording is acceptable.
+- L/R (Link/Result) is required only when the answer must connect the science back to a specific outcome asked. If the pupil explicitly states that outcome, L/R IS MET. Never mark L/R missing merely because the wording differs from the model answer.
+- conceptCorrect is false only for a real scientific misconception or when the relevant concept is absent/wrong. Minor phrasing or grammar is not a misconception.
+
+CRITICAL MARKING RULES:
+1. Do not require extra details that are not demanded by the question or rubric.
+2. Do not penalise grammar unless it changes the science.
+3. Do not penalise a pupil for explaining from Plant B then Plant A, or vice versa, if the causal relationship is correct.
+4. If the pupil states the exact result asked in the question (for example, 'Plant B could not make food while Plant A could'), L/R is met.
+5. If all required components are met and the science is correct, the answer must be treated as correct.
+6. When marking a 'State' question, do not invent D/E, S/R or L/R requirements that the question does not ask for.
+
+CALIBRATION EXAMPLE — THIS ANSWER IS CORRECT:
+Question: Two identical green plants were given the same amount of water. Plant A was placed in light while Plant B was kept in darkness. Explain why Plant A could make food but Plant B could not.
+Pupil answer: 'As Plant A was placed in light unlike Plant B, Plant B could not photosynthesise as light is needed for green plants to make food during photosynthesis. Thus, Plant B could not make food while Plant A could make food.'
+Judge this as: conceptCorrect=true, deRequired=true, deMet=true, srRequired=true, srMet=true, lrRequired=true, lrMet=true.
+Reason: the comparison is present, the science concept is correct, and the final outcome is explicitly linked back.
+
+Keep feedback concise, encouraging and PSLE-appropriate. If the answer is fully correct, missing must be an empty string.`;
 
     const user = `TOPIC: ${topic}\n\nQUESTION:\n${question}\n\nPUPIL ANSWER:\n${pupilAnswer}\n\nVERBATIM CORE EXPLANATION:\n${verbatim}\n\nSCORING IDEAS:\n- ${rubric.join('\n- ')}\n\nMODEL APPLICATION ANSWER:\n${modelAnswer}`;
 
@@ -141,18 +168,31 @@ Keep feedback concise and PSLE-appropriate.`;
       const out = await runStructured(env, [
         { role: 'system', content: system },
         { role: 'user', content: user }
-      ], OUTPUT_SCHEMA, 500);
+      ], EVAL_SCHEMA, 650);
 
-      const r = rating(out.rating);
-      const defaultVerdict = r === 'correct' ? 'Correct' : (r === 'de' || r === 'lr' ? 'Almost there' : 'Needs correction');
+      const r = deriveRating(out);
+      const verdict = r === 'correct' ? 'Correct' : (r === 'de' || r === 'lr' ? 'Almost there' : 'Needs correction');
+      const missing = r === 'correct' ? '' : text(out.missing, 500);
+      const feedback = r === 'correct'
+        ? text(out.feedback || 'Your answer contains the required science and links back to the question.', 700)
+        : text(out.feedback, 700);
 
       return reply(request, {
         rating: r,
-        verdict: text(out.verdict || defaultVerdict, 80),
-        feedback: text(out.feedback, 700),
+        verdict,
+        feedback,
         strengths: text(out.strengths, 500),
-        missing: text(out.missing, 500),
-        improvedAnswer: text(out.improvedAnswer, 1800)
+        missing,
+        improvedAnswer: text(out.improvedAnswer, 1800),
+        criteria: {
+          conceptCorrect: out.conceptCorrect === true,
+          deRequired: out.deRequired === true,
+          deMet: out.deMet === true,
+          srRequired: out.srRequired === true,
+          srMet: out.srMet === true,
+          lrRequired: out.lrRequired === true,
+          lrMet: out.lrMet === true
+        }
       });
     } catch (err) {
       console.error('AI marker error', err);
