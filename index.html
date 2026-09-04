@@ -10,86 +10,127 @@
 <script>
 (async()=>{
   try{
-    const res=await fetch('app.html?v=recall-progress-1',{cache:'no-cache'});
+    const res=await fetch('app.html?v=ai-marker-1',{cache:'no-cache'});
     if(!res.ok) throw new Error('Could not load app.html');
     let html=await res.text();
     const patch=`<style>
-.exact-progress{margin:10px 0 2px;padding:11px 13px;border:1px solid #cbd5e1;border-radius:13px;background:#f8fafc;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-.exact-progress.mastered{background:#dcfce7;border:2px solid #16a34a}
-.exact-left{min-width:0}.exact-title{font-size:13px;font-weight:800;color:#334155}.exact-progress.mastered .exact-title{color:#166534}
-.exact-dots{display:flex;gap:6px;margin-top:6px}.exact-dot{width:18px;height:18px;border-radius:50%;background:#e2e8f0;border:2px solid #cbd5e1}.exact-dot.done{background:#22c55e;border-color:#15803d}
-.exact-count{font-size:15px;font-weight:900;color:#475569;white-space:nowrap}.exact-progress.mastered .exact-count{color:#166534;font-size:16px}.exact-note{font-size:11px;color:#64748b;margin-top:5px}
+.ai-mark-wrap{margin-top:12px;padding:12px;border:1px solid #bfdbfe;border-radius:13px;background:#eff6ff}.ai-mark-head{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}.ai-mark-title{font-weight:800;color:#1e3a8a}.ai-state{font-size:12px;font-weight:700;padding:5px 8px;border-radius:999px;background:#fff;border:1px solid #bfdbfe;color:#1e40af}.ai-mark-btn{background:#1d4ed8!important;color:#fff!important;border-color:#1d4ed8!important;font-weight:800}.ai-mark-btn:disabled{opacity:.6;cursor:wait}.ai-setup{font-size:12px!important;padding:7px 9px!important}.ai-note{font-size:12px;color:#475569;margin-top:6px;line-height:1.4}.ai-result{margin-top:10px;padding:12px;border-radius:12px;border:1px solid #cbd5e1;background:#fff;line-height:1.5}.ai-result.correct{background:#ecfdf5;border-color:#86efac}.ai-result.partial{background:#fff7ed;border-color:#fdba74}.ai-result.wrongai{background:#fef2f2;border-color:#fca5a5}.ai-verdict{font-weight:900;font-size:17px;margin-bottom:5px}.ai-section{margin-top:7px}.ai-section b{display:block;margin-bottom:2px}.ai-improved{margin-top:8px;padding:9px 10px;border-left:4px solid #6366f1;background:#f8fafc;border-radius:8px}.manual-label{font-size:12px;font-weight:800;color:#64748b;margin:12px 0 4px}
+.exact-progress-box{margin-top:10px;padding:10px 12px;border:1px solid #c7d2fe;border-radius:12px;background:#eef2ff;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.exact-progress-box.mastered{background:#dcfce7;border-color:#86efac}.exact-progress-title{font-weight:800}.exact-progress-count{font-weight:900;font-size:17px}.exact-progress-dots{display:flex;gap:5px}.exact-dot{width:18px;height:18px;border-radius:50%;border:2px solid #a5b4fc;background:#fff}.exact-dot.done{background:#22c55e;border-color:#16a34a}
 <\/style>
 <script>
 (()=>{
   const filter=document.getElementById('bankFilter');
   const search=document.getElementById('bankSearch');
   const bankEl=document.getElementById('bank');
-  if(!filter||!search||!bankEl) return;
-
-  filter.innerHTML='<option value="all">All 89</option><option value="red">🔴 Focus</option><option value="green">🟢 Already Good</option><option value="amber">🟠 Learning</option>';
-  filter.title='Filter by current priority';
-  filter.style.cssText='width:100%;padding:9px 10px;border:2px solid #cbd5e1;border-radius:10px;font:inherit;font-size:13px;background:#fff';
-
-  const row=document.createElement('div');
-  row.style.cssText='display:grid;grid-template-columns:auto 1fr;gap:7px;align-items:center;margin-top:8px';
-  const label=document.createElement('label');
-  label.htmlFor='bankFilter';
-  label.textContent='Show:';
-  label.style.cssText='font-size:12px;font-weight:800;color:#475569';
-  row.append(label,filter);
-  bankEl.parentNode.insertBefore(row,bankEl);
-
-  window.bank=function(){
-    const f=filter.value||'all';
-    const q=(search.value||'').trim().toLowerCase();
-    const cur=current();
-    const html=BANK.map((e,i)=>{
-      const p=priority(i);
-      if(f!=='all'&&p!==f)return'';
-      if(q){const num=String(i+1),topic=e.topic.toLowerCase();if(!num.includes(q)&&!topic.includes(q))return'';}
-      let rowClass=p==='red'?'redrow':p==='green'?'greenrow':'amberrow';
-      if(i===cur)rowClass+=' currentrow';
-      return '<div class="row '+rowClass+'" data-i="'+i+'" title="'+esc(labelPriority(p))+'"><div class="rownum">'+(i+1)+'</div><div class="topicname">'+esc(e.topic)+'</div></div>';
-    }).join('');
-    bankEl.innerHTML=html||'<div class="small" style="padding:16px">No concepts match this filter.</div>';
-    bankEl.querySelectorAll('.row[data-i]').forEach(r=>r.onclick=()=>{
-      const i=Number(r.dataset.i);let idx=order.indexOf(i);
-      if(idx<0){order=[i,...order];idx=0;}
-      pos=idx;render();
-      if(window.innerWidth<981)window.scrollTo({top:0,behavior:'smooth'});
-    });
-  };
-  filter.onchange=window.bank;
-  search.oninput=window.bank;
+  if(filter&&search&&bankEl){
+    filter.innerHTML='<option value="all">All 89</option><option value="red">🔴 Focus</option><option value="green">🟢 Already Good</option><option value="amber">🟠 Learning</option>';
+    filter.title='Filter by current priority';
+    filter.style.cssText='width:100%;padding:9px 10px;border:2px solid #cbd5e1;border-radius:10px;font:inherit;font-size:13px;background:#fff';
+    const filterRow=document.createElement('div');
+    filterRow.style.cssText='display:grid;grid-template-columns:auto 1fr;gap:7px;align-items:center;margin-top:8px';
+    const filterLabel=document.createElement('label');
+    filterLabel.htmlFor='bankFilter';filterLabel.textContent='Show:';filterLabel.style.cssText='font-size:12px;font-weight:800;color:#475569';
+    filterRow.append(filterLabel,filter);
+    bankEl.parentNode.insertBefore(filterRow,bankEl);
+    window.bank=function(){
+      const f=filter.value||'all';
+      const q=(search.value||'').trim().toLowerCase();
+      const cur=current();
+      const html=BANK.map((e,i)=>{
+        const p=priority(i);
+        if(f!=='all'&&p!==f)return'';
+        if(q){const num=String(i+1),topic=e.topic.toLowerCase();if(!num.includes(q)&&!topic.includes(q))return'';}
+        let rowClass=p==='red'?'redrow':p==='green'?'greenrow':'amberrow';
+        if(i===cur)rowClass+=' currentrow';
+        return '<div class="row '+rowClass+'" data-i="'+i+'" title="'+esc(labelPriority(p))+'"><div class="rownum">'+(i+1)+'</div><div class="topicname">'+esc(e.topic)+'</div></div>';
+      }).join('');
+      bankEl.innerHTML=html||'<div class="small" style="padding:16px">No concepts match this filter.</div>';
+      bankEl.querySelectorAll('.row[data-i]').forEach(r=>r.onclick=()=>{
+        const i=Number(r.dataset.i);let idx=order.indexOf(i);
+        if(idx<0){order=[i,...order];idx=0;}
+        pos=idx;render();
+        if(window.innerWidth<981)window.scrollTo({top:0,behavior:'smooth'});
+      });
+    };
+    filter.onchange=window.bank;search.oninput=window.bank;
+  }
 
   const teacherStrip=document.querySelector('.teacher-strip');
-  const progress=document.createElement('div');
-  progress.id='exactRecallProgress';
-  progress.className='exact-progress';
-  progress.setAttribute('aria-live','polite');
-  if(teacherStrip) teacherStrip.insertAdjacentElement('afterend',progress);
+  const exactBox=document.createElement('div');
+  exactBox.className='exact-progress-box';
+  exactBox.innerHTML='<div><div class="exact-progress-title">Exact Recall Progress</div><div class="small">One correct Exact Recall per different day counts.</div></div><div style="display:flex;align-items:center;gap:10px"><div class="exact-progress-dots"><span class="exact-dot"></span><span class="exact-dot"></span><span class="exact-dot"></span></div><div class="exact-progress-count">0 / 3</div></div>';
+  if(teacherStrip) teacherStrip.insertAdjacentElement('afterend',exactBox);
+  const exactCount=exactBox.querySelector('.exact-progress-count');
+  const exactDots=[...exactBox.querySelectorAll('.exact-dot')];
+  function updateExactProgress(){
+    const n=Math.min(3,new Set(rec(current()).phraseDates||[]).size);
+    exactDots.forEach((d,i)=>d.classList.toggle('done',i<n));
+    exactBox.classList.toggle('mastered',n>=3);
+    exactCount.textContent=n>=3?'✅ MASTERED — 3 / 3':'Correct: '+n+' / 3';
+  }
 
-  function updateRecallProgress(){
-    if(!progress) return;
-    const i=current();
-    const x=rec(i);
-    const credited=Math.min(3,new Set(x.phraseDates||[]).size);
-    const mastered=credited>=3;
-    progress.classList.toggle('mastered',mastered);
-    const dots=[0,1,2].map(n=>'<span class="exact-dot '+(n<credited?'done':'')+'" aria-hidden="true"></span>').join('');
-    progress.innerHTML='<div class="exact-left"><div class="exact-title">Exact Recall Progress</div><div class="exact-dots">'+dots+'</div><div class="exact-note">One correct Exact Recall is credited per day.</div></div><div class="exact-count">'+(mastered?'✅ MASTERED — 3 / 3':'Correct: '+credited+' / 3')+'</div>';
+  const AI_KEY='psleScience89_ai_marker_url_v1';
+  const appPane=document.getElementById('appPane');
+  const appAnswer=document.getElementById('appAnswer');
+  const actionRow=appPane?appPane.querySelector('.actions'):null;
+  const rating=appPane?appPane.querySelector('.rating'):null;
+  let lastMarked='';
+  function normalizeEndpoint(v){v=(v||'').trim().replace(/\/+$/,'');if(v&&!/\/mark$/i.test(v))v+='/mark';return v;}
+  const qp=new URLSearchParams(location.search).get('ai');
+  if(qp&&/^https:\/\//i.test(qp)) localStorage.setItem(AI_KEY,normalizeEndpoint(qp));
+  function endpoint(){return normalizeEndpoint(localStorage.getItem(AI_KEY)||'')}
+  function setupAI(){
+    const v=prompt('Paste your Cloudflare Worker URL. Example: https://primary-science-ai-marker.YOUR-SUBDOMAIN.workers.dev/mark',endpoint());
+    if(v===null)return;
+    const clean=normalizeEndpoint(v);
+    if(clean&&!/^https:\/\//i.test(clean)){alert('Please enter an https:// Worker URL.');return;}
+    if(clean)localStorage.setItem(AI_KEY,clean);else localStorage.removeItem(AI_KEY);
+    updateAIState();
+  }
+  let aiWrap,aiState,aiBtn,aiResult,setupBtn;
+  if(actionRow){
+    aiWrap=document.createElement('div');aiWrap.className='ai-mark-wrap';
+    aiWrap.innerHTML='<div class="ai-mark-head"><div><div class="ai-mark-title">🤖 AI Application Marker</div><div class="ai-note">Marks the science and D/E → S/R → L/R. Application wording does not need to be verbatim.</div></div><span class="ai-state">Setup needed</span></div><div class="actions" style="margin-top:9px"><button type="button" class="ai-mark-btn">🤖 AI Mark My Answer</button><button type="button" class="ai-setup">⚙ AI Setup</button></div><div class="ai-result hide" aria-live="polite"></div>';
+    actionRow.parentNode.insertBefore(aiWrap,actionRow);
+    aiState=aiWrap.querySelector('.ai-state');aiBtn=aiWrap.querySelector('.ai-mark-btn');setupBtn=aiWrap.querySelector('.ai-setup');aiResult=aiWrap.querySelector('.ai-result');
+    setupBtn.addEventListener('click',setupAI);aiBtn.addEventListener('click',markWithAI);
+    appAnswer.addEventListener('input',()=>{if(appAnswer.value.trim()!==lastMarked){aiBtn.disabled=false;aiBtn.textContent='🤖 AI Mark My Answer';}});
+  }
+  if(rating){const lab=document.createElement('div');lab.className='manual-label';lab.textContent='Parent/Teacher override (optional):';rating.parentNode.insertBefore(lab,rating);}
+  function updateAIState(){if(!aiState)return;const ok=!!endpoint();aiState.textContent=ok?'AI connected':'Setup needed';aiState.style.background=ok?'#dcfce7':'#fff7ed';aiState.style.color=ok?'#166534':'#92400e';}
+  function safe(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+  function ratingLabel(r){return {correct:'✅ Correct',de:'🟨 D/E missing',sr:'🟧 S/R missing / wrong',lr:'🟪 L/R missing',concept:'❌ Concept not known'}[r]||'AI Mark'}
+  async function markWithAI(){
+    const ans=(appAnswer.value||'').trim();
+    if(!ans){aiResult.className='ai-result partial';aiResult.innerHTML='<div class="ai-verdict">Write an answer first.</div>';return;}
+    let url=endpoint();if(!url){setupAI();url=endpoint();if(!url)return;}
+    if(ans===lastMarked&&aiResult&&!aiResult.classList.contains('hide'))return;
+    const e=BANK[current()];
+    aiBtn.disabled=true;aiBtn.textContent='🤖 Marking…';aiResult.className='ai-result';aiResult.innerHTML='<div class="ai-verdict">AI is checking the science…</div>';
+    try{
+      const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({conceptId:e.id,topic:e.topic,question:e.applicationQuestion,answer:ans,verbatim:e.phrase,rubric:e.rubric,modelAnswer:e.modelApplicationAnswer})});
+      const data=await res.json().catch(()=>({}));
+      if(!res.ok)throw new Error(data.error||'AI marker could not be reached.');
+      const r=['correct','de','sr','lr','concept'].includes(data.rating)?data.rating:'concept';
+      const cls=r==='correct'?'correct':(r==='de'||r==='lr'?'partial':'wrongai');
+      let h='<div class="ai-verdict">'+safe(ratingLabel(r))+'</div>';
+      if(data.feedback)h+='<div>'+safe(data.feedback)+'</div>';
+      if(data.strengths)h+='<div class="ai-section"><b>What you did well</b>'+safe(data.strengths)+'</div>';
+      if(data.missing)h+='<div class="ai-section"><b>What is missing / wrong</b>'+safe(data.missing)+'</div>';
+      if(data.improvedAnswer)h+='<div class="ai-improved"><b>Improved PSLE answer</b><br>'+safe(data.improvedAnswer)+'</div>';
+      aiResult.className='ai-result '+cls;aiResult.innerHTML=h;lastMarked=ans;
+      rateApp(r);
+      rec(current()).aiLast={rating:r,feedback:data.feedback||'',missing:data.missing||'',markedAt:new Date().toISOString()};save();
+      aiBtn.textContent='✓ AI Marked';updateExactProgress();
+    }catch(err){aiResult.className='ai-result wrongai';aiResult.innerHTML='<div class="ai-verdict">AI marking unavailable</div><div>'+safe(err.message||'Please try again.')+'</div>';aiBtn.disabled=false;aiBtn.textContent='🤖 Try AI Mark Again';}
   }
 
   const originalRender=render;
-  render=function(){originalRender();updateRecallProgress();};
-  const originalSetPane=setPane;
-  setPane=function(p){originalSetPane(p);updateRecallProgress();};
-  const checkBtn=document.getElementById('checkPhrase');
-  if(checkBtn) checkBtn.addEventListener('click',()=>setTimeout(updateRecallProgress,0));
-
-  window.bank();
-  updateRecallProgress();
+  window.render=function(){originalRender();lastMarked='';if(aiResult)aiResult.className='ai-result hide';if(aiBtn){aiBtn.disabled=false;aiBtn.textContent='🤖 AI Mark My Answer';}updateExactProgress();updateAIState();};
+  const originalCheckPhrase=checkPhrase;
+  window.checkPhrase=function(){originalCheckPhrase();updateExactProgress();};
+  document.getElementById('checkPhrase').onclick=window.checkPhrase;
+  updateExactProgress();updateAIState();if(window.bank)window.bank();
 })();
 <\/script>`;
     html=html.replace('</body>',patch+'</body>');
