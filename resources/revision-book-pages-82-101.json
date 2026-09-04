@@ -1,0 +1,212 @@
+{
+  "source": {
+    "type": "photographed_revision_book",
+    "pages": "82-101",
+    "purpose": "Reference database for PSLE Science application answers, experiment-process skills, command words, lab apparatus and scientific reasoning. This source informs training-model generation and AI marking but does not overwrite the existing memorisation bank unless explicitly approved."
+  },
+  "answering_principles": [
+    {
+      "id": "energy_conversion_chain",
+      "pages": [82,83],
+      "rule": "For energy-conversion explanations, state the relevant initial energy form, use 'converted to', state the next energy form(s), and link the conversion to the observed motion/result. If comparing two situations, identify where extra energy is dissipated, such as heat due to friction.",
+      "protected_terms": ["converted to", "kinetic energy", "potential energy", "gravitational potential energy", "elastic potential energy", "heat energy", "sound energy", "electrical energy", "light energy"]
+    },
+    {
+      "id": "force_effect_chain",
+      "pages": [84,85,86,87,88,89],
+      "rule": "For force questions, identify the force, state the direction or interaction when relevant, then explain its effect on motion or shape. Effects include making a stationary object move, speeding up, slowing down, stopping, changing direction or changing shape."
+    },
+    {
+      "id": "fair_test_variables",
+      "pages": [90,91,92,93],
+      "rule": "For experimental-process questions, identify aim, hypothesis when required, changed variable, measured variable and variables kept the same. A fair test changes only one variable while all other relevant variables are kept constant."
+    },
+    {
+      "id": "reliability_repeat_average",
+      "pages": [90,92],
+      "rule": "Reliability is improved by repeating the experiment to obtain consistent/similar results and calculating an average when appropriate. More repeated trials increase reliability."
+    },
+    {
+      "id": "accuracy_vs_reliability",
+      "pages": [90,92,93],
+      "rule": "Accuracy means results are close to the actual value and depends on correct apparatus/procedure/reading. Reliability means repeated results are consistent/similar. Do not confuse accuracy with reliability."
+    },
+    {
+      "id": "control_setup",
+      "pages": [93],
+      "rule": "A control set-up uses the same conditions but without the independent variable so that the effect of the changed variable can be compared and confirmed."
+    },
+    {
+      "id": "apparatus_precision",
+      "pages": [94,95,96,97,98],
+      "rule": "Choose apparatus according to what is measured and the required range/precision. For liquid volume, prefer a measuring cylinder to a beaker for more accurate readings; for small precise volumes use a syringe/dropper when suitable."
+    },
+    {
+      "id": "command_word_first",
+      "pages": [100],
+      "rule": "Before answering, identify the command word and match the response form to it. 'State' requires a concise answer; 'compare' requires similarities and/or differences; 'infer' requires a conclusion based on observations; 'relate' requires explaining a relationship; 'trace' requires following a path."
+    }
+  ],
+  "topics": [
+    {
+      "topic": "Energy conversion",
+      "pages": [82,83],
+      "key_ideas": [
+        "More mass gives an object more gravitational potential energy at the same height.",
+        "Greater height gives an object more gravitational potential energy for the same mass.",
+        "Stretching or compressing an elastic object stores elastic potential energy.",
+        "When released, elastic potential energy can be converted to kinetic energy.",
+        "When an object slows because of friction, some kinetic energy is converted to heat energy and sometimes sound energy.",
+        "On a smoother path, less kinetic energy is converted to heat due to friction, so more kinetic energy remains for motion.",
+        "When an object rises, kinetic energy can be converted to gravitational potential energy; when it falls, gravitational potential energy can be converted to kinetic energy."
+      ],
+      "answering_patterns": [
+        "Initial energy → converted to → final energy → observed result",
+        "Comparison: identify which set-up loses more energy as heat/sound due to friction, then link to distance/speed/result."
+      ]
+    },
+    {
+      "topic": "Forces",
+      "pages": [84,85,86,87,88,89],
+      "key_ideas": [
+        "A force is a push or a pull.",
+        "A force can make a stationary object move, speed up, slow down, stop, change direction or change shape.",
+        "Four main forces shown: magnetic force, elastic spring force, gravitational force and frictional force.",
+        "Gravitational force pulls objects towards the centre of Earth and can act at a distance.",
+        "Greater mass gives greater gravitational force; greater distance between objects gives weaker gravitational force.",
+        "Mass is the amount of matter in an object and is not a force; weight is a force caused by gravity and can vary with gravitational force.",
+        "Frictional force opposes motion and is produced when surfaces are in contact and move/rub against each other.",
+        "Rougher surfaces and greater load/mass generally increase frictional force between surfaces.",
+        "Lubricants, rollers/wheels and streamlined shapes can reduce friction in suitable contexts.",
+        "Elastic spring force acts when an elastic object is stretched or compressed and tends to return it to its original shape.",
+        "Greater extension/compression of the same spring gives greater elastic spring force; a stiffer spring gives greater elastic spring force for the same extension/compression.",
+        "Magnetic force can be attraction or repulsion and can act at a distance.",
+        "Like poles repel; unlike poles attract.",
+        "A stronger magnet exerts a greater magnetic force."
+      ],
+      "answering_patterns": [
+        "D/E: quote the observed movement/change. S/R: identify force and mechanism. L/R: state effect on motion/shape asked.",
+        "For friction comparisons: surface/load difference → friction greater/less → object slows/moves more/less → requested outcome.",
+        "For elastic force: amount of stretch/compression or stiffness → elastic force strength → return/motion result."
+      ]
+    },
+    {
+      "topic": "Experimental processes and process skills",
+      "pages": [90,91,92,93],
+      "key_ideas": [
+        "Aim: purpose of the experiment.",
+        "Hypothesis: a prediction/relationship involving the changed and measured variables.",
+        "Changed/independent variable: what the investigator changes.",
+        "Measured/dependent variable: what is measured as the effect.",
+        "Variables kept the same: conditions kept constant to ensure a fair test.",
+        "Relationship from data should state how the measured variable changes as the changed variable increases/decreases.",
+        "Procedural steps should be clear, ordered and include relevant apparatus, quantities and measurements.",
+        "Reliability: repeat the experiment and obtain consistent/similar results; calculate an average where appropriate.",
+        "Accuracy: use suitable apparatus and follow the method carefully so readings are close to the actual value.",
+        "Control set-up: same conditions but without the independent variable."
+      ],
+      "book_example": {
+        "aim": "Find out how the amount of carbon dioxide affects the number of bubbles produced per minute by a water plant.",
+        "changed_variable": "Amount of carbon dioxide",
+        "measured_variable": "Number of bubbles produced per minute",
+        "examples_of_constants": ["distance between plant and lamp", "intensity/type of light", "amount of water", "type of plant", "number/size of plants"],
+        "relationship_pattern": "As the amount of carbon dioxide increases, the number of bubbles produced per minute increases.",
+        "reliability_improvement": "Repeat the experiment several times and calculate the average reading."
+      }
+    },
+    {
+      "topic": "Lab apparatus and measurement",
+      "pages": [94,95,96,97,98],
+      "apparatus": [
+        {"name": "Electronic balance", "use": "Measure mass", "unit": "g or kg"},
+        {"name": "Beam balance", "use": "Compare masses of two objects"},
+        {"name": "Stopwatch", "use": "Measure time", "unit": "s"},
+        {"name": "Ruler", "use": "Measure length", "unit": "cm"},
+        {"name": "Measuring tape", "use": "Measure lengths/curved surfaces", "unit": "cm"},
+        {"name": "Thermometer", "use": "Measure temperature", "unit": "°C"},
+        {"name": "Datalogger", "use": "Measure/record temperature electronically"},
+        {"name": "Measuring cylinder", "use": "Measure liquid volume with greater precision than a beaker", "unit": "mL"},
+        {"name": "Beaker", "use": "Hold and estimate/moderately measure liquid volume", "unit": "mL"},
+        {"name": "Conical flask", "use": "Hold/mix moderate amounts of liquid"},
+        {"name": "Syringe", "use": "Measure small precise volumes", "unit": "mL"},
+        {"name": "Measuring jug", "use": "Measure larger liquid volumes", "unit": "mL or L"},
+        {"name": "Retort stand", "use": "Clamp and hold objects in a fixed position"},
+        {"name": "Funnel", "use": "Pour liquids/solids into containers with small openings without spilling"},
+        {"name": "Dropper", "use": "Add liquid slowly/dropwise"}
+      ],
+      "measurement_rules": [
+        "Read liquid level at eye level where appropriate.",
+        "Use the smallest suitable scale/most precise suitable apparatus for the required measurement.",
+        "For volume of an irregular solid, use water displacement: initial water volume → submerge object fully → final volume; object volume = final - initial.",
+        "Choose a measuring cylinder rather than a beaker when an accurate liquid-volume measurement is required."
+      ]
+    },
+    {
+      "topic": "Glossary of scientific terms",
+      "pages": [99],
+      "terms": {
+        "boiling": "change from liquid to gas at a fixed temperature known as the boiling point due to heat gain",
+        "breathing": "taking in and giving out of air through the nose/mouth",
+        "condensation": "change from gas to liquid due to heat loss",
+        "evaporation": "change from liquid to gas due to heat gain and can occur at any temperature",
+        "fertilisation": "fusion of male and female reproductive cells",
+        "freezing": "change from liquid to solid at a fixed temperature known as the freezing point due to heat loss",
+        "gaseous_exchange": "taking in oxygen and removing carbon dioxide",
+        "germination": "process when a seed grows into a seedling",
+        "melting": "change from solid to liquid at a fixed temperature known as melting point due to heat gain",
+        "pollination": "transfer of pollen grains from anther of one flower to stigma of the same flower or another flower of the same type/species",
+        "respiration": "breaking down of glucose/sugar with release of energy in living cells",
+        "seed_dispersal": "seeds/fruits are scattered away from the parent plant to avoid overcrowding",
+        "photosynthesis": "green plants take in water and carbon dioxide and trap sunlight with chlorophyll to produce food/sugar/glucose and oxygen"
+      }
+    },
+    {
+      "topic": "Common command words",
+      "pages": [100],
+      "command_words": {
+        "classify": "group things based on common characteristics",
+        "compare": "identify similarities and differences between objects, concepts or processes",
+        "construct": "put components together based on a given plan",
+        "describe": "state in words, using diagrams where appropriate, the main points of a topic",
+        "discuss": "reflect on and explore a topic in speech or writing",
+        "differentiate": "identify differences between objects, concepts or processes",
+        "identify": "select and/or name the object, event, concept or process",
+        "infer": "draw a conclusion based on observations",
+        "investigate": "find out by carrying out experiments",
+        "list": "give a number of points/items without elaboration",
+        "manipulate": "control an object in order to explore and discover its behaviour",
+        "measure": "obtain a reading from a suitable measuring instrument",
+        "observe": "obtain information through the use of the senses",
+        "recognise": "identify facts, characteristics or concepts critical to understanding a situation/event/process/phenomenon",
+        "relate": "identify and explain a relationship between objects, concepts or processes",
+        "show_an_understanding": "recall, translate, explain and apply information",
+        "state": "give a concise answer with little or no supporting argument",
+        "trace": "follow a path"
+      }
+    },
+    {
+      "topic": "Useful acronyms and memory aids",
+      "pages": [101],
+      "items": [
+        "Bird groups: FARM = Fish, Amphibians, Reptiles, Mammals, with Birds/Insects included in the page's grouping aid.",
+        "Seed dispersal: WEWA = Wind, Explosive action, Water, Animal.",
+        "Photosynthesis needs: carbon dioxide, water, chlorophyll, light; produces oxygen and food/sugar; excess stored as starch.",
+        "Materials memory aid: 'We Can Move FAST' for Waterproof, Conductivity, Magnetic/non-magnetic, Flexibility, Ability to sink/float, Strength, Transparency.",
+        "Magnetic metals: Iron, Steel, Cobalt, Nickel.",
+        "Evaporation factors: WET = Wind, Exposed surface area, Temperature.",
+        "Condensation: WC^2CW = source of Water vapour → Contact/touches → Cooler surface/air → Condense → Water droplets.",
+        "Electricity/electromagnet: CEE / CEEE prompts for Circuit, Electric current, Effect/Electromagnet, Effects."
+      ]
+    }
+  ],
+  "integration_guidance": {
+    "pupil_facing_framework": "Keep D/E → S/R → L/R as the only main answering framework shown to the pupil.",
+    "ai_marker_use": [
+      "Use command words to decide whether D/E, S/R and/or L/R are actually required.",
+      "Use process-skill rules for fair-test, reliability, accuracy, variables and control-set-up questions.",
+      "Use exact scientific vocabulary from the source when generating full training answers.",
+      "Do not penalise scientifically equivalent wording if all required concepts and links are present.",
+      "Do not silently replace the memorised 89-bank phrasing with book wording."
+    ]
+  }
+}
