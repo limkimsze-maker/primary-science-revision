@@ -1,0 +1,105 @@
+{
+  "source_policy": {
+    "question_papers": "Primary School Leaving Examination Science papers, 2013-2019 plus specimen paper. Use these as strong evidence for authentic PSLE question structure, command words, data/diagram demands and topic contexts.",
+    "answer_explanations": "The answer/explanation pages in these uploaded PDFs are published by Educational Publishing House (EPH), not official SEAB marking schemes. Use them as secondary calibration for plausible answer structure only; they must not override the user's gold-standard revision book wording or be treated as definitive mark schemes.",
+    "memorisation_authority": "Gold-standard revision book remains the authority for memorised Science wording.",
+    "application_authority_order": [
+      "Actual PSLE question wording and context",
+      "Gold-standard revision book science content",
+      "CER slides for evidence/reasoning structure",
+      "EPH worked answers as secondary calibration"
+    ]
+  },
+  "coverage": ["2013","2014","2015","2016","2017","2018","2019","specimen"],
+  "calibration_rules": [
+    {
+      "id": "command_word_first",
+      "rule": "Obey the command word before applying D/E-S/R-L/R. State/Name/Identify can be direct. Explain/Why normally needs scientific reasoning. Evidence/data questions require the relevant observation, value or comparison. Compare questions must address both sides when the comparison itself is assessed."
+    },
+    {
+      "id": "claim_not_automatically_required",
+      "rule": "Do not force a final L/R sentence when the claim/result is already explicitly supplied in the question and repeating it adds no scientific content. A complete D/E plus S/R explanation can be sufficient."
+    },
+    {
+      "id": "evidence_is_question_specific",
+      "rule": "D/E should come from the actual setup, observation, graph, table, diagram or comparison in the question. When values are given and the question asks for evidence, use the relevant values or an explicit comparison rather than a generic statement."
+    },
+    {
+      "id": "reasoning_is_science",
+      "rule": "S/R is the scientific principle or causal mechanism, not a repetition of the observation. Preserve the gold-standard Primary Science wording and key terms where they fit the question."
+    },
+    {
+      "id": "causal_chain_until_requested_result",
+      "rule": "For multi-step Explain questions, continue the causal chain until the exact outcome asked is reached, then stop. Do not add unrelated science beyond the question."
+    },
+    {
+      "id": "fair_test",
+      "rule": "For fair-test/design questions, identify the changed variable and measured variable from the question, keep other relevant variables constant, and use a control set-up only when the question requires comparison with/without the changed factor."
+    },
+    {
+      "id": "relationship",
+      "rule": "For relationship questions, state how the measured variable changes as the changed variable increases/decreases. If the trend changes, state separate relationships for the separate ranges."
+    },
+    {
+      "id": "compare_both_sides",
+      "rule": "When asked to compare A and B, explicitly state both A and B, or use a clear comparative sentence that unambiguously covers both."
+    }
+  ],
+  "topic_patterns": {
+    "photosynthesis": [
+      "Use the actual light/carbon-dioxide/water condition from the setup as D/E.",
+      "Use the gold-standard photosynthesis explanation as S/R.",
+      "Link to amount of food, oxygen, growth or survival only when the question asks for that outcome."
+    ],
+    "plant_transport": [
+      "Identify the relevant water-carrying or food-carrying tubes and the direction/substance transported.",
+      "For cut/ring/removal setups, state what can no longer reach which part before giving the plant outcome."
+    ],
+    "respiration_and_body_systems": [
+      "When exercise/activity is involved: more energy needed -> faster respiration -> more oxygen/digested food needed -> breathing/heart rate changes -> transport/removal outcome when asked.",
+      "Use actual gas direction or blood-flow evidence from diagrams when provided."
+    ],
+    "ecosystems": [
+      "Start with the event/change, then feeding/resource relationship, then population effect.",
+      "Do not jump directly to population change without the food/predator/prey link when the question asks why."
+    ],
+    "condensation": [
+      "Source/contact evidence: water vapour contacts cooler surface/air.",
+      "Reasoning: water vapour loses heat and condenses to form water droplets.",
+      "Do not say droplets came through the container unless the setup supports that."
+    ],
+    "evaporation_and_heat": [
+      "Distinguish heat transfer from temperature.",
+      "For evaporation, use exposed surface area, temperature or moving air only when it is the changed condition in the question.",
+      "For insulation, identify the poor conductor/trapped air and then the slower heat-transfer outcome."
+    ],
+    "electricity_and_electromagnets": [
+      "Use open/closed/complete circuit evidence first when it is shown by the setup.",
+      "Reason using whether electric current can flow and, for electromagnets, whether current makes/removes the magnetic effect.",
+      "Do not use vague 'energy is shared' explanations for bulb brightness when current-based reasoning is required."
+    ],
+    "forces": [
+      "Identify the actual forces in the diagram/setup and their directions/effects.",
+      "For movement, explain whether forces are balanced/unbalanced or how friction/gravity/elastic force changes motion as required by the question."
+    ],
+    "energy": [
+      "Name the starting and ending energy forms in context and include transfer/conversion steps only as far as the question requires.",
+      "When friction is involved, kinetic energy may be converted to heat/sound; when height changes, link gravitational potential and kinetic energy appropriately."
+    ],
+    "adaptations": [
+      "Feature/behaviour -> immediate effect -> survival/reproduction advantage.",
+      "Use the actual habitat condition from the question rather than a generic adaptation statement."
+    ],
+    "matter": [
+      "Use Primary Science properties such as mass, occupies space, definite shape/volume and compressibility when relevant.",
+      "Do not require particle theory unless explicitly provided by the gold-standard source/question."
+    ]
+  },
+  "quality_checks": [
+    "Do not treat publisher worked answers as official SEAB marking schemes.",
+    "Do not copy publisher phrasing into the memorisation bank unless independently supported by the gold-standard book.",
+    "Do not require every D/E, S/R and L/R component in every question.",
+    "Do not reward a repeated claim as a substitute for missing evidence or reasoning.",
+    "Do not demand extra science beyond the actual question and gold-standard rubric."
+  ]
+}
