@@ -6,7 +6,7 @@
 <title>PSLE Science Structured Mastery — Re-audited 180 + Process Skills</title>
 <style>body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f4f7fb;color:#172033}.loading{min-height:100vh;display:grid;place-items:center}.loading div{background:#fff;border:1px solid #dbe3ee;border-radius:16px;padding:20px 24px;box-shadow:0 4px 18px #0f172a0d;text-align:center;line-height:1.5}</style>
 </head>
-<body><div class="loading"><div><b>Loading re-audited 180-concept trainer + process skills…</b><br><small>180 Science concepts · 12 fair-test/process skills · AI marking for Science and process-skill applications</small></div></div>
+<body><div class="loading"><div><b>Loading re-audited 180-concept trainer + process skills…</b><br><small>180 Science concepts · 12 fair-test/process skills · dedicated rubric-first AI marking</small></div></div>
 <script>
 (async()=>{
  try{
@@ -14,7 +14,6 @@
   if(!res.ok)throw new Error('Could not load trainer180.html');
   let html=await res.text();
 
-  // Force the new terminology into the base HTML before it is displayed.
   html=html
    .replace('<option value="smart">Smart 20 — 60% Focus · 30% Learning · 10% Secure</option><option value="red">Focus only</option><option value="amber">Learning only</option><option value="green">Secure only</option><option value="all">All 180</option>', '<option value="red">🔴 Focus only</option><option value="amber">⚪ Not Studied Yet only</option><option value="green">🟢 Already Good only</option><option value="all">All 180</option>')
    .replace('🟠 Learning','⚪ Not Studied Yet')
@@ -38,16 +37,16 @@
    '10-electricity-electromagnets-magnets.js','11-energy-forces.js'
   ];
   const scripts=[];
-  appFiles.forEach(f=>scripts.push(`resources/appvariants/${f}?v=20260905k`));
-  scripts.push('resources/audit180/core.js?v=20260905k');
-  auditFiles.forEach(f=>scripts.push(`resources/audit180/${f}?v=20260905k`));
-  scripts.push('resources/appvariants/engine.js?v=20260905k');
-  scripts.push('resources/priority-colors.js?v=20260905k');
-  scripts.push('resources/filter-position.js?v=20260905k');
-  scripts.push('resources/ai-marker.js?v=20260905k');
-  scripts.push('resources/process-skills.js?v=20260905k');
-  scripts.push('resources/process-skills-ui.js?v=20260905k');
-  scripts.push('resources/process-skills-ai.js?v=20260905k');
+  appFiles.forEach(f=>scripts.push(`resources/appvariants/${f}?v=20260905l`));
+  scripts.push('resources/audit180/core.js?v=20260905l');
+  auditFiles.forEach(f=>scripts.push(`resources/audit180/${f}?v=20260905l`));
+  scripts.push('resources/appvariants/engine.js?v=20260905l');
+  scripts.push('resources/priority-colors.js?v=20260905l');
+  scripts.push('resources/filter-position.js?v=20260905l');
+  scripts.push('resources/ai-marker.js?v=20260905l');
+  scripts.push('resources/process-skills.js?v=20260905l');
+  scripts.push('resources/process-skills-ui.js?v=20260905l');
+  scripts.push('resources/process-skills-ai.js?v=20260905l');
   const tags=scripts.map(src=>`<script src="${src}"><\/script>`).join('');
   html=html.replace('</body>',tags+'</body>');
   document.open();document.write(html);document.close();
