@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>PSLE Science Structured Mastery — Re-audited 180</title>
+<title>PSLE Science Structured Mastery — Re-audited 180 + Process Skills</title>
 <style>body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f4f7fb;color:#172033}.loading{min-height:100vh;display:grid;place-items:center}.loading div{background:#fff;border:1px solid #dbe3ee;border-radius:16px;padding:20px 24px;box-shadow:0 4px 18px #0f172a0d;text-align:center;line-height:1.5}</style>
 </head>
-<body><div class="loading"><div><b>Loading re-audited 180-concept trainer…</b><br><small>🔴 Focus · ⚪ Not Studied Yet · 🟢 Already Good · search + filter together · AI marking</small></div></div>
+<body><div class="loading"><div><b>Loading re-audited 180-concept trainer + process skills…</b><br><small>180 Science concepts · 12 fair-test/process skills · AI marking for Science applications</small></div></div>
 <script>
 (async()=>{
  try{
@@ -38,13 +38,15 @@
    '10-electricity-electromagnets-magnets.js','11-energy-forces.js'
   ];
   const scripts=[];
-  appFiles.forEach(f=>scripts.push(`resources/appvariants/${f}?v=20260905h`));
-  scripts.push('resources/audit180/core.js?v=20260905h');
-  auditFiles.forEach(f=>scripts.push(`resources/audit180/${f}?v=20260905h`));
-  scripts.push('resources/appvariants/engine.js?v=20260905h');
-  scripts.push('resources/priority-colors.js?v=20260905h');
-  scripts.push('resources/filter-position.js?v=20260905h');
-  scripts.push('resources/ai-marker.js?v=20260905h');
+  appFiles.forEach(f=>scripts.push(`resources/appvariants/${f}?v=20260905i`));
+  scripts.push('resources/audit180/core.js?v=20260905i');
+  auditFiles.forEach(f=>scripts.push(`resources/audit180/${f}?v=20260905i`));
+  scripts.push('resources/appvariants/engine.js?v=20260905i');
+  scripts.push('resources/priority-colors.js?v=20260905i');
+  scripts.push('resources/filter-position.js?v=20260905i');
+  scripts.push('resources/ai-marker.js?v=20260905i');
+  scripts.push('resources/process-skills.js?v=20260905i');
+  scripts.push('resources/process-skills-ui.js?v=20260905i');
   const tags=scripts.map(src=>`<script src="${src}"><\/script>`).join('');
   html=html.replace('</body>',tags+'</body>');
   document.open();document.write(html);document.close();
