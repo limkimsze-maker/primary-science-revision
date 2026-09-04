@@ -1,73 +1,112 @@
 (()=>{
-if(typeof BANK==='undefined'||typeof rec!=='function'||typeof save!=='function'||typeof priority!=='function')return;
-const style=document.createElement('style');
-style.textContent=`
-#bank .row{grid-template-columns:38px minmax(0,1fr) 54px;position:relative}
-#bank .row.whiterow{background:#fff;border-left-color:#e2e8f0}
-#bank .row.whiterow .rownum,#bank .row.whiterow .topicname{color:#172033}
-#bank .row.whiterow .catname{color:#64748b}
-.priority-colors{display:flex;gap:3px;justify-content:flex-end;align-items:center}
-.priority-colors button{width:15px;height:15px;min-width:15px;padding:0;border-radius:50%;border:1px solid #94a3b8;box-shadow:none}
-.priority-colors button:hover{transform:scale(1.15)}
-.priority-colors .pc-white{background:#fff}
-.priority-colors .pc-green{background:#22c55e;border-color:#15803d}
-.priority-colors .pc-red{background:#dc2626;border-color:#991b1b}
-.priority-colors button.selected{outline:2px solid #312e81;outline-offset:1px}
-`;
-document.head.appendChild(style);
+let tries=0;
+function start(){
+  tries++;
+  try{
+    if(typeof rec!=='function'||typeof save!=='function'||typeof priority!=='function'){if(tries<100)setTimeout(start,100);return}
+    if(window.__priorityColourControlsInstalled)return;
+    window.__priorityColourControlsInstalled=true;
 
-function paintBank(){
- const f=document.getElementById('bankFilter')?.value||'all';
- const q=(document.getElementById('bankSearch')?.value||'').trim().toLowerCase();
- const cur=typeof current==='function'?current():-1;
- const html=BANK.map((e,i)=>{
-   const x=rec(i),manual=x.override||'auto';
-   if(f!=='all'&&manual!==f)return '';
-   if(q){const hay=`${e.id} ${e.topic} ${e.category} ${e.phrase}`.toLowerCase();if(!hay.includes(q))return ''}
-   const rowClass=manual==='red'?'redrow':manual==='green'?'greenrow':'whiterow';
-   const currentClass=i===cur?' currentrow':'';
-   const escFn=typeof esc==='function'?esc:(s=>String(s));
-   return `<div class="row ${rowClass}${currentClass}" data-i="${i}">
-     <div class="rownum">${e.id}</div>
-     <div class="topicname">${escFn(e.topic)}<span class="catname">${escFn(e.category)}</span></div>
-     <div class="priority-colors" title="Set priority colour">
-       <button class="pc-white ${manual==='auto'?'selected':''}" data-colour="auto" aria-label="Set white"></button>
-       <button class="pc-green ${manual==='green'?'selected':''}" data-colour="green" aria-label="Set green"></button>
-       <button class="pc-red ${manual==='red'?'selected':''}" data-colour="red" aria-label="Set red"></button>
-     </div>
-   </div>`;
- }).join('');
- const bankEl=document.getElementById('bank');
- if(!bankEl)return;
- bankEl.innerHTML=html||'<div class="small" style="padding:16px">No concepts match this filter/search.</div>';
- bankEl.querySelectorAll('.row[data-i]').forEach(r=>{
-   r.onclick=ev=>{
-     if(ev.target.closest('.priority-colors'))return;
-     const i=Number(r.dataset.i),idx=order.indexOf(i);
-     if(idx<0){order=[i,...order];pos=0}else pos=idx;
-     render();
-     if(window.innerWidth<1031)window.scrollTo({top:0,behavior:'smooth'});
-   };
- });
- bankEl.querySelectorAll('.priority-colors button[data-colour]').forEach(b=>{
-   b.onclick=ev=>{
-     ev.preventDefault();ev.stopPropagation();
-     const row=b.closest('.row[data-i]');
-     const i=Number(row.dataset.i); const v=b.dataset.colour;
-     rec(i).override=v;
-     // A manual choice takes precedence over the imported past-paper colour.
-     rec(i).userColour=v;
-     save();
-     if(typeof stats==='function')stats();
-     paintBank();
-     if(i===cur&&typeof renderPriorityOnly==='function')renderPriorityOnly();
-   };
- });
+    const style=document.createElement('style');
+    style.textContent=`
+      #bank .row{grid-template-columns:38px minmax(0,1fr) 62px!important;position:relative}
+      #bank .priority-colors{display:flex!important;gap:4px;justify-content:flex-end;align-items:center;z-index:5}
+      #bank .priority-colors button{display:block!important;width:16px!important;height:16px!important;min-width:16px!important;padding:0!important;border-radius:50%!important;box-shadow:none!important;cursor:pointer!important}
+      #bank .priority-colors .pc-white{background:#fff!important;border:1px solid #64748b!important}
+      #bank .priority-colors .pc-green{background:#22c55e!important;border:1px solid #15803d!important}
+      #bank .priority-colors .pc-red{background:#dc2626!important;border:1px solid #991b1b!important}
+      #bank .priority-colors button.selected{outline:2px solid #312e81!important;outline-offset:2px!important}
+      .pill.manual-white{background:#fff!important;color:#172033!important;border:1px solid #cbd5e1!important}
+    `;
+    document.head.appendChild(style);
+
+    const basePriority=priority;
+    priority=function(i){
+      const x=rec(i);
+      if(x&&x.userColour==='white')return 'amber';
+      return basePriority(i);
+    };
+
+    if(typeof renderPriorityOnly==='function'){
+      const baseRenderPriorityOnly=renderPriorityOnly;
+      renderPriorityOnly=function(){
+        const i=typeof current==='function'?current():0;
+        const x=rec(i);
+        if(x&&x.userColour==='white'){
+          const p=document.getElementById('priorityPill');
+          if(p){p.className='pill manual-white';p.textContent='⚪ Neutral'}
+          return;
+        }
+        return baseRenderPriorityOnly();
+      };
+    }
+
+    function effectiveColour(i){
+      const x=rec(i)||{};
+      if(x.userColour==='white')return 'white';
+      if(x.override==='green')return 'green';
+      if(x.override==='red')return 'red';
+      const p=priority(i);
+      return p==='green'?'green':p==='red'?'red':'white';
+    }
+
+    function applyRowStyle(row,i){
+      const c=effectiveColour(i);
+      const topic=row.querySelector('.topicname');
+      const num=row.querySelector('.rownum');
+      const cat=row.querySelector('.catname');
+      if(c==='red'){
+        row.style.background='#b91c1c';row.style.borderLeftColor='#991b1b';
+        if(topic)topic.style.color='#fff';if(num)num.style.color='#fff';if(cat)cat.style.color='#fee2e2';
+      }else if(c==='green'){
+        row.style.background='#dcfce7';row.style.borderLeftColor='#16a34a';
+        if(topic)topic.style.color='#14532d';if(num)num.style.color='#14532d';if(cat)cat.style.color='#166534';
+      }else{
+        row.style.background='#fff';row.style.borderLeftColor='#e2e8f0';
+        if(topic)topic.style.color='#172033';if(num)num.style.color='#172033';if(cat)cat.style.color='#64748b';
+      }
+    }
+
+    function decorate(){
+      const bankEl=document.getElementById('bank');if(!bankEl)return;
+      bankEl.querySelectorAll('.row[data-i]').forEach(row=>{
+        const i=Number(row.dataset.i);if(!Number.isInteger(i))return;
+        applyRowStyle(row,i);
+        let controls=row.querySelector('.priority-colors');
+        if(!controls){
+          controls=document.createElement('div');controls.className='priority-colors';controls.title='Choose row colour: white, green or red';
+          controls.innerHTML='<button class="pc-white" data-colour="white" title="White / Neutral" aria-label="Set white"></button><button class="pc-green" data-colour="green" title="Green / Strong" aria-label="Set green"></button><button class="pc-red" data-colour="red" title="Red / Focus" aria-label="Set red"></button>';
+          row.appendChild(controls);
+          controls.addEventListener('click',ev=>{
+            const b=ev.target.closest('button[data-colour]');if(!b)return;
+            ev.preventDefault();ev.stopPropagation();
+            const v=b.dataset.colour,x=rec(i);
+            if(v==='white'){x.override='auto';x.userColour='white'}
+            else if(v==='green'){x.override='green';x.userColour='green'}
+            else{x.override='red';x.userColour='red'}
+            save();
+            if(typeof stats==='function')stats();
+            if(typeof renderPriorityOnly==='function'&&typeof current==='function'&&i===current())renderPriorityOnly();
+            if(typeof bank==='function')bank(); else decorate();
+          });
+          controls.addEventListener('pointerdown',ev=>ev.stopPropagation());
+        }
+        const x=rec(i)||{};
+        controls.querySelectorAll('button').forEach(b=>b.classList.remove('selected'));
+        if(x.userColour==='white')controls.querySelector('.pc-white')?.classList.add('selected');
+        else if(x.override==='green')controls.querySelector('.pc-green')?.classList.add('selected');
+        else if(x.override==='red')controls.querySelector('.pc-red')?.classList.add('selected');
+      });
+    }
+
+    const bankEl=document.getElementById('bank');
+    if(bankEl)new MutationObserver(()=>decorate()).observe(bankEl,{childList:true,subtree:true});
+    const legend=document.querySelector('.priority-legend');
+    if(legend)legend.innerHTML='🔴 Focus · ⚪ White / Neutral · 🟢 Strong<br>Use the three dots on each row to set its colour. Click the concept name to practise.';
+    const filter=document.getElementById('bankFilter');
+    if(filter)for(const o of filter.options){if(o.value==='auto')o.textContent='⚪ White / Neutral'}
+    decorate();
+  }catch(err){console.error('priority colour controls',err);if(tries<100)setTimeout(start,100)}
 }
-
-bank=paintBank;
-const filter=document.getElementById('bankFilter');if(filter){filter.onchange=paintBank;for(const o of filter.options){if(o.value==='auto')o.textContent='⚪ White / Neutral'}}
-const search=document.getElementById('bankSearch');if(search)search.oninput=paintBank;
-const legend=document.querySelector('.priority-legend');if(legend)legend.innerHTML='🔴 Focus · ⚪ White / Neutral · 🟢 Strong<br>Click a colour dot to change it. Click the concept itself to practise.';
-paintBank();
+start();
 })();
