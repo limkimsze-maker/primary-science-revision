@@ -10,7 +10,7 @@
 <script>
 (async()=>{
  try{
-  const res=await fetch('trainer180.html?v=20260905c',{cache:'no-cache'});
+  const res=await fetch('trainer180.html?v=20260905d',{cache:'no-cache'});
   if(!res.ok)throw new Error('Could not load trainer180.html');
   let html=await res.text();
   const appFiles=[
@@ -26,12 +26,12 @@
    '10-electricity-electromagnets-magnets.js','11-energy-forces.js'
   ];
   const scripts=[];
-  appFiles.forEach(f=>scripts.push(`resources/appvariants/${f}?v=20260905c`));
-  scripts.push('resources/audit180/core.js?v=20260905c');
-  auditFiles.forEach(f=>scripts.push(`resources/audit180/${f}?v=20260905c`));
-  scripts.push('resources/appvariants/engine.js?v=20260905c');
-  scripts.push('resources/priority-colors.js?v=20260905c');
-  scripts.push('resources/ai-marker.js?v=20260905c');
+  appFiles.forEach(f=>scripts.push(`resources/appvariants/${f}?v=20260905d`));
+  scripts.push('resources/audit180/core.js?v=20260905d');
+  auditFiles.forEach(f=>scripts.push(`resources/audit180/${f}?v=20260905d`));
+  scripts.push('resources/appvariants/engine.js?v=20260905d');
+  scripts.push('resources/priority-colors.js?v=20260905d');
+  scripts.push('resources/ai-marker.js?v=20260905d');
   const tags=scripts.map(src=>`<script src="${src}"><\/script>`).join('');
   html=html.replace('</body>',tags+'</body>');
   document.open();document.write(html);document.close();
