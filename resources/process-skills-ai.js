@@ -24,15 +24,28 @@ function currentVariant(skill){
   const q=($('processQuestion')?.textContent||'').trim();
   return skill?.variants?.find(v=>v.q===q)||skill?.variants?.[0]||{q,model:''};
 }
+function emptyMissing(v){
+  const s=String(v??'').trim().toLowerCase().replace(/[.!]/g,'');
+  return !s||['none','nothing','n/a','na','nil','no','no missing points','nothing missing'].includes(s)||/^none\b/.test(s)||/^no\s+(important\s+)?(idea|point|concept|element).*(missing|omitted)/.test(s);
+}
 function detailFrom(data){
   const bits=[];
-  for(const k of ['strengths','feedback','missing']){const v=data?.[k];if(typeof v==='string'&&v.trim())bits.push(v.trim())}
+  for(const k of ['strengths','feedback']){const v=data?.[k];if(typeof v==='string'&&v.trim())bits.push(v.trim())}
+  if(typeof data?.missing==='string'&&data.missing.trim()&&!emptyMissing(data.missing))bits.push('Missing: '+data.missing.trim());
   if(data?.improvedAnswer)bits.push('Improved PSLE answer: '+data.improvedAnswer.trim());
   return [...new Set(bits)].join(' ');
 }
-function isCorrect(data){
+function genericCorrect(data){
   const r=String(data?.rating||data?.verdict||'').toLowerCase();
   return r==='correct'||r==='full'||r==='pass'||r.includes('correct');
+}
+function processCorrect(data){
+  if(genericCorrect(data))return true;
+  // Process-skill questions are not always naturally D/E-S/R-L/R questions. The shared Science
+  // marker can occasionally attach a missing-component label even after judging the actual rubric
+  // complete. For this tab, a correct concept judgment + no substantive missing rubric point wins.
+  if(data?.conceptCorrect===true&&emptyMissing(data?.missing))return true;
+  return false;
 }
 function install(){
   if(!$('processAnswer')||$('processAIMarkBtn'))return false;
@@ -64,7 +77,7 @@ async function mark(){
     const res=await fetch(ENDPOINT,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload),signal:ctl.signal});
     const raw=await res.text();let data;try{data=JSON.parse(raw)}catch(_e){data={message:raw}}
     if(!res.ok)throw new Error(data?.error||data?.message||`HTTP ${res.status}`);
-    const ok=isCorrect(data),detail=detailFrom(data)||data?.message||'';
+    const ok=processCorrect(data),detail=detailFrom(data)||data?.message||'';
     if(ok){$('processAppCorrect')?.click();setTimeout(()=>{if(box){box.className='fb good';box.innerHTML='<b>🤖 AI: Correct ✅</b>'+(detail?'<br>'+esc(detail):'')}},0)}
     else{$('processAppFocus')?.click();setTimeout(()=>{if(box){box.className='fb wrong';box.innerHTML='<b>🤖 AI: Needs work</b>'+(detail?'<br>'+esc(detail):'')}},0)}
     setStatus('● AI ready','#166534');
