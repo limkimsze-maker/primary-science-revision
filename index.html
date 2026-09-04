@@ -10,10 +10,17 @@
 <script>
 (async()=>{
   try{
-    const res=await fetch('app.html?v=priority-filter-1',{cache:'no-cache'});
+    const res=await fetch('app.html?v=recall-progress-1',{cache:'no-cache'});
     if(!res.ok) throw new Error('Could not load app.html');
     let html=await res.text();
-    const patch=`<script>
+    const patch=`<style>
+.exact-progress{margin:10px 0 2px;padding:11px 13px;border:1px solid #cbd5e1;border-radius:13px;background:#f8fafc;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.exact-progress.mastered{background:#dcfce7;border:2px solid #16a34a}
+.exact-left{min-width:0}.exact-title{font-size:13px;font-weight:800;color:#334155}.exact-progress.mastered .exact-title{color:#166534}
+.exact-dots{display:flex;gap:6px;margin-top:6px}.exact-dot{width:18px;height:18px;border-radius:50%;background:#e2e8f0;border:2px solid #cbd5e1}.exact-dot.done{background:#22c55e;border-color:#15803d}
+.exact-count{font-size:15px;font-weight:900;color:#475569;white-space:nowrap}.exact-progress.mastered .exact-count{color:#166534;font-size:16px}.exact-note{font-size:11px;color:#64748b;margin-top:5px}
+<\/style>
+<script>
 (()=>{
   const filter=document.getElementById('bankFilter');
   const search=document.getElementById('bankSearch');
@@ -55,7 +62,34 @@
   };
   filter.onchange=window.bank;
   search.oninput=window.bank;
+
+  const teacherStrip=document.querySelector('.teacher-strip');
+  const progress=document.createElement('div');
+  progress.id='exactRecallProgress';
+  progress.className='exact-progress';
+  progress.setAttribute('aria-live','polite');
+  if(teacherStrip) teacherStrip.insertAdjacentElement('afterend',progress);
+
+  function updateRecallProgress(){
+    if(!progress) return;
+    const i=current();
+    const x=rec(i);
+    const credited=Math.min(3,new Set(x.phraseDates||[]).size);
+    const mastered=credited>=3;
+    progress.classList.toggle('mastered',mastered);
+    const dots=[0,1,2].map(n=>'<span class="exact-dot '+(n<credited?'done':'')+'" aria-hidden="true"></span>').join('');
+    progress.innerHTML='<div class="exact-left"><div class="exact-title">Exact Recall Progress</div><div class="exact-dots">'+dots+'</div><div class="exact-note">One correct Exact Recall is credited per day.</div></div><div class="exact-count">'+(mastered?'✅ MASTERED — 3 / 3':'Correct: '+credited+' / 3')+'</div>';
+  }
+
+  const originalRender=render;
+  render=function(){originalRender();updateRecallProgress();};
+  const originalSetPane=setPane;
+  setPane=function(p){originalSetPane(p);updateRecallProgress();};
+  const checkBtn=document.getElementById('checkPhrase');
+  if(checkBtn) checkBtn.addEventListener('click',()=>setTimeout(updateRecallProgress,0));
+
   window.bank();
+  updateRecallProgress();
 })();
 <\/script>`;
     html=html.replace('</body>',patch+'</body>');
