@@ -10,7 +10,7 @@
 <script>
 (async()=>{
  try{
-  const res=await fetch('trainer180.html?v=20260905a',{cache:'no-cache'});
+  const res=await fetch('trainer180.html?v=20260905b',{cache:'no-cache'});
   if(!res.ok)throw new Error('Could not load trainer180.html');
   let html=await res.text();
   const appFiles=[
@@ -26,11 +26,11 @@
    '10-electricity-electromagnets-magnets.js','11-energy-forces.js'
   ];
   const scripts=[];
-  appFiles.forEach(f=>scripts.push(`resources/appvariants/${f}?v=20260905a`));
-  scripts.push('resources/audit180/core.js?v=20260905a');
-  auditFiles.forEach(f=>scripts.push(`resources/audit180/${f}?v=20260905a`));
-  scripts.push('resources/appvariants/engine.js?v=20260905a');
-  scripts.push('resources/ai-marker.js?v=20260905a');
+  appFiles.forEach(f=>scripts.push(`resources/appvariants/${f}?v=20260905b`));
+  scripts.push('resources/audit180/core.js?v=20260905b');
+  auditFiles.forEach(f=>scripts.push(`resources/audit180/${f}?v=20260905b`));
+  scripts.push('resources/appvariants/engine.js?v=20260905b');
+  scripts.push('resources/ai-marker.js?v=20260905b');
   const tags=scripts.map(src=>`<script src="${src}"><\/script>`).join('');
   html=html.replace('</body>',tags+'</body>');
   document.open();document.write(html);document.close();
