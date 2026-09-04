@@ -1,35 +1,35 @@
 (()=>{
   const CORE='https://raw.githubusercontent.com/limkimsze-maker/primary-science-revision/ead2f3b9acee165ac275e8168491317b99604210/enhancements.js';
 
-  function makeFocusRowsNormalRed(){
+  function makeFocusRowsDarkRed(){
     const s=document.createElement('style');
     s.textContent=`
-      /* Priority List — normal light red for Focus rows, comparable to the green Secure rows */
+      /* Priority List — dark red Focus rows for maximum visibility */
       .row.redrow,
       .row.redrow.currentrow{
-        border-left:7px solid #dc2626 !important;
-        background:#fecaca !important;
+        border-left:7px solid #450a0a !important;
+        background:#991b1b !important;
         box-shadow:none !important;
       }
       .row.redrow .rownum,
       .row.redrow .topicname{
-        color:#991b1b !important;
+        color:#ffffff !important;
         font-weight:800 !important;
       }
       .row.redrow:hover,
       .row.redrow.currentrow:hover{
-        background:#fca5a5 !important;
+        background:#7f1d1d !important;
       }
 
       .pill.red{
-        background:#fee2e2 !important;
-        color:#991b1b !important;
-        border:1px solid #ef4444 !important;
+        background:#991b1b !important;
+        color:#ffffff !important;
+        border:1px solid #7f1d1d !important;
       }
       .btn-red{
-        background:#fee2e2 !important;
-        color:#991b1b !important;
-        border-color:#ef4444 !important;
+        background:#991b1b !important;
+        color:#ffffff !important;
+        border-color:#7f1d1d !important;
         font-weight:800;
       }
     `;
@@ -40,10 +40,10 @@
     .then(r=>{if(!r.ok)throw new Error('Could not load gold-standard enhancements');return r.text()})
     .then(code=>{
       (0,eval)(code);
-      makeFocusRowsNormalRed();
+      makeFocusRowsDarkRed();
     })
     .catch(err=>{
       console.error(err);
-      makeFocusRowsNormalRed();
+      makeFocusRowsDarkRed();
     });
 })();
