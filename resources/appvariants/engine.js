@@ -62,5 +62,23 @@ function model(){let i=current(),e=BANK[i],v=vv(i),b=$("modelAppBox");if(b.class
 let app=$("appPane"),a=app.querySelector(".actions"),row=document.createElement("div");row.className="actions";row.innerHTML='<button class="primary" id="freshAppBtn">🔄 New Application Question</button><span id="variantNote" class="small"></span>';a.before(row);$("freshAppBtn").onclick=newQ;$("rubricBtn").onclick=rubric;$("modelAppBtn").onclick=model;$("modelAppBtn").textContent="Show Science Core";
 let sub=document.querySelector("header .sub");if(sub)sub.innerHTML='<b>180 re-audited Science concepts</b> · original 108-page book photos checked page by page · <b>4–6 application questions per concept</b> · past-paper/remediation profile applied';
 let note=app.querySelector(".mode-note");if(note)note.innerHTML='<b>Written Application:</b> each concept has <b>4–6 fixed question variants</b>. Tap <b>New Application Question</b> for another context. Exact wording is not required. Start with the command word. Use <b>D/E → S/R → L/R only when the question actually requires those parts</b>. The displayed Science core has been audited against the original book photos.';
+
+// Workflow improvement: after a correct Exact Recall attempt, move immediately to
+// the Written Application question for the SAME concept. Learning/gaps/initials modes
+// do not trigger this jump.
+const baseCheckPhrase=checkPhrase;
+checkPhrase=function(){
+ const shouldJump=$("phraseMode").value==="exact" && norm($("phraseAnswer").value)===norm(BANK[current()].phrase);
+ baseCheckPhrase();
+ if(shouldJump){
+  setPane("app");
+  const box=$("appFeedback");
+  if(box){box.className="fb good";box.innerHTML="<b>Exact recall correct ✅</b><br>Now answer the application question for the same concept."}
+  $("appAnswer").focus();
+  window.scrollTo({top:0,behavior:"smooth"});
+ }
+};
+$("checkPhrase").onclick=checkPhrase;
+
 render();
 })();
