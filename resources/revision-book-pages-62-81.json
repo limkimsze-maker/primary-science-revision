@@ -1,0 +1,156 @@
+{
+  "source": {
+    "type": "photographed_revision_book",
+    "pages": "62-81",
+    "purpose": "Reference database for PSLE Science application answers, scientific vocabulary, causal chains and marking support. Do not automatically overwrite the existing 89 memorisation sentences unless explicitly approved."
+  },
+  "answering_principles": [
+    {
+      "id": "heat_transfer_chain",
+      "pages": [62,64,65,66],
+      "rule": "For heat-transfer explanations, identify the hotter object and cooler object, state that heat flows from the hotter object to the cooler object, then state the relevant heat gain/heat loss and resulting temperature change until thermal conditions equalise when appropriate.",
+      "protected_terms": ["heat flows", "hotter", "cooler", "heat gain", "heat loss", "temperature"]
+    },
+    {
+      "id": "conductor_comparison",
+      "pages": [64,65,66],
+      "rule": "For comparing conductors, state which material allows heat to pass through faster/more easily and link this to faster heat transfer and the observed temperature change. For poor conductors, state that heat passes through slowly, reducing heat transfer.",
+      "protected_terms": ["good conductor of heat", "poor conductor of heat", "heat transfer"]
+    },
+    {
+      "id": "expansion_contraction_chain",
+      "pages": [63,67],
+      "rule": "For expansion/contraction applications, state the temperature change first, then whether the material expands or contracts, then link to the design feature or observed effect such as gaps, slack wires, easier opening or cracking/buckling.",
+      "protected_terms": ["expands", "contracts", "heat gain", "heat loss"]
+    },
+    {
+      "id": "electric_circuit_cause_effect",
+      "pages": [68,69,70,71,72,73,74],
+      "rule": "For circuit explanations, state whether the circuit is open or closed, whether current can flow, then the effect on the bulb/component. When brightness changes, identify the circuit change and explain its effect on electric current before linking to brightness.",
+      "protected_terms": ["closed circuit", "open circuit", "electric current", "brightness"]
+    },
+    {
+      "id": "series_parallel_reasoning",
+      "pages": [70,71,74],
+      "rule": "For series/parallel questions, identify the arrangement before reasoning. In series, bulbs share the electric current and a break stops the whole path. In parallel, branches provide separate paths, so one branch can fail while another continues to work. Use the actual diagram rather than memorising a conclusion without checking the arrangement.",
+      "protected_terms": ["series", "parallel", "separate path", "electric current"]
+    },
+    {
+      "id": "electromagnet_chain",
+      "pages": [75,76,79],
+      "rule": "For electromagnet questions, connect the electrical state to magnetism: closed circuit -> current flows through the coil -> the iron core becomes an electromagnet -> attraction occurs. Open circuit -> no current -> no electromagnet -> no magnetic attraction. Link the final movement/effect back to the mechanism in the apparatus.",
+      "protected_terms": ["closed circuit", "electric current", "coil", "iron core", "electromagnet", "attract"]
+    },
+    {
+      "id": "magnet_comparison",
+      "pages": [77,78,79],
+      "rule": "For magnet questions, identify the interacting poles/materials first. Like poles repel; unlike poles attract. Magnetic strength comparisons should use observable evidence such as greater attracting distance, more magnetic objects lifted, or a stronger effect.",
+      "protected_terms": ["like poles", "unlike poles", "repel", "attract", "magnetic strength"]
+    },
+    {
+      "id": "energy_conversion_chain",
+      "pages": [80,81],
+      "rule": "For energy-conversion explanations, name the initial form of energy, use 'converted to' for the change, name the final form(s), and link to the observed movement/light/heat/sound when required. Energy is not created or destroyed; it is converted from one form to another.",
+      "protected_terms": ["converted", "kinetic energy", "potential energy", "heat energy", "light energy", "sound energy", "electrical energy"]
+    }
+  ],
+  "topics": [
+    {
+      "topic": "Heat energy and temperature",
+      "pages": [62,64,65,66],
+      "key_ideas": [
+        "Heat is a form of energy.",
+        "Temperature is a measure of how hot or cold an object is and is measured in degree Celsius using a thermometer.",
+        "Heat flows from a hotter region/object to a cooler region/object until the regions are at the same temperature.",
+        "When an object gains heat, its temperature generally increases; when it loses heat, its temperature generally decreases.",
+        "The amount of heat energy in a substance depends on factors including its temperature and amount/volume of substance.",
+        "Good conductors of heat allow heat to pass through easily; poor conductors do not allow heat to pass through easily."
+      ],
+      "examples": [
+        "Metals are good conductors of heat and are suitable for cooking utensils where heat transfer is required.",
+        "Wood, rubber, plastic and air are poor conductors of heat and can reduce heat transfer in handles, clothing and containers.",
+        "For two cups made of different materials containing hot water at the same initial temperature, the better heat conductor transfers heat to the surroundings faster, so the water cools faster."
+      ],
+      "keywords": ["heat", "temperature", "thermometer", "degree Celsius", "hotter", "cooler", "good conductor", "poor conductor", "heat transfer"]
+    },
+    {
+      "topic": "Expansion and contraction",
+      "pages": [63,67],
+      "key_ideas": [
+        "Matter expands when heated and contracts when cooled.",
+        "Expansion is associated with heat gain; contraction is associated with heat loss.",
+        "Gaps between sections of roads/railway tracks allow expansion and contraction at different temperatures.",
+        "Overhead wires are left with slack so they can contract in cooler conditions without snapping.",
+        "Heating a metal lid can make it expand and easier to open.",
+        "Uneven heating and cooling can cause different parts of a material to expand or contract by different amounts, leading to cracking or buckling."
+      ],
+      "keywords": ["expand", "contract", "heat gain", "heat loss", "temperature change"]
+    },
+    {
+      "topic": "Electrical systems and using electricity",
+      "pages": [68,69,70,71,72,73,74],
+      "key_ideas": [
+        "A simple electric circuit contains a source of energy such as a battery, wires and an electrical component such as a bulb; a switch controls whether the circuit is open or closed.",
+        "Electric current flows only in a closed circuit with no gap/break.",
+        "Electrical conductors allow electric current to flow through them; electrical insulators do not.",
+        "The metal casing and metal tip of a bulb are conducting parts; glass is an electrical insulator.",
+        "Bulb brightness is affected by number of batteries, number of bulbs and arrangement of bulbs.",
+        "With more bulbs in series, each bulb is generally less bright because the bulbs share the electric current in the single path.",
+        "With more batteries in series, more electric current can flow and the bulb can be brighter.",
+        "In a parallel arrangement, branches provide separate paths for electric current; one failed/open branch need not stop current in another branch.",
+        "A short circuit is a low/no-resistance path that allows current to bypass the intended component and can cause excessive current."
+      ],
+      "keywords": ["battery", "wire", "bulb", "switch", "closed circuit", "open circuit", "electric current", "electrical conductor", "electrical insulator", "series", "parallel", "short circuit"]
+    },
+    {
+      "topic": "Electromagnets",
+      "pages": [75,76,79],
+      "key_ideas": [
+        "An electromagnet is produced when electric current flows through a coil of wire around an iron core/object.",
+        "When the circuit is closed, current flows and the iron core becomes magnetic; when the circuit is opened, current stops and the electromagnet loses its magnetic effect.",
+        "Electromagnets can attract magnetic materials such as iron.",
+        "Increasing the number of turns of wire around the iron core can make the electromagnet stronger.",
+        "Increasing the number of batteries can make the electromagnet stronger, provided the circuit arrangement supports greater current.",
+        "In an electromagnet mechanism, explain the sequence from switch/circuit state to magnetism, attraction and resulting movement."
+      ],
+      "marking_pattern": "circuit state -> current/no current -> electromagnet/not electromagnet -> attraction/no attraction -> mechanical result",
+      "keywords": ["coil", "iron core", "electric current", "electromagnet", "attract", "closed circuit", "open circuit"]
+    },
+    {
+      "topic": "Magnets",
+      "pages": [77,78,79],
+      "key_ideas": [
+        "Magnets have a North pole and a South pole.",
+        "Like poles repel and unlike poles attract.",
+        "Magnetic force acts through some non-magnetic materials.",
+        "Magnetic materials shown include iron and steel; many materials such as plastic, rubber, ceramic, wood, glass and aluminium are non-magnetic in this school-level context.",
+        "A magnet is strongest at its poles.",
+        "Magnet strength can be compared by observable effects such as attracting from a greater distance or lifting more magnetic objects.",
+        "Magnets can be made by a stroking method or by using electricity to make an electromagnet."
+      ],
+      "keywords": ["North pole", "South pole", "like poles", "unlike poles", "attract", "repel", "magnetic material", "magnetic force"]
+    },
+    {
+      "topic": "Forms of energy and energy conversion",
+      "pages": [80,81],
+      "key_ideas": [
+        "Energy allows things to work and can be stored, used or changed from one form to another.",
+        "Forms shown include heat, kinetic, potential, sound, light and electrical energy.",
+        "Kinetic energy is associated with motion and depends on mass and speed.",
+        "Potential energy is stored energy related to state or position, such as height, stretching/compressing or chemical stores.",
+        "Energy cannot be created or destroyed; it can be converted from one form to another.",
+        "The Sun is a major energy source; solar panels convert light energy to electrical energy.",
+        "Wind turbines convert kinetic energy of wind to electrical energy.",
+        "Fuel can store potential energy which can be converted to light and heat when burnt.",
+        "In hydro-electric generation, gravitational potential energy of stored water changes to kinetic energy as water moves, then to kinetic energy of the turbine and electrical energy."
+      ],
+      "application_pattern": "initial energy form -> converted to -> final energy form(s) -> observed effect/result",
+      "keywords": ["kinetic energy", "potential energy", "heat energy", "sound energy", "light energy", "electrical energy", "energy conversion"]
+    }
+  ],
+  "integration_notes": [
+    "Use this batch to enrich Application Mode and AI marking, especially for causal chains and key vocabulary.",
+    "Keep the pupil-facing D/E -> S/R -> L/R framework. Any book-specific answer acronym or strategy should remain behind the scenes unless explicitly approved, to avoid confusing the pupil with multiple frameworks.",
+    "Do not replace existing memorisation items simply because this book uses different wording; compare first and only change with explicit approval."
+  ]
+}
