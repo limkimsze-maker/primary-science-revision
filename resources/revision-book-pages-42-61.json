@@ -1,0 +1,183 @@
+{
+  "source": {
+    "type": "photographed_revision_book",
+    "pages": "42-61",
+    "purpose": "Reference database for PSLE Science answering, key vocabulary, model reasoning patterns and topic coverage. This source informs application marking and training-model generation but must not silently replace the existing 89 memorisation sentences unless explicitly approved."
+  },
+  "answering_principles": [
+    {
+      "id": "adaptation_afp_crop",
+      "pages": [42,44],
+      "rule": "For adaptation questions, identify WHAT the adaptation is, explain HOW it works, then explain WHY it helps the organism survive by linking to a CROP purpose: coping with physical factors, reproduction, obtaining food or protection/escape.",
+      "applies_to": ["adaptation", "explain", "survival"],
+      "protected_terms": ["adaptation", "function", "survival"]
+    },
+    {
+      "id": "human_impact_causal_chain",
+      "pages": [43,45],
+      "rule": "For human-impact questions, state the human action, the environmental change it causes, and the resulting effect on organisms or habitats. For conservation questions, state the action and the environmental benefit.",
+      "applies_to": ["pollution", "deforestation", "global_warming", "conservation"]
+    },
+    {
+      "id": "matter_property_evidence",
+      "pages": [46,47,48,57],
+      "rule": "When using an observation to identify a property of matter or a material, quote the observation first and link it to the exact property, such as occupies space, can be compressed, fixed shape, fixed volume, transparency, strength, flexibility or ability to float/sink.",
+      "applies_to": ["matter", "materials", "evidence", "properties"]
+    },
+    {
+      "id": "condensation_source_contact_cooler_surface",
+      "pages": [49,50,51,52,53,54,55],
+      "rule": "For condensation explanations, identify the source of the water vapour, state that it contacts a cooler surface or cooler air, loses heat, then condenses into tiny water droplets. Do not imply that the visible droplets came through a container wall unless the scenario states so.",
+      "applies_to": ["condensation", "water_cycle", "explain"],
+      "protected_terms": ["water vapour", "loses heat", "cooler surface", "condenses", "water droplets"]
+    },
+    {
+      "id": "evaporation_factor_relationship",
+      "pages": [49,52,53],
+      "rule": "For rate-of-evaporation questions, identify the changed factor and state the direction of change in evaporation rate. Main factors shown are wind, exposed surface area and temperature.",
+      "applies_to": ["evaporation", "relationship", "experiment"]
+    },
+    {
+      "id": "shadow_size_relationship",
+      "pages": [58,59,60,61],
+      "rule": "For shadow-size questions, compare the relative positions of light source, object and screen before stating the resulting shadow size. Moving the object nearer the light source generally makes the shadow larger; moving it nearer the screen generally makes the shadow smaller.",
+      "applies_to": ["light", "shadow", "compare", "relationship"]
+    }
+  ],
+  "topics": [
+    {
+      "topic": "Surviving within the environment",
+      "pages": [42,44,45],
+      "key_ideas": [
+        "Adaptations may be structural or behavioural.",
+        "The book groups survival purposes using CROP: coping with physical factors, reproduction, obtaining food and protection/escape.",
+        "Examples of animal adaptations include migration, hibernation, camouflage, group behaviour, body coverings and specialised feeding structures.",
+        "Examples of plant adaptations include leaf changes for reducing water loss, storage structures, aerial roots/pneumatophores and fruit/seed structures for reproduction.",
+        "Human actions can have negative or positive impacts on the environment."
+      ],
+      "answer_patterns": [
+        "WHAT adaptation -> HOW it works -> WHY it improves survival",
+        "Human action -> environmental change -> effect on organisms/habitat"
+      ]
+    },
+    {
+      "topic": "Human impacts on the environment",
+      "pages": [43,45],
+      "key_ideas": [
+        "Pollution can affect air, water and land.",
+        "Deforestation can destroy habitats and reduce food/shelter, leading to population decline or extinction risk.",
+        "Global warming is linked in the book to increased carbon dioxide, heat trapping, melting ice and sea-level rise.",
+        "Depletion of natural resources occurs when resources are used faster than they can be replenished.",
+        "Positive actions include conservation, reforestation, managing invasive species and sustainable habits such as reduce, reuse and recycle."
+      ]
+    },
+    {
+      "topic": "Matter",
+      "pages": [46,47,48],
+      "key_ideas": [
+        "Matter has mass and occupies space.",
+        "Solids have definite shape and definite volume.",
+        "Liquids have no definite shape but have definite volume and take the shape of their container.",
+        "Gases have no definite shape and no definite volume and can be compressed.",
+        "Air can be used as evidence that gas occupies space and can be compressed.",
+        "Mass and volume can be measured using suitable apparatus such as balances and measuring cylinders."
+      ],
+      "application_patterns": [
+        "Syringe plunger can move inward -> trapped air can be compressed.",
+        "Air prevents another substance/object from occupying the same space -> air occupies space.",
+        "Liquid changes container shape while volume remains the same -> liquid has no fixed shape but fixed volume."
+      ]
+    },
+    {
+      "topic": "Cycles in water and changes of state",
+      "pages": [49,50,51,52,53,54,55,56],
+      "key_ideas": [
+        "Melting and boiling involve heat gain; freezing and condensation involve heat loss.",
+        "Evaporation can occur at any temperature and only at the surface of a liquid.",
+        "Boiling occurs throughout the liquid at the boiling point.",
+        "Main factors affecting evaporation rate shown are wind, exposed surface area and temperature.",
+        "Condensation occurs when water vapour loses heat and changes into liquid water.",
+        "Water cycle processes shown include evaporation, condensation and precipitation.",
+        "Water is important to humans and plants, and water conservation reduces unnecessary use."
+      ],
+      "condensation_framework": {
+        "sequence": [
+          "Identify source of water vapour",
+          "Water vapour contacts cooler surface or cooler air",
+          "Water vapour loses heat",
+          "Water vapour condenses",
+          "Tiny water droplets form"
+        ],
+        "common_scenarios": [
+          "Droplets on outside of a cold container: water vapour from surrounding air condenses on cooler outer surface.",
+          "Droplets on underside of a lid/cover: water vapour from warm object/liquid condenses on the cooler surface.",
+          "Mist near a cold object: surrounding air is cooled; water vapour condenses into tiny droplets in the air.",
+          "Steam/mist near hot water: hot water forms water vapour; when it reaches cooler air it loses heat and condenses into tiny droplets."
+        ]
+      },
+      "evaporation_factors": ["wind", "exposed surface area", "temperature"]
+    },
+    {
+      "topic": "Materials",
+      "pages": [57],
+      "key_ideas": [
+        "Properties shown include waterproofness, conductivity, magnetism, flexibility, ability to float/sink, strength and transparency.",
+        "Material choice should be justified using the required property and the function of the object."
+      ],
+      "answer_pattern": "Required function -> relevant material property -> why that property suits the use"
+    },
+    {
+      "topic": "Light and shadow",
+      "pages": [58,59,60,61],
+      "key_ideas": [
+        "Light is a form of energy that enables us to see.",
+        "Light travels in straight lines.",
+        "Light can be reflected.",
+        "We see an object when light reflected from the object enters our eyes.",
+        "Transparent materials allow most light through, translucent materials allow some light through, and opaque materials do not allow light through.",
+        "A shadow forms when light is partially or completely blocked by an object.",
+        "Shadow size depends on the relative positions of the light source, object and screen."
+      ],
+      "shadow_relationships": [
+        "Object nearer light source -> larger shadow.",
+        "Object nearer screen -> smaller shadow.",
+        "Light source farther from object -> shadow can become larger in the book's illustrated setup."
+      ]
+    }
+  ],
+  "protected_vocabulary": [
+    "adaptation",
+    "structural",
+    "behavioural",
+    "survival",
+    "pollution",
+    "deforestation",
+    "global warming",
+    "natural resources",
+    "mass",
+    "occupies space",
+    "definite shape",
+    "definite volume",
+    "compressed",
+    "evaporation",
+    "condensation",
+    "water vapour",
+    "loses heat",
+    "cooler surface",
+    "water droplets",
+    "melting",
+    "freezing",
+    "boiling",
+    "waterproof",
+    "flexibility",
+    "strength",
+    "transparency",
+    "light travels in straight lines",
+    "reflected",
+    "transparent",
+    "translucent",
+    "opaque",
+    "shadow"
+  ],
+  "integration_note": "Use this book as a supporting reference for richer D/E -> S/R -> L/R application answers and AI diagnostics. Where the book's wording differs from the existing memorisation bank, keep the existing memorisation wording unless the user explicitly approves a replacement."
+}
