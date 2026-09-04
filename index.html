@@ -3,19 +3,114 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>PSLE Science Structured Mastery — 89</title>
+<title>PSLE Science Structured Mastery — 97</title>
 <style>body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f4f7fb;color:#172033}.loading{min-height:100vh;display:grid;place-items:center}.loading div{background:#fff;border:1px solid #dbe3ee;border-radius:16px;padding:20px 24px;box-shadow:0 4px 18px #0f172a0d}</style>
 </head>
 <body><div class="loading"><div>Loading PSLE Science Structured Mastery…</div></div>
 <script>
 (async()=>{
   try{
-    const res=await fetch('app.html?v=ai-live-1',{cache:'no-cache'});
+    const res=await fetch('app.html?v=experiment-frameworks-1',{cache:'no-cache'});
     if(!res.ok) throw new Error('Could not load app.html');
     let html=await res.text();
+
+    const EXPERIMENT_BANK=[
+      {
+        id:90,
+        topic:'Experiment — keep variable the same',
+        phrasePrompt:'Why keep X the same?',
+        phrase:'To ensure that only the changed variable affects the measured variable, making it a fair test.',
+        applicationQuestion:'A pupil investigates whether the amount of fertiliser affects the height of plants. Why should the amount of water given to each plant be kept the same?',
+        rubric:['The amount of water is kept constant','Only the amount of fertiliser is the changed variable','Plant height is the measured variable','Keeping other variables constant makes it a fair test'],
+        modelApplicationAnswer:'The amount of water should be kept the same to ensure that only the amount of fertiliser, the changed variable, affects the height of the plants, the measured variable, making it a fair test.'
+      },
+      {
+        id:91,
+        topic:'Experiment — repeat experiment',
+        phrasePrompt:'Why repeat the experiment?',
+        phrase:'To improve the reliability of the results and reduce the effect of random errors.',
+        applicationQuestion:'A pupil measures the time taken for a toy car to travel down the same ramp. Explain why the experiment should be repeated several times.',
+        rubric:['Repeating improves reliability','Repeating reduces the effect of random errors'],
+        modelApplicationAnswer:'The experiment should be repeated to improve the reliability of the results and reduce the effect of random errors.'
+      },
+      {
+        id:92,
+        topic:'Experiment — calculate average',
+        phrasePrompt:'Why calculate an average?',
+        phrase:'To reduce the effect of unusual readings and make the results more reliable.',
+        applicationQuestion:'A pupil repeats an experiment five times and obtains slightly different readings. Explain why an average of the readings should be calculated.',
+        rubric:['An average reduces the effect of unusual readings','The results become more reliable'],
+        modelApplicationAnswer:'An average should be calculated to reduce the effect of unusual readings and make the results more reliable.'
+      },
+      {
+        id:93,
+        topic:'Experiment — identical plants/objects',
+        phrasePrompt:'Why use identical plants/objects?',
+        phrase:'So differences in the measured result are due to the changed variable rather than differences between the specimens.',
+        applicationQuestion:'A pupil investigates how temperature affects seed germination. Explain why seeds of the same type and similar size should be used in all the set-ups.',
+        rubric:['The specimens should be similar/identical','Differences in the measured result should be due to temperature, the changed variable','Differences should not be due to differences between the seeds/specimens'],
+        modelApplicationAnswer:'Seeds of the same type and similar size should be used so that differences in germination are due to the changed temperature rather than differences between the seeds.'
+      },
+      {
+        id:94,
+        topic:'Experiment — conclusion from data',
+        phrasePrompt:'What framework should I use for a conclusion from data?',
+        phrase:'As __ increases/decreases, __ increases/decreases.',
+        applicationQuestion:'A water plant produced 5 bubbles per minute at a low light intensity, 11 bubbles per minute at a medium light intensity and 18 bubbles per minute at a high light intensity. State the relationship between light intensity and the number of bubbles produced per minute.',
+        rubric:['State the changed variable: light intensity','State the measured variable: number of bubbles produced per minute','State the correct direction of the relationship: as light intensity increases, bubbles per minute increases'],
+        modelApplicationAnswer:'As the light intensity increases, the number of bubbles produced per minute increases.'
+      },
+      {
+        id:95,
+        topic:'Experiment — cause from experiment',
+        phrasePrompt:'What framework should I use to explain a cause from an experiment?',
+        phrase:'Since only __ was changed while the other variables were kept constant, the difference in __ was due to __.',
+        applicationQuestion:'Two circuits were identical except that Circuit A had two batteries while Circuit B had one battery. Bulb A was brighter than Bulb B. Explain how the experiment shows that the number of batteries affected the brightness of the bulb.',
+        rubric:['Only the number of batteries was changed','Other variables were kept constant','Brightness was the measured result','The difference in brightness was due to the number of batteries'],
+        modelApplicationAnswer:'Since only the number of batteries was changed while the other variables were kept constant, the difference in bulb brightness was due to the number of batteries.'
+      },
+      {
+        id:96,
+        topic:'Experiment — evidence question',
+        phrasePrompt:'What should I do for an evidence question?',
+        phrase:'Quote the actual result first, then explain the science behind that result.',
+        applicationQuestion:'Plant X was placed in brighter light and produced 20 bubbles per minute. Plant Y produced 8 bubbles per minute. Explain, using evidence from the results, why Plant X had a higher rate of photosynthesis.',
+        rubric:['Quote/compare the actual result: 20 bubbles per minute versus 8 bubbles per minute','Explain that Plant X received more light','Light is needed for photosynthesis / more photosynthesis took place'],
+        modelApplicationAnswer:'Plant X produced 20 bubbles per minute compared with Plant Y, which produced 8 bubbles per minute. Plant X received more light, which is needed for photosynthesis, so it had a higher rate of photosynthesis.'
+      },
+      {
+        id:97,
+        topic:'Experiment — compare question',
+        phrasePrompt:'What should I do for a compare question?',
+        phrase:'State what happened to A compared with B, then explain why.',
+        applicationQuestion:'Two identical wet cloths were placed under the same conditions except that moving air blew over Cloth A while the air around Cloth B was still. Cloth A dried in 40 minutes while Cloth B dried in 70 minutes. Compare the results and explain why.',
+        rubric:['State the comparison: Cloth A dried faster / took less time than Cloth B','Moving air carries water vapour away from the surface','Evaporation occurs faster'],
+        modelApplicationAnswer:'Cloth A dried faster than Cloth B. The moving air carried water vapour away from Cloth A, allowing evaporation to occur faster.'
+      }
+    ];
+
+    const bankInject='BANK.push(...'+JSON.stringify(EXPERIMENT_BANK)+');\n';
+    html=html.replace('const KEY=',bankInject+'const KEY=');
+
+    html=html.replaceAll('Array(89).keys()','Array(BANK.length).keys()');
+    html=html.replaceAll('for(let i=0;i<89;i++)','for(let i=0;i<BANK.length;i++)');
+    html=html.replaceAll('ps/89*100','ps/BANK.length*100');
+    html=html.replaceAll('as/89*100','as/BANK.length*100');
+    html=html.replace('bank:89','bank:BANK.length');
+    html=html.replace('psle-science-89-structured-progress.json','psle-science-97-structured-progress.json');
+
+    html=html.replace('89 concepts · VERBATIM phrase mastery + application · weak concepts recur more often','97 patterns · 89 Science explanations + 8 experiment frameworks · memorisation + application');
+    html=html.replaceAll('All 89','All 97');
+    html=html.replace('id="amberCount">89','id="amberCount">97');
+    html=html.replace('Type the VERBATIM 89-bank explanation here...','Type the VERBATIM mastery sentence/framework here...');
+    html=html.replace('the target sentence is copied VERBATIM from the original 89-bank HTML.','the target sentence/framework is learned VERBATIM.');
+    html=html.replace('core 89-bank explanation is never rewritten','core mastery explanation/framework is never rewritten');
+    html=html.replace('Existing progress from the earlier 89-item trainers is migrated automatically when available.','Existing 89-item progress is preserved; the 8 experiment frameworks are added alongside it.');
+
     const patch=`<style>
 .ai-mark-wrap{margin-top:12px;padding:12px;border:1px solid #bfdbfe;border-radius:13px;background:#eff6ff}.ai-mark-head{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}.ai-mark-title{font-weight:800;color:#1e3a8a}.ai-state{font-size:12px;font-weight:800;padding:5px 8px;border-radius:999px;background:#dcfce7;border:1px solid #86efac;color:#166534}.ai-mark-btn{background:#1d4ed8!important;color:#fff!important;border-color:#1d4ed8!important;font-weight:800}.ai-mark-btn:disabled{opacity:.6;cursor:wait}.ai-note{font-size:12px;color:#475569;margin-top:6px;line-height:1.4}.ai-result{margin-top:10px;padding:12px;border-radius:12px;border:1px solid #cbd5e1;background:#fff;line-height:1.5}.ai-result.correct{background:#ecfdf5;border-color:#86efac}.ai-result.partial{background:#fff7ed;border-color:#fdba74}.ai-result.wrongai{background:#fef2f2;border-color:#fca5a5}.ai-verdict{font-weight:900;font-size:17px;margin-bottom:5px}.ai-section{margin-top:7px}.ai-section b{display:block;margin-bottom:2px}.ai-improved{margin-top:8px;padding:9px 10px;border-left:4px solid #6366f1;background:#f8fafc;border-radius:8px}.manual-label{font-size:12px;font-weight:800;color:#64748b;margin:12px 0 4px}
 .exact-progress-box{margin-top:10px;padding:10px 12px;border:1px solid #c7d2fe;border-radius:12px;background:#eef2ff;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.exact-progress-box.mastered{background:#dcfce7;border-color:#86efac}.exact-progress-title{font-weight:800}.exact-progress-count{font-weight:900;font-size:17px}.exact-progress-dots{display:flex;gap:5px}.exact-dot{width:18px;height:18px;border-radius:50%;border:2px solid #a5b4fc;background:#fff}.exact-dot.done{background:#22c55e;border-color:#16a34a}
+.experiment-tag{display:inline-block;margin-left:5px;padding:2px 6px;border-radius:999px;background:#dbeafe;color:#1e40af;font-size:10px;font-weight:800}
 <\/style>
 <script>
 (()=>{
@@ -25,7 +120,7 @@
   const search=document.getElementById('bankSearch');
   const bankEl=document.getElementById('bank');
   if(filter&&search&&bankEl){
-    filter.innerHTML='<option value="all">All 89</option><option value="red">🔴 Focus</option><option value="green">🟢 Already Good</option><option value="amber">🟠 Learning</option>';
+    filter.innerHTML='<option value="all">All '+BANK.length+'</option><option value="red">🔴 Focus</option><option value="green">🟢 Already Good</option><option value="amber">🟠 Learning</option><option value="experiment">🧪 Experiment only</option>';
     filter.title='Filter by current priority';
     filter.style.cssText='width:100%;padding:9px 10px;border:2px solid #cbd5e1;border-radius:10px;font:inherit;font-size:13px;background:#fff';
     const filterRow=document.createElement('div');
@@ -40,11 +135,14 @@
       const cur=current();
       const rows=BANK.map((e,i)=>{
         const p=priority(i);
-        if(f!=='all'&&p!==f)return'';
+        const isExperiment=i>=89;
+        if(f==='experiment'&&!isExperiment)return'';
+        if(f!=='all'&&f!=='experiment'&&p!==f)return'';
         if(q){const num=String(i+1),topic=e.topic.toLowerCase();if(!num.includes(q)&&!topic.includes(q))return'';}
         let rowClass=p==='red'?'redrow':p==='green'?'greenrow':'amberrow';
         if(i===cur)rowClass+=' currentrow';
-        return '<div class="row '+rowClass+'" data-i="'+i+'" title="'+esc(labelPriority(p))+'"><div class="rownum">'+(i+1)+'</div><div class="topicname">'+esc(e.topic)+'</div></div>';
+        const tag=isExperiment?'<span class="experiment-tag">EXP</span>':'';
+        return '<div class="row '+rowClass+'" data-i="'+i+'" title="'+esc(labelPriority(p))+'"><div class="rownum">'+(i+1)+'</div><div class="topicname">'+esc(e.topic)+tag+'</div></div>';
       }).join('');
       bankEl.innerHTML=rows||'<div class="small" style="padding:16px">No concepts match this filter.</div>';
       bankEl.querySelectorAll('.row[data-i]').forEach(r=>r.onclick=()=>{
@@ -79,7 +177,7 @@
   let aiWrap,aiBtn,aiResult;
   if(actionRow){
     aiWrap=document.createElement('div');aiWrap.className='ai-mark-wrap';
-    aiWrap.innerHTML='<div class="ai-mark-head"><div><div class="ai-mark-title">🤖 AI Application Marker</div><div class="ai-note">Marks the science and D/E → S/R → L/R. Application wording does not need to be verbatim.</div></div><span class="ai-state">● AI ready</span></div><div class="actions" style="margin-top:9px"><button type="button" class="ai-mark-btn">🤖 AI Mark My Answer</button></div><div class="ai-result hide" aria-live="polite"></div>';
+    aiWrap.innerHTML='<div class="ai-mark-head"><div><div class="ai-mark-title">🤖 AI Application Marker</div><div class="ai-note">Marks the Science/experiment reasoning and D/E → S/R → L/R. Application wording does not need to be verbatim.</div></div><span class="ai-state">● AI ready</span></div><div class="actions" style="margin-top:9px"><button type="button" class="ai-mark-btn">🤖 AI Mark My Answer</button></div><div class="ai-result hide" aria-live="polite"></div>';
     actionRow.parentNode.insertBefore(aiWrap,actionRow);
     aiBtn=aiWrap.querySelector('.ai-mark-btn');aiResult=aiWrap.querySelector('.ai-result');
     aiBtn.addEventListener('click',markWithAI);
@@ -93,7 +191,7 @@
     if(!ans){aiResult.className='ai-result partial';aiResult.innerHTML='<div class="ai-verdict">Write an answer first.</div>';return;}
     if(ans===lastMarked&&aiResult&&!aiResult.classList.contains('hide'))return;
     const e=BANK[current()];
-    aiBtn.disabled=true;aiBtn.textContent='🤖 Marking…';aiResult.className='ai-result';aiResult.innerHTML='<div class="ai-verdict">AI is checking the science…</div>';
+    aiBtn.disabled=true;aiBtn.textContent='🤖 Marking…';aiResult.className='ai-result';aiResult.innerHTML='<div class="ai-verdict">AI is checking the answer…</div>';
     try{
       const res=await fetch(AI_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({conceptId:e.id,topic:e.topic,question:e.applicationQuestion,answer:ans,verbatim:e.phrase,rubric:e.rubric,modelAnswer:e.modelApplicationAnswer})});
       const data=await res.json().catch(()=>({}));
@@ -124,6 +222,7 @@
   updateExactProgress();if(window.bank)window.bank();
 })();
 <\/script>`;
+
     html=html.replace('</body>',patch+'</body>');
     document.open();document.write(html);document.close();
   }catch(err){
