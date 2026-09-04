@@ -1,7 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "primary-science-ai-marker",
-  "main": "src/fixed.js",
+  "main": "src/calibrated.js",
   "compatibility_date": "2026-09-04",
   "ai": {
     "binding": "AI"
