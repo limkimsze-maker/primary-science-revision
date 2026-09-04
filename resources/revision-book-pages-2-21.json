@@ -1,0 +1,205 @@
+{
+  "source": {
+    "type": "photographed_revision_book",
+    "pages": "2-21",
+    "purpose": "Reference database for PSLE Science answering, scientific key words, model reasoning patterns and topic coverage. This source should inform application marking and training-model generation, but should not silently overwrite the existing 89 memorisation sentences unless explicitly approved."
+  },
+  "answering_principles": [
+    {
+      "id": "compare_both_subjects",
+      "pages": [8,9,10],
+      "rule": "For comparison questions, explicitly mention both organisms/items. Use forms such as 'Both A and B ...' for similarities and 'A ..., while/but B ...' for differences. Avoid describing only one side of the comparison.",
+      "applies_to": ["compare", "similarities", "differences", "life_cycles"]
+    },
+    {
+      "id": "life_cycle_continuity",
+      "pages": [7,9,17,19],
+      "rule": "When asked why living things reproduce or why the life cycle is important, link reproduction to survival/continuity of their own kind.",
+      "protected_terms": ["reproduce", "continuity", "own kind"]
+    },
+    {
+      "id": "feature_mechanism_result",
+      "pages": [11,12,14,15],
+      "rule": "For adaptation/seed-dispersal explanations, answer as feature -> how the feature works -> resulting advantage or dispersal outcome.",
+      "applies_to": ["seed_dispersal", "adaptations", "explain"]
+    },
+    {
+      "id": "function_use_precise_noun",
+      "pages": [5,12,13,18,20,21],
+      "rule": "For function questions, name the structure and state its precise function directly. Prefer precise nouns such as oxygen, carbon dioxide, water, mineral salts, pollen grains, reproductive cells and blood instead of vague pronouns."
+    }
+  ],
+  "topics": [
+    {
+      "topic": "Diversity of living things",
+      "pages": [3,4,5,6],
+      "key_ideas": [
+        "Living things need air, food and water, grow, reproduce and respond to changes around them.",
+        "Living things can be grouped/classified using common characteristics.",
+        "Major groups shown include animals, plants, fungi and bacteria.",
+        "Animal groups shown include amphibians, birds, fish, insects, mammals and reptiles.",
+        "Flowering plants reproduce by seeds; non-flowering plants reproduce by spores.",
+        "Bacteria and fungi may be useful or harmful; many act as decomposers."
+      ],
+      "protected_terms": ["reproduce", "respond to changes", "microscopic", "fungi", "bacteria", "spores", "decomposition"],
+      "answer_patterns": [
+        {
+          "question_type": "classification",
+          "pattern": "State the common observable characteristic(s) used to group the organisms; do not rely on irrelevant differences."
+        },
+        {
+          "question_type": "decomposer_explanation",
+          "pattern": "Dead organisms/animal waste -> decomposers break them down -> simpler substances/mineral salts, carbon dioxide and water are formed/released -> useful substances can return to the environment."
+        }
+      ]
+    },
+    {
+      "topic": "Plant parts and functions",
+      "pages": [3,5],
+      "key_ideas": [
+        "Stem supports the plant upright so leaves can receive sunlight.",
+        "Stem transports water and mineral salts from roots to other plant parts and transports food made in leaves to other parts.",
+        "Roots absorb water and mineral salts from soil and anchor the plant.",
+        "Leaves help the plant make food and allow gaseous exchange through stomata.",
+        "Flowers enable flowering plants to reproduce; fruits contain/protect seeds; seeds enable reproduction."
+      ],
+      "protected_terms": ["supports", "upright", "transports", "water", "mineral salts", "food", "absorbs", "roots", "stomata", "reproduce"]
+    },
+    {
+      "topic": "Life cycles of plants and animals",
+      "pages": [7,8,9,10],
+      "key_ideas": [
+        "A life cycle shows the different stages of development of a living thing.",
+        "Plant life cycle shown as seed -> young plant -> adult plant; the adult reproduces to continue the cycle.",
+        "Seeds germinate before growing into new plants; roots grow before shoots.",
+        "Young plants initially develop leaves and later make food; adult plants flower and produce fruits containing seeds.",
+        "Animal life cycles can be compared by number of stages, whether there is a nymph/pupa stage, whether the young resembles the adult, whether eggs are laid and where stages live."
+      ],
+      "comparison_framework": {
+        "acronym": "MRSEAL",
+        "dimensions": [
+          "M: Does the young moult?",
+          "R: Does the young resemble the adult?",
+          "S: Number of stages in the life cycle",
+          "E: Egg stage / reproduces by laying eggs",
+          "A: Adult stage",
+          "L: Where the different stages live"
+        ]
+      },
+      "answer_patterns": [
+        {
+          "question_type": "why_reproduce",
+          "pattern": "Living things reproduce to ensure the continuity of their own kind."
+        },
+        {
+          "question_type": "compare_life_cycles",
+          "pattern": "Similarity: 'Both A and B ...'. Difference: 'A ..., while/but B ...'. Mention both organisms in every comparison statement."
+        }
+      ],
+      "protected_terms": ["life cycle", "stages of development", "germinate", "young", "adult", "reproduce", "continuity", "own kind", "nymph", "larva", "pupa", "moult"]
+    },
+    {
+      "topic": "Reproduction in flowering plants",
+      "pages": [11,12,13,14,15,16],
+      "key_ideas": [
+        "Pollination is transfer of pollen grains from anther to stigma of the same flower or another flower of the same species/kind.",
+        "Fertilisation occurs when the male reproductive cell fuses/joins with the female reproductive cell.",
+        "After fertilisation, the ovary develops into a fruit and the ovule develops into a seed.",
+        "Seed dispersal reduces overcrowding and competition for resources such as water, mineral salts, sunlight/light and space.",
+        "Seed dispersal methods shown: animals, wind, water, explosive action/splitting.",
+        "Germination conditions shown: suitable temperature/warmth, oxygen/air and water; sunlight is not required for germination.",
+        "Seed leaves provide stored food/nutrients to the young plant before its leaves can make food by photosynthesis.",
+        "Spores in non-flowering plants are dispersed, commonly by wind; spore cases may be found on the underside of leaves."
+      ],
+      "answer_patterns": [
+        {
+          "question_type": "pollination_definition",
+          "pattern": "Name source and destination precisely: pollen grains are transferred from anther to stigma, within the same kind/species of flower."
+        },
+        {
+          "question_type": "fertilisation_process",
+          "pattern": "Pollen grain reaches stigma -> pollen tube grows towards ovule -> male reproductive cell travels down pollen tube -> male reproductive cell fuses with female reproductive cell in ovule."
+        },
+        {
+          "question_type": "why_seed_dispersal",
+          "pattern": "Seeds are dispersed away from the parent plant -> overcrowding is reduced -> competition for limited resources is reduced. Name the relevant resources when required."
+        },
+        {
+          "question_type": "seed_dispersal_by_wind",
+          "pattern": "State the feature (e.g. light/small, wing-like or hair-like structure) -> explain that it increases surface area/catches moving air -> seed is carried further by wind."
+        },
+        {
+          "question_type": "seed_dispersal_by_water",
+          "pattern": "State the feature (waterproof outer layer and/or fibrous husk that traps air) -> seed/fruit floats -> it can be carried away by water."
+        },
+        {
+          "question_type": "seed_dispersal_by_animals",
+          "pattern": "Hooks/stiff hairs attach to animal fur OR juicy/bright fruits are eaten -> seeds are transported away from parent plant and later dropped/passed out."
+        },
+        {
+          "question_type": "seed_dispersal_explosive",
+          "pattern": "Pod-like fruit has tension/splitting lines -> fruit splits open -> seeds are scattered away from the parent plant."
+        },
+        {
+          "question_type": "young_plant_food",
+          "pattern": "Seed leaves contain stored food/nutrients -> young plant uses the stored food before its leaves can carry out photosynthesis."
+        }
+      ],
+      "protected_terms": ["pollination", "pollen grains", "anther", "stigma", "fertilisation", "male reproductive cell", "female reproductive cell", "ovary", "ovule", "fruit", "seed", "germination", "suitable temperature", "oxygen", "water", "seed leaves", "stored food", "photosynthesis", "competition", "mineral salts", "sunlight", "space"]
+    },
+    {
+      "topic": "Reproduction in humans",
+      "pages": [17,18,19],
+      "key_ideas": [
+        "Testes produce sperm/male reproductive cells; ovaries produce eggs/female reproductive cells.",
+        "Fertilisation is the fusion/joining of one sperm cell and one egg cell.",
+        "The fertilised egg develops in the womb; the developing baby obtains nutrients from the mother's blood through the umbilical cord.",
+        "Sexual reproduction passes hereditary/genetic information from parents to offspring.",
+        "Some characteristics are inherited from parents while other acquired characteristics are not inherited."
+      ],
+      "answer_patterns": [
+        {
+          "question_type": "human_fertilisation",
+          "pattern": "State that one sperm cell fuses/joins with one egg cell; identify this process as fertilisation."
+        },
+        {
+          "question_type": "why_reproduce",
+          "pattern": "Humans/living things reproduce to ensure continuity of their own kind."
+        },
+        {
+          "question_type": "inherited_characteristics",
+          "pattern": "State that characteristics are passed from parents to young through reproduction; distinguish inherited traits from acquired/non-inherited traits when asked."
+        }
+      ],
+      "protected_terms": ["testes", "sperm", "male reproductive cell", "ovaries", "egg", "female reproductive cell", "fertilisation", "womb", "umbilical cord", "hereditary", "inherited", "continuity"]
+    },
+    {
+      "topic": "Air and respiratory system",
+      "pages": [20,21],
+      "key_ideas": [
+        "Air is a mixture of gases; the page shows about 78% nitrogen and 21% oxygen with the remainder carbon dioxide, water vapour and other gases.",
+        "Respiratory system organs shown include nose, windpipe and lungs.",
+        "Nose allows air to enter/leave and has moist lining/tiny hairs that filter air.",
+        "Windpipe transports air to and from the lungs.",
+        "Lungs are the site of gaseous exchange: oxygen moves into blood and carbon dioxide is removed from blood.",
+        "After exercise the body needs more energy; breathing rate increases so more oxygen can be taken in and carbon dioxide can be removed faster."
+      ],
+      "answer_patterns": [
+        {
+          "question_type": "exercise_breathing_rate",
+          "pattern": "More activity/exercise -> body/muscles need more energy -> respiration rate increases -> more oxygen is needed and carbon dioxide must be removed faster -> breathing rate increases."
+        },
+        {
+          "question_type": "lung_function",
+          "pattern": "State gaseous exchange precisely: oxygen passes into the blood while carbon dioxide passes from the blood into the lungs for removal."
+        }
+      ],
+      "protected_terms": ["respiratory system", "nose", "windpipe", "lungs", "gaseous exchange", "oxygen", "carbon dioxide", "blood", "breathing rate", "energy", "respiration"]
+    }
+  ],
+  "source_notes": [
+    "This batch covers the contents page and Life Science material through Air and Respiratory System (pages 2-21).",
+    "Several pages contain direct Q&A examples. Those are stored here as answering patterns rather than replacing the existing memorisation bank automatically.",
+    "Where this source uses wording that differs from the current 89-bank wording, preserve both until the parent explicitly chooses which sentence the child should memorise."
+  ]
+}
