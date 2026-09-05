@@ -6,13 +6,19 @@
 <title>PSLE Science Structured Mastery — Re-audited 180 + Process Skills</title>
 <style>body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f4f7fb;color:#172033}.loading{min-height:100vh;display:grid;place-items:center}.loading div{background:#fff;border:1px solid #dbe3ee;border-radius:16px;padding:20px 24px;box-shadow:0 4px 18px #0f172a0d;text-align:center;line-height:1.5}</style>
 </head>
-<body><div class="loading"><div><b>Loading re-audited 180-concept trainer + process skills…</b><br><small>180 Science concepts · 12 fair-test/process skills · question-specific rubric-first AI marking</small></div></div>
+<body><div class="loading"><div><b>Loading your PSLE Science profile…</b><br><small>180 Science concepts · 12 fair-test/process skills · separate progress by student</small></div></div>
 <script>
 (async()=>{
  try{
+  const student=(localStorage.getItem('psleScience_active_student')||'').toLowerCase();
+  if(!['jerry','javis'].includes(student)){location.replace('signin.html');return}
   const res=await fetch('trainer180.html?v=20260905h',{cache:'no-cache'});
   if(!res.ok)throw new Error('Could not load trainer180.html');
   let html=await res.text();
+
+  // This must run before trainer180's own inline script so all progress storage is
+  // transparently scoped to the selected child.
+  html=html.replace('</head>','<script src="resources/profile-storage.js?v=20260905n"><\/script></head>');
 
   html=html
    .replace('<option value="smart">Smart 20 — 60% Focus · 30% Learning · 10% Secure</option><option value="red">Focus only</option><option value="amber">Learning only</option><option value="green">Secure only</option><option value="all">All 180</option>', '<option value="red">🔴 Focus only</option><option value="amber">⚪ Not Studied Yet only</option><option value="green">🟢 Already Good only</option><option value="all">All 180</option>')
@@ -37,16 +43,17 @@
    '10-electricity-electromagnets-magnets.js','11-energy-forces.js'
   ];
   const scripts=[];
-  appFiles.forEach(f=>scripts.push(`resources/appvariants/${f}?v=20260905m`));
-  scripts.push('resources/audit180/core.js?v=20260905m');
-  auditFiles.forEach(f=>scripts.push(`resources/audit180/${f}?v=20260905m`));
-  scripts.push('resources/appvariants/engine.js?v=20260905m');
-  scripts.push('resources/priority-colors.js?v=20260905m');
-  scripts.push('resources/filter-position.js?v=20260905m');
-  scripts.push('resources/ai-marker.js?v=20260905m');
-  scripts.push('resources/process-skills.js?v=20260905m');
-  scripts.push('resources/process-skills-ui.js?v=20260905m');
-  scripts.push('resources/process-skills-ai.js?v=20260905m');
+  appFiles.forEach(f=>scripts.push(`resources/appvariants/${f}?v=20260905n`));
+  scripts.push('resources/audit180/core.js?v=20260905n');
+  auditFiles.forEach(f=>scripts.push(`resources/audit180/${f}?v=20260905n`));
+  scripts.push('resources/appvariants/engine.js?v=20260905n');
+  scripts.push('resources/priority-colors.js?v=20260905n');
+  scripts.push('resources/filter-position.js?v=20260905n');
+  scripts.push('resources/ai-marker.js?v=20260905n');
+  scripts.push('resources/process-skills.js?v=20260905n');
+  scripts.push('resources/process-skills-ui.js?v=20260905n');
+  scripts.push('resources/process-skills-ai.js?v=20260905n');
+  scripts.push('resources/student-session.js?v=20260905n');
   const tags=scripts.map(src=>`<script src="${src}"><\/script>`).join('');
   html=html.replace('</body>',tags+'</body>');
   document.open();document.write(html);document.close();
