@@ -16,7 +16,7 @@
   if(!res.ok)throw new Error('Could not load trainer180.html');
   let html=await res.text();
 
-  html=html.replace('</head>','<script src="resources/profile-storage.js?v=20260905r"><\/script></head>');
+  html=html.replace('</head>','<script src="resources/profile-storage.js?v=20260905s"><\/script></head>');
 
   html=html
    .replace('<option value="smart">Smart 20 — 60% Focus · 30% Learning · 10% Secure</option><option value="red">Focus only</option><option value="amber">Learning only</option><option value="green">Secure only</option><option value="all">All 180</option>', '<option value="red">🔴 Focus only</option><option value="amber">⚪ Not Studied Yet only</option><option value="green">🟢 Already Good only</option><option value="all">All 180</option>')
@@ -41,19 +41,20 @@
    '10-electricity-electromagnets-magnets.js','11-energy-forces.js'
   ];
   const scripts=[];
-  appFiles.forEach(f=>scripts.push(`resources/appvariants/${f}?v=20260905r`));
-  scripts.push('resources/audit180/core.js?v=20260905r');
-  auditFiles.forEach(f=>scripts.push(`resources/audit180/${f}?v=20260905r`));
-  scripts.push('resources/appvariants/engine.js?v=20260905r');
-  scripts.push('resources/priority-colors.js?v=20260905r');
-  scripts.push('resources/filter-position.js?v=20260905r');
-  scripts.push('resources/ai-marker.js?v=20260905r');
-  scripts.push('resources/process-skills.js?v=20260905r');
-  scripts.push('resources/process-skills-ui.js?v=20260905r');
-  scripts.push('resources/process-skills-ai.js?v=20260905r');
-  scripts.push('resources/student-session.js?v=20260905r');
-  scripts.push('resources/memorisation-flow.js?v=20260905r');
-  scripts.push('resources/speech-input.js?v=20260905r');
+  appFiles.forEach(f=>scripts.push(`resources/appvariants/${f}?v=20260905s`));
+  scripts.push('resources/audit180/core.js?v=20260905s');
+  auditFiles.forEach(f=>scripts.push(`resources/audit180/${f}?v=20260905s`));
+  scripts.push('resources/appvariants/engine.js?v=20260905s');
+  scripts.push('resources/priority-colors.js?v=20260905s');
+  scripts.push('resources/filter-position.js?v=20260905s');
+  scripts.push('resources/ai-marker.js?v=20260905s');
+  scripts.push('resources/process-skills.js?v=20260905s');
+  scripts.push('resources/process-skills-ui.js?v=20260905s');
+  scripts.push('resources/process-skills-ai.js?v=20260905s');
+  scripts.push('resources/student-session.js?v=20260905s');
+  scripts.push('resources/memorisation-flow.js?v=20260905s');
+  scripts.push('resources/speech-input.js?v=20260905s');
+  scripts.push('resources/answer-normalization.js?v=20260905s');
   const tags=scripts.map(src=>`<script src="${src}"><\/script>`).join('');
   html=html.replace('</body>',tags+'</body>');
   document.open();document.write(html);document.close();
