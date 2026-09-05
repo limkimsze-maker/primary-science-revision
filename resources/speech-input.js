@@ -8,8 +8,9 @@ const TARGETS=[
  {id:'processRecall',label:'Speak Answer',area:'Process recall',submit:['processCheck']},
  {id:'processAnswer',label:'Speak Answer',area:'Process application',submit:['processAIMarkBtn']}
 ];
-let currentRec=null,currentBtn=null,currentStatus=null;
+let currentRec=null;
 const safeParse=(s,f)=>{try{return JSON.parse(s||'')||f}catch(_e){return f}};
+const wordNorm=s=>String(s||'').toLowerCase().replace(/[’‘]/g,"'").replace(/[^a-z0-9]+/g,' ').trim().replace(/\s+/g,' ');
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function logAttempt(area,box){
  const text=(box?.value||'').trim();if(!text)return;
@@ -21,13 +22,13 @@ function logAttempt(area,box){
 function setIdle(btn,status,msg){
  if(btn){btn.textContent='🎤 Speak Answer';btn.classList.remove('speech-listening');btn.disabled=false}
  if(status)status.textContent=msg||'Speak → check/edit the transcription → submit.';
- currentRec=null;currentBtn=null;currentStatus=null;
+ currentRec=null;
 }
 function stopCurrent(){try{currentRec?.stop()}catch(_e){}}
 function startRecognition(box,btn,status){
  if(!SpeechRecognition){status.textContent='Speech recognition is not available in this browser.';btn.disabled=true;return}
  if(currentRec){stopCurrent();return}
- const rec=new SpeechRecognition();currentRec=rec;currentBtn=btn;currentStatus=status;
+ const rec=new SpeechRecognition();currentRec=rec;
  rec.lang='en-SG';rec.continuous=false;rec.interimResults=false;rec.maxAlternatives=1;
  rec.onstart=()=>{btn.textContent='⏹ Stop Listening';btn.classList.add('speech-listening');status.textContent='Listening… Speak clearly.'};
  rec.onresult=e=>{
@@ -49,8 +50,19 @@ function startRecognition(box,btn,status){
   };
   status.textContent=map[e.error]||`Speech recognition error: ${e.error||'unknown error'}`;
  };
- rec.onend=()=>setIdle(btn,status,status.textContent.includes('Voice transcribed')?status.textContent:null);
+ rec.onend=()=>{
+  const keep=status.textContent&&status.textContent!=='Listening… Speak clearly.'?status.textContent:null;
+  setIdle(btn,status,keep);
+ };
  try{rec.start()}catch(_e){setIdle(btn,status,'Could not start speech recognition. Try again.')}
+}
+function prepareVoiceExact(box){
+ try{
+  if(box.id!=='phraseAnswer'||box.dataset.voiceUsed!=='1'||document.getElementById('phraseMode')?.value!=='exact')return;
+  if(typeof BANK==='undefined'||typeof current!=='function')return;
+  const target=BANK[current()]?.phrase||'';
+  if(target&&wordNorm(box.value)===wordNorm(target))box.value=target;
+ }catch(_e){}
 }
 function installOne(t){
  const box=document.getElementById(t.id);if(!box||document.getElementById(`speech-${t.id}`))return false;
@@ -63,7 +75,12 @@ function installOne(t){
  btn.onclick=()=>startRecognition(box,btn,status);
  box.addEventListener('focus',()=>{if(!(box.value||'').trim())delete box.dataset.voiceUsed});
  t.submit.forEach(id=>{
-  const hook=()=>{const b=document.getElementById(id);if(!b||b.dataset.speechLogBound==='1')return false;b.dataset.speechLogBound='1';b.addEventListener('click',()=>logAttempt(t.area,box),true);return true};
+  const hook=()=>{
+   const b=document.getElementById(id);if(!b||b.dataset.speechLogBound==='1')return false;
+   b.dataset.speechLogBound='1';
+   b.addEventListener('click',()=>{prepareVoiceExact(box);logAttempt(t.area,box)},true);
+   return true;
+  };
   if(!hook()){let n=0;const timer=setInterval(()=>{n++;if(hook()||n>100)clearInterval(timer)},100)}
  });
  return true;
