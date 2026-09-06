@@ -1,9 +1,8 @@
 (()=>{
   let tries=0;
 
-  function parseCounter(){
-    const text=document.getElementById('fcCounter')?.textContent||'';
-    const m=text.match(/(\d+)\s*\/\s*(\d+)/);
+  function parseCounterText(text){
+    const m=String(text||'').match(/(\d+)\s*\/\s*(\d+)/);
     return m?{pos:Number(m[1]),total:Number(m[2])}:{pos:0,total:0};
   }
 
@@ -16,19 +15,30 @@
     const tapHint=document.getElementById('fcTapHint');
     const panel=document.getElementById('flashcardPanel');
     if(!card||!prev||!next||!flip||!counter||!panel)return false;
-    if(card.dataset.navFix==='1')return true;
+    if(card.dataset.navFix==='2')return true;
     if(typeof card.onclick!=='function'||typeof prev.onclick!=='function'||typeof next.onclick!=='function')return false;
 
-    card.dataset.navFix='1';
+    card.dataset.navFix='2';
     const originalCardTap=card.onclick;
     const originalPrev=prev.onclick;
     const originalNext=next.onclick;
 
+    function navPosition(){
+      const resultSel=document.getElementById('fcResultFilter');
+      if(resultSel&&(resultSel.value||'all')!=='all'){
+        const reviewCounter=document.getElementById('fcResultReviewCounter');
+        const review=parseCounterText(reviewCounter?.textContent||'');
+        if(review.total>0)return review;
+        return {pos:0,total:0};
+      }
+      return parseCounterText(counter.textContent||'');
+    }
+
     function sync(){
-      const {pos,total}=parseCounter();
+      const {pos,total}=navPosition();
       const showingAnswer=card.classList.contains('show-back');
-      prev.disabled=total>0&&pos<=1;
-      next.disabled=total>0&&pos>=total;
+      prev.disabled=total===0||pos<=1;
+      next.disabled=total===0||pos>=total;
       flip.textContent=showingAnswer?'Show Question ←':'Show Answer →';
       if(tapHint)tapHint.textContent=showingAnswer?'Tap card to show the question again.':'Tap card to show the answer.';
     }
@@ -37,9 +47,7 @@
       if(!card.classList.contains('show-back')){
         originalCardTap.call(card,e);
       }else{
-        // Reset the flashcard engine to the front of the SAME card without advancing.
-        // Moving back once and forward once leaves the list position unchanged while
-        // restoring the engine's internal side state to "question".
+        // Restore the front of the SAME card without advancing the list.
         originalPrev.call(prev,e);
         originalNext.call(next,e);
       }
@@ -50,14 +58,18 @@
     flip.onclick=flipSameCard;
 
     prev.onclick=function(e){
-      const {pos}=parseCounter();
+      const resultSel=document.getElementById('fcResultFilter');
+      if(resultSel&&(resultSel.value||'all')!=='all')return;
+      const {pos}=navPosition();
       if(pos<=1)return;
       originalPrev.call(prev,e);
       setTimeout(sync,0);
     };
 
     next.onclick=function(e){
-      const {pos,total}=parseCounter();
+      const resultSel=document.getElementById('fcResultFilter');
+      if(resultSel&&(resultSel.value||'all')!=='all')return;
+      const {pos,total}=navPosition();
       if(total&&pos>=total)return;
       originalNext.call(next,e);
       setTimeout(sync,0);
@@ -82,8 +94,15 @@
     if(tip)tip.innerHTML='<b>Simple flow:</b> Tap the card to flip question ↔ explanation. The card changes only when you press Previous or Next.';
 
     const observer=new MutationObserver(()=>requestAnimationFrame(sync));
-    observer.observe(card,{attributes:true,attributeFilter:['class','data-side']});
+    observer.observe(card,{attributes:true,attributeFilter:['class','data-side','data-card-index']});
     observer.observe(counter,{childList:true,characterData:true,subtree:true});
+    observer.observe(panel,{childList:true,subtree:true});
+    panel.addEventListener('change',e=>{
+      if(e.target?.id==='fcResultFilter'||e.target?.id==='fcCategory'||e.target?.id==='fcPriority')setTimeout(sync,0);
+    });
+    panel.addEventListener('click',e=>{
+      if(e.target?.id==='fcNext'||e.target?.id==='fcPrev'||e.target?.id==='fcMarkRight'||e.target?.id==='fcMarkWrong')setTimeout(sync,0);
+    });
     sync();
     return true;
   }
