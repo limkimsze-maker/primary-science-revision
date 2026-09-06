@@ -9,55 +9,82 @@
 <body><div class="loading"><div><b>Loading your PSLE Science profile…</b><br><small>180 Science concepts · process skills · large-print flashcards · Cloudflare AI speech clean-up</small></div></div>
 <script>
 (async()=>{
+ const student=(localStorage.getItem('psleScience_active_student')||'').toLowerCase();
+ if(!['jerry','javis'].includes(student)){location.replace('signin.html');return}
+ const loadExternal=(src,critical=false)=>new Promise((resolve,reject)=>{
+  const s=document.createElement('script');s.src=src;s.async=false;
+  s.onload=()=>resolve(true);
+  s.onerror=()=>{console.error('Could not load',src);critical?reject(new Error('Could not load '+src)):resolve(false)};
+  document.head.appendChild(s);
+ });
+ const runInline=code=>{const s=document.createElement('script');s.textContent=code;document.body.appendChild(s);s.remove()};
  try{
-  const student=(localStorage.getItem('psleScience_active_student')||'').toLowerCase();
-  if(!['jerry','javis'].includes(student)){location.replace('signin.html');return}
-  const res=await fetch('trainer180.html?v=20260905h',{cache:'no-cache'});
+  // Profile scoping must be active before the base trainer reads localStorage.
+  await loadExternal('resources/profile-storage.js?v=20260906m',true);
+
+  const res=await fetch('trainer180.html?v=20260906m',{cache:'no-store'});
   if(!res.ok)throw new Error('Could not load trainer180.html');
   let html=await res.text();
-  html=html.replace('</head>','<script src="resources/profile-storage.js?v=20260905x"><\/script></head>');
   html=html
    .replace('<option value="smart">Smart 20 — 60% Focus · 30% Learning · 10% Secure</option><option value="red">Focus only</option><option value="amber">Learning only</option><option value="green">Secure only</option><option value="all">All 180</option>', '<option value="red">🔴 Focus only</option><option value="amber">⚪ Not Studied Yet only</option><option value="green">🟢 Already Good only</option><option value="all">All 180</option>')
    .replace('🟠 Learning','⚪ Not Studied Yet')
    .replace('🟢 Secure','🟢 Already Good')
    .replace('Parent/Teacher priority:</span> <span class="small" id="overrideText">Auto</span>','Parent/Teacher priority:</span> <span class="small" id="overrideText">Not Studied Yet</span>')
    .replace('id="markAuto">🟠 Auto</button>','id="markAuto">⚪ Not Studied Yet</button>')
-   .replace('id="markGood" class="btn-green">🟢 Already Good</button>','id="markGood" class="btn-green">🟢 Already Good</button>')
    .replace('🔴 Focus · 🟠 Auto/Learning · 🟢 Already Good','🔴 Focus · ⚪ Not Studied Yet · 🟢 Already Good')
    .replace('<option value="all">All 180</option><option value="red">🔴 Focus</option><option value="green">🟢 Already Good</option><option value="auto">🟠 Auto</option>', '<option value="all">All 180</option><option value="red">🔴 Focus only</option><option value="auto">⚪ Not Studied Yet only</option><option value="green">🟢 Already Good only</option>');
+
+  // Parse the base page, remove its script tags, then execute every script explicitly
+  // in order. This avoids browser-dependent document.write behaviour that could
+  // leave a visible but completely inert trainer.
+  const parsed=new DOMParser().parseFromString(html,'text/html');
+  const baseScripts=[...parsed.querySelectorAll('script')].map(s=>({src:s.getAttribute('src')||'',code:s.textContent||''}));
+  parsed.querySelectorAll('script').forEach(s=>s.remove());
+  document.documentElement.innerHTML=parsed.documentElement.innerHTML;
+
+  const status=document.createElement('div');
+  status.id='trainerBootStatus';
+  status.style.cssText='position:fixed;right:12px;bottom:12px;z-index:99999;padding:9px 12px;border-radius:10px;background:#172033;color:#fff;font:700 12px Arial;box-shadow:0 4px 18px #0003';
+  status.textContent='Loading controls…';document.body.appendChild(status);
+
+  for(const item of baseScripts){
+   if(item.src)await loadExternal(item.src,true);else if(item.code.trim())runInline(item.code);
+  }
+
   const appFiles=['01-diversity-classification.js','02-plant-structures-functions.js','03-life-cycles-reproduction.js','04-human-animal-systems.js','05-plant-transport-photosynthesis-respiration.js','06-ecology-adaptations-environment.js','07-matter-materials-changes-of-state.js','08-light.js','09-heat-thermal-expansion.js','10-electricity-electromagnets-magnets.js','11-energy-forces.js'];
-  const auditFiles=[...appFiles];
   const scripts=[];
-  appFiles.forEach(f=>scripts.push(`resources/appvariants/${f}?v=20260905x`));
-  scripts.push('resources/audit180/core.js?v=20260905x');
-  auditFiles.forEach(f=>scripts.push(`resources/audit180/${f}?v=20260905x`));
-  scripts.push('resources/appvariants/engine.js?v=20260906h');
-  scripts.push('resources/psle-style-questions.js?v=20260905a');
-  scripts.push('resources/priority-colors.js?v=20260905x');
-  scripts.push('resources/filter-position.js?v=20260905x');
-  scripts.push('resources/ai-marker.js?v=20260906i');
-  scripts.push('resources/process-skills.js?v=20260905x');
-  scripts.push('resources/process-skills-ui.js?v=20260905x');
-  scripts.push('resources/process-skills-ai.js?v=20260905x');
-  scripts.push('resources/student-session.js?v=20260905x');
-  scripts.push('resources/memorisation-flow.js?v=20260905x');
-  scripts.push('resources/speech-input-ai-v5.js?v=20260905zd');
-  scripts.push('resources/uk-spelling.js?v=20260905ze');
-  scripts.push('resources/answer-normalization.js?v=20260905x');
-  scripts.push('resources/check-next.js?v=20260905zf');
-  scripts.push('resources/flashcards.js?v=20260905zb');
-  scripts.push('resources/flashcard-nav-fix.js?v=20260906c');
-  scripts.push('resources/flashcard-results.js?v=20260905a');
-  scripts.push('resources/flashcard-results-filter-fix.js?v=20260905a');
-  scripts.push('resources/flashcard-top-result-filter.js?v=20260906b');
-  scripts.push('resources/adaptive-engine.js?v=20260905a');
-  scripts.push('resources/learning-cycle.js?v=20260906b');
-  scripts.push('resources/application-answer-ui.js?v=20260906k');
-  const tags=scripts.map(src=>`<script src="${src}"><\/script>`).join('');
-  html=html.replace('</body>',tags+'</body>');
-  document.open();document.write(html);document.close();
+  appFiles.forEach(f=>scripts.push(`resources/appvariants/${f}?v=20260906m`));
+  scripts.push('resources/audit180/core.js?v=20260906m');
+  appFiles.forEach(f=>scripts.push(`resources/audit180/${f}?v=20260906m`));
+  scripts.push('resources/appvariants/engine.js?v=20260906m');
+  scripts.push('resources/psle-style-questions.js?v=20260906m');
+  scripts.push('resources/priority-colors.js?v=20260906m');
+  scripts.push('resources/filter-position.js?v=20260906m');
+  scripts.push('resources/ai-marker.js?v=20260906m');
+  scripts.push('resources/process-skills.js?v=20260906m');
+  scripts.push('resources/process-skills-ui.js?v=20260906m');
+  scripts.push('resources/process-skills-ai.js?v=20260906m');
+  scripts.push('resources/student-session.js?v=20260906m');
+  scripts.push('resources/memorisation-flow.js?v=20260906m');
+  scripts.push('resources/speech-input-ai-v5.js?v=20260906m');
+  scripts.push('resources/uk-spelling.js?v=20260906m');
+  scripts.push('resources/answer-normalization.js?v=20260906m');
+  scripts.push('resources/check-next.js?v=20260906m');
+  scripts.push('resources/flashcards.js?v=20260906m');
+  scripts.push('resources/flashcard-nav-fix.js?v=20260906m');
+  scripts.push('resources/flashcard-results.js?v=20260906m');
+  scripts.push('resources/flashcard-results-filter-fix.js?v=20260906m');
+  scripts.push('resources/flashcard-top-result-filter.js?v=20260906m');
+  scripts.push('resources/adaptive-engine.js?v=20260906m');
+  scripts.push('resources/learning-cycle.js?v=20260906m');
+  scripts.push('resources/application-answer-ui.js?v=20260906m');
+  for(const src of scripts)await loadExternal(src,false);
+
+  status.textContent='Ready ✓';
+  setTimeout(()=>status.remove(),900);
  }catch(err){
-  document.body.innerHTML='<div class="loading"><div><b>Could not load the trainer.</b><br>'+String(err.message||err)+'</div></div>';
+  console.error(err);
+  document.body.innerHTML='<div class="loading"><div><b>Could not initialise the trainer.</b><br><small>'+String(err.message||err)+'</small><br><br><button onclick="location.reload()">Reload</button></div></div>';
  }
 })();
 </script>
