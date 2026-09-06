@@ -9,11 +9,12 @@ function install(){
  if(document.getElementById('appLiteModeBar'))return;
  const originalFresh=fresh.onclick,originalNext=next.onclick;
  let mode='all';
- const labels={all:'All',recall:'Recall',explain:'Explain / Why',describe:'Describe / How',suggest:'Suggest / Predict',experiment:'Experiment / Relationship'};
+ const labels={all:'All',recall:'Recall',compare:'Compare',explain:'Explain / Why',describe:'Describe / How',suggest:'Suggest / Predict',experiment:'Experiment / Relationship'};
  const qText=()=>String(q.textContent||'').trim();
  const kindText=()=>String(document.getElementById('variantNote')?.textContent||'').toLowerCase();
  function category(){
   const t=qText().toLowerCase(),k=kindText();
+  if(/^\s*compare\b/.test(t)||/\bcompare\b/.test(k))return'compare';
   if(/\b(explain|why|give\s+(?:a\s+)?reason)\b/.test(t))return'explain';
   if(/\b(suggest|predict)\b/.test(t)||/prediction|suggest|inference/.test(k))return'suggest';
   if(/^\s*(describe|how)\b/.test(t)||/describe|sequence|process/.test(k))return'describe';
@@ -26,6 +27,7 @@ function install(){
   const c=category();
   const m={
    recall:'Answer directly. A correct Science concept or term may be enough.',
+   compare:'Compare directly: state the relevant similarity and/or difference asked. No D/E, S/R or L/R is required unless the question also asks you to explain or give a reason.',
    explain:'Use S/R. Add D/E and L/R only when this exact question needs them.',
    describe:'Describe observations/steps. For How, give the process in logical Science steps.',
    suggest:'Give a reasonable scientifically valid suggestion, or a prediction and reason if asked.',
