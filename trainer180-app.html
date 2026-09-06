@@ -31,11 +31,11 @@
   appFiles.forEach(f=>scripts.push(`resources/appvariants/${f}?v=20260905x`));
   scripts.push('resources/audit180/core.js?v=20260905x');
   auditFiles.forEach(f=>scripts.push(`resources/audit180/${f}?v=20260905x`));
-  scripts.push('resources/appvariants/engine.js?v=20260905x');
+  scripts.push('resources/appvariants/engine.js?v=20260906h');
   scripts.push('resources/psle-style-questions.js?v=20260905a');
   scripts.push('resources/priority-colors.js?v=20260905x');
   scripts.push('resources/filter-position.js?v=20260905x');
-  scripts.push('resources/ai-marker.js?v=20260906g');
+  scripts.push('resources/ai-marker.js?v=20260906h');
   scripts.push('resources/process-skills.js?v=20260905x');
   scripts.push('resources/process-skills-ui.js?v=20260905x');
   scripts.push('resources/process-skills-ai.js?v=20260905x');
@@ -52,7 +52,7 @@
   scripts.push('resources/flashcard-top-result-filter.js?v=20260906b');
   scripts.push('resources/adaptive-engine.js?v=20260905a');
   scripts.push('resources/learning-cycle.js?v=20260906b');
-  scripts.push('resources/application-answer-ui.js?v=20260906f');
+  scripts.push('resources/application-answer-ui.js?v=20260906h');
   const tags=scripts.map(src=>`<script src="${src}"><\/script>`).join('');
   html=html.replace('</body>',tags+'</body>');
   document.open();document.write(html);document.close();
