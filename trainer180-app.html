@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>PSLE Science Structured Mastery</title>
 <style>
 html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#f4f7fb;font-family:Arial,Helvetica,sans-serif;color:#172033}
@@ -10,7 +10,8 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#f4f7fb;fon
 #boot{position:fixed;inset:0;z-index:99999;display:grid;place-items:center;background:#f4f7fbcc}
 #bootCard{background:#fff;border:1px solid #dbe3ee;border-radius:16px;padding:18px 22px;box-shadow:0 8px 30px #0f172a18;text-align:center;line-height:1.5;min-width:min(420px,calc(100vw - 32px))}
 #bootMsg{font-weight:800}.small{font-size:12px;color:#64748b;margin-top:4px}#errorBox{display:none;margin-top:10px;padding:10px;border-radius:10px;background:#fef2f2;color:#991b1b;font-size:12px;text-align:left}
-#switchStudent{position:fixed;top:10px;right:12px;z-index:99998;border:1px solid #cbd5e1;border-radius:11px;background:#fff;color:#475569;padding:8px 11px;font:800 12px Arial;box-shadow:0 4px 14px #0f172a18;cursor:pointer}#switchStudent:hover{background:#f8fafc}
+#switchStudent{position:fixed;top:max(10px,env(safe-area-inset-top));right:max(12px,env(safe-area-inset-right));z-index:99998;border:1px solid #cbd5e1;border-radius:11px;background:#fff;color:#475569;padding:8px 11px;font:800 12px Arial;box-shadow:0 4px 14px #0f172a18;cursor:pointer}#switchStudent:hover{background:#f8fafc}
+@media(max-width:700px){#switchStudent{top:max(6px,env(safe-area-inset-top));right:max(7px,env(safe-area-inset-right));padding:7px 9px;font-size:11px}}
 </style>
 </head>
 <body>
@@ -19,7 +20,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#f4f7fb;fon
 <div id="boot"><div id="bootCard"><div id="bootMsg">Loading Science trainer…</div><div class="small">192 items · Recall → Memorise → Apply</div><div id="errorBox"></div></div></div>
 <script>
 (async()=>{
- const V='20260907a';
+ const V='20260907b';
  document.getElementById('switchStudent').onclick=()=>location.replace('signin.html?v='+V);
  const student=(localStorage.getItem('psleScience_active_student')||'').toLowerCase();
  if(!['jerry','javis'].includes(student)){location.replace('signin.html?v='+V);return}
@@ -87,6 +88,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#f4f7fb;fon
    if(!await waitFor(()=>w.PSLE_PROCESS_MERGE,5000))throw new Error('Process Skills did not merge into the study path.');
    await loadScript(d,'resources/guided-progress-sidebar.js?v='+V,true);
    await loadScript(d,'resources/motivation-layer.js?v='+V,true);
+   await loadScript(d,'resources/universal-display.js?v='+V,true);
    msg.textContent='Ready ✓';await sleep(100);boot.style.display='none';
   }catch(e){fail(e)}
  },{once:true});
