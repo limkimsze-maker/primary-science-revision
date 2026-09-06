@@ -36,18 +36,17 @@ function noMissing(v){
 }
 function internallySaysCorrect(d,payload){
   if(!d||!payload)return false;
+  // If the model's own improved answer is literally the pupil's answer, a missing-category
+  // verdict is self-contradictory and must never be allowed to override the answer.
+  const improvedSame=norm(d.improvedAnswer)&&norm(d.improvedAnswer)===norm(payload.answer);
+  if(improvedSame)return true;
   const conceptOK=d?.criteria?.conceptCorrect===true||d.conceptCorrect===true;
   if(!conceptOK||!noMissing(d.missing))return false;
-  const improvedSame=norm(d.improvedAnswer)&&norm(d.improvedAnswer)===norm(payload.answer);
   const wording=norm([d.feedback,d.strengths,d.message].filter(Boolean).join(' '));
   const saysCorrect=/\b(correct and concise|fully correct|correct answer|directly addresses the question|all required|nothing missing|no required)\b/.test(wording);
-  return improvedSame||saysCorrect;
+  return saysCorrect;
 }
 function extractRating(d,payload){
-  // Guard against an internally contradictory model response. If the AI says the concept
-  // is correct, says nothing is missing, and its own improved answer is the pupil's answer
-  // (or its written feedback explicitly calls the answer correct), it cannot also be graded
-  // D/E, S/R or L/R missing.
   if(internallySaysCorrect(d,payload))return 'correct';
   if(!d)return null;
   for(const x of [d.rating,d.verdict,d.result,d.category,d.classification,d.status,d.label]){const r=normalizeRating(x);if(r)return r}
@@ -67,6 +66,25 @@ function currentPayload(studentAnswer){
     modelAnswer:e.modelApplicationAnswer||e.phrase||'',
     rubric:Array.isArray(e.rubric)?e.rubric:[]
   };
+}
+function locallyCertainCorrect(payload){
+  const q=norm(payload?.question),a=norm(payload?.answer),m=norm(payload?.modelAnswer);
+  if(!a)return '';
+  // Direct concept/recall questions: an exact model-answer match cannot be wrong.
+  if(m&&a===m&&q&&typeof BANK!=='undefined'){
+    const i=typeof current==='function'?current():0,e=BANK[i]||{};
+    if(q===norm(e.phrasePrompt||''))return 'Your answer matches the model answer. Punctuation and capitalisation are ignored.';
+  }
+  // Concept 56 transfer question. The previous AI response could say that the water-carrying
+  // tubes / link to the leaves were missing even when those exact ideas were present.
+  if(Number(payload?.conceptId)===56&&q.includes('coloured water')&&q.includes('leaves')&&q.includes('pathway')){
+    const hasTube=/\bwater carrying tubes?\b|\bxylem\b/.test(a);
+    const hasWater=/\bcoloured water\b|\bcolored water\b|\bwater\b/.test(a);
+    const hasLeaf=/\bleaf\b|\bleaves\b/.test(a);
+    const hasMove=/\btransport(?:ed|s|ing)?\b|\bcarried\b|\bcarry\b|\breach(?:es|ed|ing)?\b/.test(a);
+    if(hasTube&&hasWater&&hasLeaf&&hasMove)return 'Correct. You linked the coloured water to the water-carrying tubes and its movement to the leaves.';
+  }
+  return '';
 }
 function sameRequest(payload){return !!(lastResult&&lastResult.question===payload.question&&lastResult.answer===payload.answer&&lastResult.conceptId===payload.conceptId&&lastResult.data)}
 async function requestAI(payload){
@@ -95,6 +113,8 @@ async function markWithAI(){
   const btn=$id('aiMarkBtn'); btn.disabled=true; btn.textContent='🤖 AI marking…'; setStatus('● AI marking…','#b45309');
   const payload=currentPayload(student);
   try{
+    const certain=locallyCertainCorrect(payload);
+    if(certain){recordAIRating('correct',certain);setStatus('● AI ready','#166534');return}
     const data=await requestAI(payload); const rate=extractRating(data,payload); const detail=collectFeedback(data);
     if(!rate){const b=$id('appFeedback');if(b){b.className='fb warnbox';b.innerHTML='<b>AI replied, but the mark could not be read.</b><br><span class="small">'+escHtml(detail||'Please try again.')+'</span>'};setStatus('● AI response received','#b45309')}
     else{recordAIRating(rate,detail);setStatus('● AI ready','#166534')}
