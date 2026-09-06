@@ -20,8 +20,8 @@
  const runInline=code=>{const s=document.createElement('script');s.textContent=code;document.body.appendChild(s);s.remove()};
  const waitFor=(fn,ms=5000)=>new Promise(resolve=>{const start=Date.now();const tick=()=>{if(fn())return resolve(true);if(Date.now()-start>ms)return resolve(false);setTimeout(tick,60)};tick()});
  try{
-  await loadExternal('resources/profile-storage.js?v=20260906n',true);
-  const res=await fetch('trainer180.html?v=20260906n',{cache:'no-store'});
+  await loadExternal('resources/profile-storage.js?v=20260906p',true);
+  const res=await fetch('trainer180.html?v=20260906p',{cache:'no-store'});
   if(!res.ok)throw new Error('Could not load trainer180.html');
   let html=await res.text();
   html=html
@@ -32,30 +32,62 @@
    .replace('id="markAuto">🟠 Auto</button>','id="markAuto">⚪ Not Studied Yet</button>')
    .replace('🔴 Focus · 🟠 Auto/Learning · 🟢 Already Good','🔴 Focus · ⚪ Not Studied Yet · 🟢 Already Good')
    .replace('<option value="all">All 180</option><option value="red">🔴 Focus</option><option value="green">🟢 Already Good</option><option value="auto">🟠 Auto</option>', '<option value="all">All 180</option><option value="red">🔴 Focus only</option><option value="auto">⚪ Not Studied Yet only</option><option value="green">🟢 Already Good only</option>');
+
   const parsed=new DOMParser().parseFromString(html,'text/html');
   const baseScripts=[...parsed.querySelectorAll('script')].map(s=>({src:s.getAttribute('src')||'',code:s.textContent||''}));
   parsed.querySelectorAll('script').forEach(s=>s.remove());
   document.documentElement.innerHTML=parsed.documentElement.innerHTML;
-  const status=document.createElement('div');status.id='trainerBootStatus';status.style.cssText='position:fixed;right:12px;bottom:12px;z-index:99999;padding:9px 12px;border-radius:10px;background:#172033;color:#fff;font:700 12px Arial;box-shadow:0 4px 18px #0003';status.textContent='Loading controls…';document.body.appendChild(status);
+
+  const status=document.createElement('div');
+  status.id='trainerBootStatus';
+  status.style.cssText='position:fixed;right:12px;bottom:12px;z-index:99999;padding:9px 12px;border-radius:10px;background:#172033;color:#fff;font:700 12px Arial;box-shadow:0 4px 18px #0003';
+  status.textContent='Loading core controls…';document.body.appendChild(status);
+
   for(const item of baseScripts){if(item.src)await loadExternal(item.src,true);else if(item.code.trim())runInline(item.code)}
   const baseReady=await waitFor(()=>typeof BANK!=='undefined'&&Array.isArray(BANK)&&BANK.length===180&&typeof rec==='function'&&typeof save==='function'&&document.querySelector('header .tabs'));
   if(!baseReady)throw new Error('Base trainer did not finish initialising.');
-  const appFiles=['01-diversity-classification.js','02-plant-structures-functions.js','03-life-cycles-reproduction.js','04-human-animal-systems.js','05-plant-transport-photosynthesis-respiration.js','06-ecology-adaptations-environment.js','07-matter-materials-changes-of-state.js','08-light.js','09-heat-thermal-expansion.js','10-electricity-electromagnets-magnets.js','11-energy-forces.js'];
-  const beforeFlash=[];
-  appFiles.forEach(f=>beforeFlash.push(`resources/appvariants/${f}?v=20260906n`));
-  beforeFlash.push('resources/audit180/core.js?v=20260906n');
-  appFiles.forEach(f=>beforeFlash.push(`resources/audit180/${f}?v=20260906n`));
-  beforeFlash.push('resources/appvariants/engine.js?v=20260906n','resources/psle-style-questions.js?v=20260906n','resources/priority-colors.js?v=20260906n','resources/filter-position.js?v=20260906n','resources/ai-marker.js?v=20260906n','resources/process-skills.js?v=20260906n','resources/process-skills-ui.js?v=20260906n','resources/process-skills-ai.js?v=20260906n','resources/student-session.js?v=20260906n','resources/memorisation-flow.js?v=20260906n','resources/speech-input-ai-v5.js?v=20260906n','resources/uk-spelling.js?v=20260906n','resources/answer-normalization.js?v=20260906n','resources/check-next.js?v=20260906n');
-  for(const src of beforeFlash)await loadExternal(src,false);
+
+  // Flashcards are a core mode. Load them immediately, before any optional
+  // application/process-skill enhancements, so one slow enhancement can never
+  // make the Flashcards tab disappear.
   status.textContent='Loading flashcards…';
-  await loadExternal('resources/flashcards-stable.js?v=20260906n',true);
+  await loadExternal('resources/flashcards-stable.js?v=20260906p',true);
   if(typeof window.PSLE_INSTALL_FLASHCARDS==='function')window.PSLE_INSTALL_FLASHCARDS();
   const flashReady=await waitFor(()=>!!document.getElementById('flashcardTab')&&!!document.getElementById('flashcardPanel'),5000);
   if(!flashReady)throw new Error('Flashcards could not be added.');
-  const afterFlash=['resources/adaptive-engine.js?v=20260906n','resources/learning-cycle.js?v=20260906n','resources/application-answer-ui.js?v=20260906n'];
-  for(const src of afterFlash)await loadExternal(src,false);
+  status.textContent='Flashcards ready ✓ · loading extras…';
+
+  const appFiles=['01-diversity-classification.js','02-plant-structures-functions.js','03-life-cycles-reproduction.js','04-human-animal-systems.js','05-plant-transport-photosynthesis-respiration.js','06-ecology-adaptations-environment.js','07-matter-materials-changes-of-state.js','08-light.js','09-heat-thermal-expansion.js','10-electricity-electromagnets-magnets.js','11-energy-forces.js'];
+  const extras=[];
+  appFiles.forEach(f=>extras.push(`resources/appvariants/${f}?v=20260906p`));
+  extras.push('resources/audit180/core.js?v=20260906p');
+  appFiles.forEach(f=>extras.push(`resources/audit180/${f}?v=20260906p`));
+  extras.push(
+   'resources/appvariants/engine.js?v=20260906p',
+   'resources/psle-style-questions.js?v=20260906p',
+   'resources/priority-colors.js?v=20260906p',
+   'resources/filter-position.js?v=20260906p',
+   'resources/ai-marker.js?v=20260906p',
+   'resources/process-skills.js?v=20260906p',
+   'resources/process-skills-ui.js?v=20260906p',
+   'resources/process-skills-ai.js?v=20260906p',
+   'resources/student-session.js?v=20260906p',
+   'resources/memorisation-flow.js?v=20260906p',
+   'resources/speech-input-ai-v5.js?v=20260906p',
+   'resources/uk-spelling.js?v=20260906p',
+   'resources/answer-normalization.js?v=20260906p',
+   'resources/check-next.js?v=20260906p',
+   'resources/adaptive-engine.js?v=20260906p',
+   'resources/learning-cycle.js?v=20260906p',
+   'resources/application-answer-ui.js?v=20260906p'
+  );
+  for(const src of extras)await loadExternal(src,false);
+
   status.textContent='Ready ✓';setTimeout(()=>status.remove(),1000);
- }catch(err){console.error(err);document.body.innerHTML='<div class="loading"><div><b>Could not initialise the trainer.</b><br><small>'+String(err.message||err)+'</small><br><br><button onclick="location.reload()">Reload</button></div></div>'}
+ }catch(err){
+  console.error(err);
+  document.body.innerHTML='<div class="loading"><div><b>Could not initialise the trainer.</b><br><small>'+String(err.message||err)+'</small><br><br><button onclick="location.reload()">Reload</button></div></div>';
+ }
 })();
 </script>
 </body>
