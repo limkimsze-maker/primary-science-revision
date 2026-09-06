@@ -13,7 +13,7 @@ function installUI(){
   row.innerHTML='<button class="primary" id="aiMarkBtn">🤖 AI Mark My Answer</button><span id="aiStatus" class="small" style="font-weight:700;color:#166534">● AI ready</span>';
   answer.insertAdjacentElement('afterend',row);
   const note=document.createElement('div'); note.className='small'; note.id='aiMarkNote'; note.style.marginTop='6px';
-  note.innerHTML='AI follows the <b>same command-word rules as the 2 PSLE posters</b>: What/Identify/State/Suggest/Describe/How/Compare/Predict are marked according to what each asks; Explain/Why uses <b>D/E → S/R → L/R only where needed</b>; Relationship, Reliability, Aim and Conclusion follow their own poster rules.';
+  note.innerHTML='AI follows the <b>same command-word rules as the 2 PSLE posters</b>. A second local PSLE audit now checks every AI result so a pupil is not penalised for D/E, S/R or L/R that the question did not actually require.';
   row.insertAdjacentElement('afterend',note);
   const rating=app.querySelector('.rating');
   if(rating){const label=document.createElement('div');label.className='small';label.style.marginTop='10px';label.style.fontWeight='700';label.textContent='Manual override (use only if you disagree with the AI mark):';rating.parentNode.insertBefore(label,rating)}
@@ -34,23 +34,71 @@ function noMissing(v){
   const s=norm(v);
   return !s||s==='none'||s==='nothing'||s==='nil'||s==='no missing ideas'||s==='nothing missing'||s==='no required ideas are missing';
 }
+function questionPolicy(question){
+  const q=String(question||'').trim(),t=q.toLowerCase();
+  const reason=/\b(explain|why|give\s+(?:a\s+)?reason)\b/i.test(q);
+  const direct=/^\s*(what|which|identify|name|state)\b/i.test(q);
+  const compare=/\bcompare\b/i.test(q);
+  const predict=/^\s*predict\b/i.test(q)||/\bpredict what\b/i.test(q);
+  const suggest=/^\s*suggest\b/i.test(q);
+  const describe=/^\s*describe\b/i.test(q);
+  const relationship=/\bstate the relationship\b|\brelationship between\b/i.test(q);
+  const evidence=/\busing (?:the )?(?:data|evidence|results?)\b|\bbased on (?:the )?(?:data|results?)\b|\bfrom (?:the )?(?:data|results?)\b|\bquote\b.*\b(?:value|data|evidence)\b|\bgraph\b|\btable\b|\breadings?\b|\bresults? show\b/i.test(q);
+  const experiment=/\bexperiment|investigat|fair test|variable|results?\b/i.test(q);
+  const directOnly=direct&&!reason;
+  const compareOnly=compare&&!reason;
+  const predictOnly=predict&&!reason;
+  const suggestOnly=suggest&&!reason;
+  const describeOnly=describe&&!reason;
+  return {q,t,reason,directOnly,compareOnly,predictOnly,suggestOnly,describeOnly,relationship,evidence,experiment};
+}
 function internallySaysCorrect(d,payload){
   if(!d||!payload)return false;
-  // If the model's own improved answer is literally the pupil's answer, a missing-category
-  // verdict is self-contradictory and must never be allowed to override the answer.
   const improvedSame=norm(d.improvedAnswer)&&norm(d.improvedAnswer)===norm(payload.answer);
   if(improvedSame)return true;
   const conceptOK=d?.criteria?.conceptCorrect===true||d.conceptCorrect===true;
   if(!conceptOK||!noMissing(d.missing))return false;
   const wording=norm([d.feedback,d.strengths,d.message].filter(Boolean).join(' '));
-  const saysCorrect=/\b(correct and concise|fully correct|correct answer|directly addresses the question|all required|nothing missing|no required)\b/.test(wording);
-  return saysCorrect;
+  return /\b(correct and concise|fully correct|correct answer|directly addresses the question|all required|nothing missing|no required)\b/.test(wording);
 }
-function extractRating(d,payload){
-  if(internallySaysCorrect(d,payload))return 'correct';
+function previousImprovedMatch(payload){
+  if(!lastResult||lastResult.conceptId!==payload.conceptId||lastResult.question!==payload.question)return false;
+  const improved=norm(lastResult.data?.improvedAnswer),answer=norm(payload.answer);
+  return !!(improved&&answer&&improved===answer);
+}
+function rawRating(d){
   if(!d)return null;
   for(const x of [d.rating,d.verdict,d.result,d.category,d.classification,d.status,d.label]){const r=normalizeRating(x);if(r)return r}
   return null;
+}
+function auditedRating(d,payload){
+  if(previousImprovedMatch(payload))return {rate:'correct',reason:'previous-improved'};
+  if(internallySaysCorrect(d,payload))return {rate:'correct',reason:'self-contradiction'};
+  if(!d)return {rate:null,reason:''};
+  const p=questionPolicy(payload.question),c=d.criteria||{},raw=rawRating(d);
+  const conceptOK=c.conceptCorrect===true||d.conceptCorrect===true;
+  const srOK=c.srRequired!==true||c.srMet===true;
+  const lrOK=c.lrRequired!==true||c.lrMet===true;
+
+  // PSLE command-word safety: direct, Compare-only, Predict-only, Suggest-only and
+  // Describe-only questions cannot be failed for a D/E-S/R-L/R component that was not asked.
+  if(conceptOK&&(p.directOnly||p.compareOnly||p.predictOnly||p.suggestOnly||p.describeOnly)){
+    return {rate:'correct',reason:'command-word'};
+  }
+
+  // Relationship questions are judged on the changed/measured-variable relationship, not D/E-S/R-L/R labels.
+  if(conceptOK&&p.relationship&&raw!=='concept')return {rate:'correct',reason:'command-word'};
+
+  // For Explain/Why, S/R is the core. Do not create a separate D/E mark merely because the
+  // question contains a scenario or changed condition. D/E is compulsory only when the wording
+  // actually requires data/evidence/results or an experimental evidence statement.
+  if(raw==='de'&&p.reason&&!p.evidence&&!p.experiment){
+    if(!srOK)return {rate:'sr',reason:'command-word'};
+    if(!lrOK)return {rate:'lr',reason:'command-word'};
+    if(conceptOK)return {rate:'correct',reason:'command-word'};
+  }
+
+  return {rate:raw,reason:''};
 }
 function collectFeedback(d){if(!d)return '';let parts=[];for(const k of ['feedback','missing','strengths','reason','explanation','message']){const v=d[k];if(typeof v==='string'&&v.trim()&&!noMissing(v))parts.push(v.trim())}if(d.improvedAnswer)parts.push('Improved answer: '+d.improvedAnswer);return [...new Set(parts)].join(' ')}
 function ratingTitle(rate){return {correct:'✅ Correct',de:'🟨 D/E missing',sr:'🟧 S/R missing / wrong',lr:'🟪 L/R missing',concept:'❌ Concept not known'}[rate]||'AI result'}
@@ -70,19 +118,30 @@ function currentPayload(studentAnswer){
 function locallyCertainCorrect(payload){
   const q=norm(payload?.question),a=norm(payload?.answer),m=norm(payload?.modelAnswer);
   if(!a)return '';
-  // Direct concept/recall questions: an exact model-answer match cannot be wrong.
+  if(previousImprovedMatch(payload))return 'Correct. This is the improved PSLE answer that the marker itself gave on the previous attempt.';
+
+  // Direct concept/recall questions: exact model-answer match is decisive.
   if(m&&a===m&&q&&typeof BANK!=='undefined'){
     const i=typeof current==='function'?current():0,e=BANK[i]||{};
     if(q===norm(e.phrasePrompt||''))return 'Your answer matches the model answer. Punctuation and capitalisation are ignored.';
   }
-  // Concept 56 transfer question. The previous AI response could say that the water-carrying
-  // tubes / link to the leaves were missing even when those exact ideas were present.
-  if(Number(payload?.conceptId)===56&&q.includes('coloured water')&&q.includes('leaves')&&q.includes('pathway')){
+
+  // Plant-water pathway guard used by both the stem and transport concepts.
+  if(q.includes('coloured water')&&q.includes('leaves')){
     const hasTube=/\bwater carrying tubes?\b|\bxylem\b/.test(a);
     const hasWater=/\bcoloured water\b|\bcolored water\b|\bwater\b/.test(a);
     const hasLeaf=/\bleaf\b|\bleaves\b/.test(a);
     const hasMove=/\btransport(?:ed|s|ing)?\b|\bcarried\b|\bcarry\b|\breach(?:es|ed|ing)?\b/.test(a);
-    if(hasTube&&hasWater&&hasLeaf&&hasMove)return 'Correct. You linked the coloured water to the water-carrying tubes and its movement to the leaves.';
+    if(hasTube&&hasWater&&hasLeaf&&hasMove)return 'Correct. The required pathway is present: coloured water is carried through the water-carrying tubes to the leaves.';
+  }
+
+  // Roots-absorption guard. This is a causal Explain question; repeating a separate D/E statement
+  // is not an extra mark when the answer already links damaged roots to reduced absorption.
+  if(q.includes('damaged roots')&&q.includes('water')&&q.includes('mineral salts')){
+    const hasRoots=/\bdamaged roots?\b|\broot system\b/.test(a);
+    const hasAbsorb=/\babsorb(?:s|ed|ing|tion)?\b/.test(a);
+    const hasWater=/\bwater\b/.test(a),hasMineral=/\bmineral salts?\b/.test(a),hasSoil=/\bsoil\b/.test(a);
+    if(hasRoots&&hasAbsorb&&hasWater&&hasMineral&&hasSoil)return 'Correct. You linked the damaged roots to reduced absorption of water and mineral salts from the soil, which fully answers the Explain question.';
   }
   return '';
 }
@@ -115,9 +174,12 @@ async function markWithAI(){
   try{
     const certain=locallyCertainCorrect(payload);
     if(certain){recordAIRating('correct',certain);setStatus('● AI ready','#166534');return}
-    const data=await requestAI(payload); const rate=extractRating(data,payload); const detail=collectFeedback(data);
-    if(!rate){const b=$id('appFeedback');if(b){b.className='fb warnbox';b.innerHTML='<b>AI replied, but the mark could not be read.</b><br><span class="small">'+escHtml(detail||'Please try again.')+'</span>'};setStatus('● AI response received','#b45309')}
-    else{recordAIRating(rate,detail);setStatus('● AI ready','#166534')}
+    const data=await requestAI(payload); const audit=auditedRating(data,payload); let detail=collectFeedback(data);
+    if(audit.rate==='correct'&&audit.reason==='command-word')detail='Correct after PSLE command-word audit. The first AI pass asked for a D/E, S/R or L/R component that this exact question does not separately require.';
+    if(audit.rate==='correct'&&audit.reason==='previous-improved')detail='Correct. This matches the improved PSLE answer previously supplied by the marker.';
+    if(audit.rate==='correct'&&audit.reason==='self-contradiction')detail='Correct. The AI response was internally contradictory, so the app accepted the scientifically complete answer.';
+    if(!audit.rate){const b=$id('appFeedback');if(b){b.className='fb warnbox';b.innerHTML='<b>AI replied, but the mark could not be read.</b><br><span class="small">'+escHtml(detail||'Please try again.')+'</span>'};setStatus('● AI response received','#b45309')}
+    else{recordAIRating(audit.rate,detail);setStatus('● AI ready','#166534')}
   }catch(err){
     const msg=err&&err.name==='AbortError'?'AI marking timed out. Please try again.':`AI marker unavailable: ${err&&err.message?err.message:err}`;
     const b=$id('appFeedback');if(b){b.className='fb wrong';b.innerHTML='<b>Could not reach the AI marker.</b><br><span class="small">'+escHtml(msg)+'</span>'};setStatus('● AI unavailable','#991b1b')
@@ -132,5 +194,6 @@ async function previewModel(){
 }
 window.PSLE_AI_PREVIEW_MODEL=previewModel;
 window.PSLE_AI_GET_LAST=()=>lastResult;
+window.PSLE_MARKING_AUDIT={questionPolicy,auditedRating,locallyCertainCorrect};
 installUI();window.addEventListener('load',installUI,{once:true});
 })();
