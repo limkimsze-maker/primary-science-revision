@@ -7,6 +7,19 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
+    if (url.pathname === '/health') {
+      const response = await base.fetch(request, env);
+      try {
+        const data = await response.clone().json();
+        return new Response(JSON.stringify({ ...data, resilientMarker: true, markerRetries: 3 }), {
+          status: response.status,
+          headers: response.headers
+        });
+      } catch (_err) {
+        return response;
+      }
+    }
+
     // Only retry the Science answer marker. Other endpoints keep their existing behaviour.
     if (url.pathname !== '/mark' || request.method !== 'POST') {
       return base.fetch(request, env);
