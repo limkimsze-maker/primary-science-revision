@@ -26,7 +26,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#f4f7fb;fon
  const preloadScript=(doc,src)=>{try{const l=doc.createElement('link');l.rel='preload';l.as='script';l.href=src;doc.head.appendChild(l)}catch(_e){}};
  const fail=e=>{console.error(e);msg.textContent='Could not initialise the trainer';errBox.style.display='block';errBox.textContent=String(e&&e.message?e.message:e)};
 
- frame.src='trainer180.html?v=20260906w';
+ frame.src='trainer180.html?v=20260906x';
  frame.addEventListener('load',async()=>{
   try{
    const w=frame.contentWindow,d=frame.contentDocument;
@@ -34,7 +34,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#f4f7fb;fon
    const coreReady=await waitFor(()=>w.eval('typeof BANK!=="undefined" && Array.isArray(BANK) && BANK.length===180 && typeof rec==="function" && typeof save==="function" && typeof buildQueue==="function"'));
    if(!coreReady)throw new Error('The 180-concept core trainer did not finish loading.');
 
-   await loadScript(d,'resources/profile-storage.js?v=20260906w',true);
+   await loadScript(d,'resources/profile-storage.js?v=20260906x',true);
    try{w.eval('S=loadState(); save(); buildQueue(); setPane("phrase");')}catch(e){throw new Error('Could not restore this pupil\'s saved progress: '+e.message)}
 
    try{
@@ -45,31 +45,32 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#f4f7fb;fon
    }catch(_e){}
 
    msg.textContent='Loading Flashcards…';
-   await loadScript(d,'resources/flashcards-stable.js?v=20260906w',true);
+   await loadScript(d,'resources/flashcards-stable.js?v=20260906x',true);
    try{if(typeof w.PSLE_INSTALL_FLASHCARDS==='function')w.PSLE_INSTALL_FLASHCARDS()}catch(_e){}
    const flashReady=await waitFor(()=>d.getElementById('flashcardTab')&&d.getElementById('flashcardPanel'),5000);
    if(!flashReady)throw new Error('Flashcards could not be added.');
-   await loadScript(d,'resources/flashcard-speech-rescue.js?v=20260906w',false);
+   await loadScript(d,'resources/flashcard-speech-rescue.js?v=20260906x',false);
 
    msg.textContent='Ready ✓';await sleep(100);boot.style.display='none';
 
    const variantFiles=[
-    'resources/appvariants/01-diversity-classification.js?v=20260906w',
-    'resources/appvariants/02-plant-structures-functions.js?v=20260906w',
-    'resources/appvariants/03-life-cycles-reproduction.js?v=20260906w',
-    'resources/appvariants/04-human-animal-systems.js?v=20260906w',
-    'resources/appvariants/05-plant-transport-photosynthesis-respiration.js?v=20260906w',
-    'resources/appvariants/06-ecology-adaptations-environment.js?v=20260906w',
-    'resources/appvariants/07-matter-materials-changes-of-state.js?v=20260906w',
-    'resources/appvariants/08-light.js?v=20260906w',
-    'resources/appvariants/09-heat-thermal-expansion.js?v=20260906w',
-    'resources/appvariants/10-electricity-electromagnets-magnets.js?v=20260906w',
-    'resources/appvariants/11-energy-forces.js?v=20260906w'
+    'resources/appvariants/01-diversity-classification.js?v=20260906x',
+    'resources/appvariants/02-plant-structures-functions.js?v=20260906x',
+    'resources/appvariants/03-life-cycles-reproduction.js?v=20260906x',
+    'resources/appvariants/04-human-animal-systems.js?v=20260906x',
+    'resources/appvariants/05-plant-transport-photosynthesis-respiration.js?v=20260906x',
+    'resources/appvariants/06-ecology-adaptations-environment.js?v=20260906x',
+    'resources/appvariants/07-matter-materials-changes-of-state.js?v=20260906x',
+    'resources/appvariants/08-light.js?v=20260906x',
+    'resources/appvariants/09-heat-thermal-expansion.js?v=20260906x',
+    'resources/appvariants/10-electricity-electromagnets-magnets.js?v=20260906x',
+    'resources/appvariants/11-energy-forces.js?v=20260906x'
    ];
    const appCore=[
-    'resources/appvariants/engine.js?v=20260906w',
-    'resources/ai-marker.js?v=20260906w',
-    'resources/application-lite-ui.js?v=20260906w'
+    'resources/appvariants/engine.js?v=20260906x',
+    'resources/ai-fetch-retry.js?v=20260906x',
+    'resources/ai-marker.js?v=20260906x',
+    'resources/application-lite-ui.js?v=20260906x'
    ];
    setTimeout(()=>[...variantFiles,...appCore].forEach(src=>preloadScript(d,src)),250);
 
@@ -81,10 +82,11 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#f4f7fb;fon
     try{
      await Promise.all(variantFiles.map(src=>loadScript(d,src,true)));
      badge.textContent='Building question sets…';
-     await loadScript(d,'resources/appvariants/engine.js?v=20260906w',true);
+     await loadScript(d,'resources/appvariants/engine.js?v=20260906x',true);
+     await loadScript(d,'resources/ai-fetch-retry.js?v=20260906x',true);
      await Promise.all([
-      loadScript(d,'resources/ai-marker.js?v=20260906w',true),
-      loadScript(d,'resources/application-lite-ui.js?v=20260906w',true)
+      loadScript(d,'resources/ai-marker.js?v=20260906x',true),
+      loadScript(d,'resources/application-lite-ui.js?v=20260906x',true)
      ]);
      try{w.eval('render();')}catch(_e){}
      appState='ready';badge.textContent='Application ready ✓';setTimeout(()=>badge.remove(),600);
