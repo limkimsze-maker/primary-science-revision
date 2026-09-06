@@ -12,117 +12,87 @@ function installStyle(){
 }
 
 function chooseVoice(){
-  try{
-    const vs=speechSynthesis.getVoices?.()||[];
-    return vs.find(v=>/^en[-_]GB$/i.test(v.lang||''))||vs.find(v=>/^en/i.test(v.lang||''))||null;
-  }catch(_e){return null}
+  try{const vs=speechSynthesis.getVoices?.()||[];return vs.find(v=>/^en[-_]GB$/i.test(v.lang||''))||vs.find(v=>/^en/i.test(v.lang||''))||null}catch(_e){return null}
 }
 function speakCard(text){
-  const t=String(text||'').trim();
-  if(!t||typeof speechSynthesis==='undefined'||typeof SpeechSynthesisUtterance==='undefined')return;
-  try{
-    speechSynthesis.cancel();
-    const u=new SpeechSynthesisUtterance(t);u.lang='en-GB';u.rate=.86;u.pitch=1;
-    const v=chooseVoice();if(v)u.voice=v;
-    speechSynthesis.speak(u);
-  }catch(_e){}
+  const t=String(text||'').trim();if(!t||typeof speechSynthesis==='undefined'||typeof SpeechSynthesisUtterance==='undefined')return;
+  try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='en-GB';u.rate=.86;u.pitch=1;const v=chooseVoice();if(v)u.voice=v;speechSynthesis.speak(u)}catch(_e){}
 }
-
 function cardMarkup(e,side){
   const answer=side==='answer';
   return `<div class="gf-freeflip-tag">${answer?'ANSWER':'QUESTION'}</div><div class="gf-freeflip-text">${esc(answer?e.phrase:e.phrasePrompt)}</div><div class="gf-freeflip-note">Click the card anytime to see the ${answer?'question':'answer'}.</div>`;
 }
-
-function wireFreeFlip(body,advance){
+function wireFreeFlip(body,advance,label){
   if(body.querySelector('.gf-freeflip'))return;
   const e=(typeof BANK!=='undefined'&&typeof current==='function')?BANK[current()]:null;if(!e)return;
   const pills=body.querySelector('.gf-pillrow')?.outerHTML||'';
-  body.innerHTML=pills+`<div id="gfFreeFlip" class="gf-freeflip" role="button" tabindex="0" aria-label="Flashcard question. Click to show answer."></div><div class="gf-hint">Refer to the question and answer as many times as you need. Move on only when you feel confident.</div><div class="gf-actions"><button id="gfFlashConfident" class="gf-btn gf-confident">I'm confident — Memorise →</button></div>`;
+  body.innerHTML=pills+`<div id="gfFreeFlip" class="gf-freeflip" role="button" tabindex="0" aria-label="Flashcard question. Click to show answer."></div><div class="gf-hint">Refer to the question and answer as many times as you need. Move on only when you feel confident.</div><div class="gf-actions"><button id="gfFlashConfident" class="gf-btn gf-confident">${esc(label||"I'm confident — Memorise →")}</button></div>`;
   const card=$('gfFreeFlip');let side='question';
   const draw=()=>{card.classList.toggle('answer',side==='answer');card.innerHTML=cardMarkup(e,side);card.setAttribute('aria-label',side==='answer'?'Flashcard answer. Click to show question.':'Flashcard question. Click to show answer.')};
   const readSide=()=>speakCard(side==='answer'?e.phrase:`${e.topic||''}. ${e.phrasePrompt||''}`);
   const flip=()=>{side=side==='question'?'answer':'question';draw();readSide()};
-  card.onclick=flip;card.onkeydown=ev=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();flip()}};draw();
-  setTimeout(readSide,80);
+  card.onclick=flip;card.onkeydown=ev=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();flip()}};draw();setTimeout(readSide,80);
   $('gfFlashConfident').onclick=()=>{try{speechSynthesis.cancel()}catch(_e){}advance()};
 }
-
 function advanceFromFront(reveal,revealAction){
   if(advancing)return;advancing=true;
   try{revealAction.call(reveal)}catch(_e){try{reveal.click()}catch(__e){advancing=false;return}}
   try{speechSynthesis.cancel()}catch(_e){}
-  let n=0;
-  const finish=()=>{
-    const right=$('gfRight');
-    if(right){
-      try{const fn=right.onclick;if(typeof fn==='function')fn.call(right);else right.click()}catch(_e){try{right.click()}catch(__e){}}
-      advancing=false;schedule();return;
-    }
-    if(n++<25)setTimeout(finish,20);else{advancing=false;schedule()}
-  };
-  setTimeout(finish,0);
+  let n=0;const finish=()=>{const right=$('gfRight');if(right){try{const fn=right.onclick;if(typeof fn==='function')fn.call(right);else right.click()}catch(_e){try{right.click()}catch(__e){}}advancing=false;schedule();return}if(n++<25)setTimeout(finish,20);else{advancing=false;schedule()}};setTimeout(finish,0);
 }
-
 function enhanceFlash(body){
   if(advancing||body.querySelector('.gf-freeflip'))return;
+  const review=$('guidedFlow')?.dataset?.reviewReturn||'';
+  if(review&&window.PSLE_GUIDED_NAV?.returnFromFlash){
+    wireFreeFlip(body,()=>window.PSLE_GUIDED_NAV.returnFromFlash(),review==='app'?'Return to Application →':'Return to Memorise →');return;
+  }
   const reveal=$('gfReveal');
-  if(reveal){
-    const fn=reveal.onclick;
-    wireFreeFlip(body,()=>advanceFromFront(reveal,fn));
-    return;
-  }
+  if(reveal){const fn=reveal.onclick;wireFreeFlip(body,()=>advanceFromFront(reveal,fn));return}
   const right=$('gfRight');
-  if(right){
-    const fn=right.onclick;
-    wireFreeFlip(body,()=>{if(advancing)return;advancing=true;try{if(typeof fn==='function')fn.call(right);else right.click()}finally{advancing=false;schedule()}});
-  }
+  if(right){const fn=right.onclick;wireFreeFlip(body,()=>{if(advancing)return;advancing=true;try{if(typeof fn==='function')fn.call(right);else right.click()}finally{advancing=false;schedule()}})}
 }
 
-function enhanceSpeech(body){
-  const ta=$('gfRecall');if(!ta||$('gfSpeechRecall'))return;
-  const actions=ta.nextElementSibling?.classList?.contains('gf-actions')?ta.nextElementSibling:body.querySelector('.gf-actions');if(!actions)return;
-  const btn=document.createElement('button');btn.id='gfSpeechRecall';btn.type='button';btn.className='gf-btn gf-muted gf-speech-btn';btn.textContent='🎤 Speak answer';
-  actions.insertBefore(btn,actions.firstChild);
-  const status=document.createElement('div');status.id='gfSpeechStatus';status.className='gf-speech-status';status.textContent='You can type or use speech recognition.';actions.insertAdjacentElement('afterend',status);
+function addRecognition(textareaId,buttonId,statusId,checkId,contextLabel){
+  const ta=$(textareaId);if(!ta||$(buttonId))return;
+  const actions=ta.nextElementSibling?.classList?.contains('gf-actions')?ta.nextElementSibling:ta.parentElement?.querySelector('.gf-actions');if(!actions)return;
+  const btn=document.createElement('button');btn.id=buttonId;btn.type='button';btn.className='gf-btn gf-muted gf-speech-btn';btn.textContent='🎤 Speak answer';
+  const check=$(checkId);if(check&&check.parentElement===actions)actions.insertBefore(btn,check);else actions.insertBefore(btn,actions.firstChild);
+  const status=document.createElement('div');status.id=statusId;status.className='gf-speech-status';status.textContent='You can type or use speech recognition.';actions.insertAdjacentElement('afterend',status);
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(!SR){btn.disabled=true;btn.textContent='🎤 Speech unavailable';status.textContent='Speech recognition is not supported in this browser. You can still type your answer.';return}
-  let recognition=null,listening=false,stopTimer=null;
+  let recognition=null,listening=false,stopTimer=null,base='',committed='';
   const setIdle=()=>{listening=false;btn.classList.remove('listening');btn.textContent='🎤 Speak answer';if(stopTimer){clearTimeout(stopTimer);stopTimer=null}};
   const stop=()=>{try{recognition?.stop()}catch(_e){}setIdle()};
   btn.onclick=()=>{
     if(listening){stop();return}
     try{speechSynthesis.cancel()}catch(_e){}
-    const seed=ta.value.trim();
+    base=ta.value.trim();committed='';
     recognition=new SR();recognition.lang='en-SG';recognition.continuous=true;recognition.interimResults=true;recognition.maxAlternatives=1;
-    recognition.onstart=()=>{listening=true;btn.classList.add('listening');btn.textContent='⏹ Stop listening';status.className='gf-speech-status live';status.textContent='Listening… speak the full Science sentence.'};
+    recognition.onstart=()=>{listening=true;btn.classList.add('listening');btn.textContent='⏹ Stop listening';status.className='gf-speech-status live';status.textContent=`Listening… speak your ${contextLabel} answer.`};
     recognition.onresult=ev=>{
-      let finalText='',interim='';
-      for(let i=0;i<ev.results.length;i++){
-        const t=String(ev.results[i][0]?.transcript||'').trim();
-        if(!t)continue;
-        if(ev.results[i].isFinal)finalText+=(finalText?' ':'')+t;else interim+=(interim?' ':'')+t;
+      let interim='';
+      for(let i=ev.resultIndex;i<ev.results.length;i++){
+        const t=String(ev.results[i][0]?.transcript||'').trim();if(!t)continue;
+        if(ev.results[i].isFinal)committed+=(committed?' ':'')+t;else interim+=(interim?' ':'')+t;
       }
-      ta.value=[seed,finalText,interim].filter(Boolean).join(' ').replace(/\s+/g,' ').trim();
-      ta.dispatchEvent(new Event('input',{bubbles:true}));
+      ta.value=[base,committed,interim].filter(Boolean).join(' ').replace(/\s+/g,' ').trim();ta.dispatchEvent(new Event('input',{bubbles:true}));
       status.className='gf-speech-status live';status.textContent=interim?'Listening…':'Speech entered. Continue speaking or press Stop listening.';
     };
-    recognition.onerror=ev=>{setIdle();status.className='gf-speech-status bad';status.textContent=ev.error==='not-allowed'||ev.error==='service-not-allowed'?'Microphone permission is blocked. Allow microphone access for this site and try again.':ev.error==='no-speech'?'I did not hear anything. Tap Speak answer and try again.':'Speech recognition stopped. You can tap Speak answer to try again.'};
-    recognition.onend=()=>{const hadText=ta.value.trim().length>0;setIdle();if(!status.classList.contains('bad')){status.className='gf-speech-status '+(hadText?'ok':'');status.textContent=hadText?'Speech entered. Check the sentence, then press Check answer.':'Tap Speak answer when you are ready.'}};
-    try{recognition.start();stopTimer=setTimeout(()=>{if(listening)stop()},45000)}catch(_e){setIdle();status.className='gf-speech-status bad';status.textContent='Could not start the microphone. Please allow microphone access and try again.'}
+    recognition.onerror=ev=>{setIdle();status.className='gf-speech-status bad';status.textContent=ev.error==='not-allowed'||ev.error==='service-not-allowed'?'Microphone permission is blocked. Allow microphone access for this site and try again.':ev.error==='no-speech'?'I did not hear anything. Tap Speak answer and try again.':'Speech recognition stopped. Tap Speak answer to try again.'};
+    recognition.onend=()=>{const hadText=ta.value.trim().length>0;setIdle();if(!status.classList.contains('bad')){status.className='gf-speech-status '+(hadText?'ok':'');status.textContent=hadText?'Speech entered. Check your answer, then continue.':'Tap Speak answer when you are ready.'}};
+    try{recognition.start();stopTimer=setTimeout(()=>{if(listening)stop()},45000)}catch(_e){setIdle();status.className='gf-speech-status bad';status.textContent='Could not start the microphone. Allow microphone access and try again.'}
   };
-  const check=$('gfCheckRecall');if(check)check.addEventListener('click',()=>{if(listening)stop()},{capture:true});
+  if(check)check.addEventListener('click',()=>{if(listening)stop()},{capture:true});
 }
-
+function enhanceSpeech(){addRecognition('gfRecall','gfSpeechRecall','gfSpeechStatus','gfCheckRecall','Science sentence')}
+function enhanceAppSpeech(){addRecognition('gfAppAnswer','gfSpeechApp','gfSpeechAppStatus','gfMarkApp','PSLE Science')}
 function enhance(){
-  scheduled=false;if(advancing)return;
-  installStyle();const body=$('gfBody');if(!body)return;
-  if($('gfReveal')||$('gfRight'))enhanceFlash(body);
-  if($('gfRecall'))enhanceSpeech(body);
+  scheduled=false;if(advancing)return;installStyle();const body=$('gfBody');if(!body)return;
+  if($('gfReveal')||$('gfRight')||($('guidedFlow')?.dataset?.stage==='flash'))enhanceFlash(body);
+  if($('gfRecall'))enhanceSpeech();
+  if($('gfAppAnswer'))enhanceAppSpeech();
 }
 function schedule(){if(scheduled)return;scheduled=true;setTimeout(enhance,0)}
-function boot(){
-  const body=$('gfBody');if(!body){setTimeout(boot,80);return}
-  installStyle();new MutationObserver(schedule).observe(body,{childList:true,subtree:true});enhance();
-}
+function boot(){const body=$('gfBody');if(!body){setTimeout(boot,80);return}installStyle();new MutationObserver(schedule).observe(body,{childList:true,subtree:true});enhance()}
 boot();
 })();
