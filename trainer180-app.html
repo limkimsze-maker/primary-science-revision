@@ -15,18 +15,19 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#f4f7fb;fon
 </head>
 <body>
 <iframe id="trainerFrame" title="PSLE Science Structured Mastery"></iframe>
-<div id="boot"><div id="bootCard"><div id="bootMsg">Loading Science trainer…</div><div class="small">Core trainer first · Flashcards next · application tools after</div><div id="errorBox"></div></div></div>
+<div id="boot"><div id="bootCard"><div id="bootMsg">Loading Science trainer…</div><div class="small">Core trainer first · Flashcards next · heavier application tools only when needed</div><div id="errorBox"></div></div></div>
 <script>
 (async()=>{
  const student=(localStorage.getItem('psleScience_active_student')||'').toLowerCase();
  if(!['jerry','javis'].includes(student)){location.replace('signin.html');return}
  const frame=document.getElementById('trainerFrame'),boot=document.getElementById('boot'),msg=document.getElementById('bootMsg'),errBox=document.getElementById('errorBox');
  const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+ const nextFrame=()=>new Promise(r=>requestAnimationFrame(()=>r()));
  const waitFor=(fn,ms=6000)=>new Promise(resolve=>{const start=Date.now();const tick=()=>{let ok=false;try{ok=!!fn()}catch(_e){}if(ok)return resolve(true);if(Date.now()-start>=ms)return resolve(false);setTimeout(tick,80)};tick()});
  const loadScript=(doc,src,critical=false)=>new Promise((resolve,reject)=>{const s=doc.createElement('script');s.src=src;s.async=false;s.onload=()=>resolve(true);s.onerror=()=>critical?reject(new Error('Could not load '+src)):resolve(false);doc.head.appendChild(s)});
  const fail=e=>{console.error(e);msg.textContent='Could not initialise the trainer';errBox.style.display='block';errBox.textContent=String(e&&e.message?e.message:e)};
 
- frame.src='trainer180.html?v=20260906q';
+ frame.src='trainer180.html?v=20260906r';
  frame.addEventListener('load',async()=>{
   try{
    const w=frame.contentWindow,d=frame.contentDocument;
@@ -34,13 +35,9 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#f4f7fb;fon
    const coreReady=await waitFor(()=>w.eval('typeof BANK!=="undefined" && Array.isArray(BANK) && BANK.length===180 && typeof rec==="function" && typeof save==="function" && typeof buildQueue==="function"'),7000);
    if(!coreReady)throw new Error('The 180-concept core trainer did not finish loading.');
 
-   // Activate per-pupil storage after the normal core page has loaded, then reload
-   // the in-memory state from the pupil-scoped key. This avoids rewriting the whole
-   // document while scripts are executing, which was causing Chrome to hang.
-   await loadScript(d,'resources/profile-storage.js?v=20260906q',true);
+   await loadScript(d,'resources/profile-storage.js?v=20260906r',true);
    try{w.eval('S=loadState(); save(); buildQueue(); setPane("phrase");')}catch(e){throw new Error('Could not restore this pupil\'s saved progress: '+e.message)}
 
-   // Match the learner-friendly labels used by the app without touching the core logic.
    try{
     const q=d.getElementById('queueMode');if(q){[...q.options].forEach(o=>{if(o.value==='red')o.textContent='🔴 Focus only';if(o.value==='amber')o.textContent='⚪ Not Studied Yet only';if(o.value==='green')o.textContent='🟢 Already Good only';if(o.value==='all')o.textContent='All 180'})}
     const a=d.getElementById('markAuto');if(a)a.textContent='⚪ Not Studied Yet';
@@ -49,36 +46,53 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#f4f7fb;fon
    }catch(_e){}
 
    msg.textContent='Loading Flashcards…';
-   await loadScript(d,'resources/flashcards-stable.js?v=20260906q',true);
+   await loadScript(d,'resources/flashcards-stable.js?v=20260906r',true);
    try{if(typeof w.PSLE_INSTALL_FLASHCARDS==='function')w.PSLE_INSTALL_FLASHCARDS()}catch(_e){}
    const flashReady=await waitFor(()=>d.getElementById('flashcardTab')&&d.getElementById('flashcardPanel'),5000);
    if(!flashReady)throw new Error('Flashcards could not be added.');
 
-   // Make the usable core available immediately. Do not hold the whole page hostage
-   // while the heavier application enhancements load.
    msg.textContent='Flashcards ready ✓';
-   await sleep(180);
-   boot.style.display='none';
+   await sleep(120);boot.style.display='none';
 
-   const appFiles=['01-diversity-classification.js','02-plant-structures-functions.js','03-life-cycles-reproduction.js','04-human-animal-systems.js','05-plant-transport-photosynthesis-respiration.js','06-ecology-adaptations-environment.js','07-matter-materials-changes-of-state.js','08-light.js','09-heat-thermal-expansion.js','10-electricity-electromagnets-magnets.js','11-energy-forces.js'];
-   const essential=[];
-   appFiles.forEach(f=>essential.push('resources/appvariants/'+f+'?v=20260906q'));
-   essential.push('resources/audit180/core.js?v=20260906q');
-   appFiles.forEach(f=>essential.push('resources/audit180/'+f+'?v=20260906q'));
-   essential.push(
-    'resources/appvariants/engine.js?v=20260906q',
-    'resources/psle-style-questions.js?v=20260906q',
-    'resources/priority-colors.js?v=20260906q',
-    'resources/filter-position.js?v=20260906q',
-    'resources/ai-marker.js?v=20260906q',
-    'resources/memorisation-flow.js?v=20260906q',
-    'resources/answer-normalization.js?v=20260906q',
-    'resources/check-next.js?v=20260906q',
-    'resources/learning-cycle.js?v=20260906q',
-    'resources/application-answer-ui.js?v=20260906q'
-   );
-   // Yield between files so Chrome remains responsive even on slower machines.
-   for(const src of essential){await sleep(20);await loadScript(d,src,false)}
+   // Do NOT load the large application/audit stack in the background. It was making
+   // Chrome busy while the pupil was trying to use Flashcards. Load it only when the
+   // pupil actually enters Written Application.
+   let enhancementsState='idle';
+   async function loadEnhancements(){
+    if(enhancementsState!=='idle')return;
+    enhancementsState='loading';
+    const badge=d.createElement('div');badge.id='appEnhanceStatus';badge.style.cssText='position:fixed;right:12px;bottom:12px;z-index:99999;padding:8px 11px;border-radius:10px;background:#172033;color:#fff;font:700 12px Arial;box-shadow:0 4px 18px #0003';badge.textContent='Loading enhanced Application tools…';d.body.appendChild(badge);
+    try{
+     const appFiles=['01-diversity-classification.js','02-plant-structures-functions.js','03-life-cycles-reproduction.js','04-human-animal-systems.js','05-plant-transport-photosynthesis-respiration.js','06-ecology-adaptations-environment.js','07-matter-materials-changes-of-state.js','08-light.js','09-heat-thermal-expansion.js','10-electricity-electromagnets-magnets.js','11-energy-forces.js'];
+     const files=[];
+     appFiles.forEach(f=>files.push('resources/appvariants/'+f+'?v=20260906r'));
+     files.push('resources/audit180/core.js?v=20260906r');
+     appFiles.forEach(f=>files.push('resources/audit180/'+f+'?v=20260906r'));
+     files.push(
+      'resources/appvariants/engine.js?v=20260906r',
+      'resources/psle-style-questions.js?v=20260906r',
+      'resources/priority-colors.js?v=20260906r',
+      'resources/filter-position.js?v=20260906r',
+      'resources/ai-marker.js?v=20260906r',
+      'resources/memorisation-flow.js?v=20260906r',
+      'resources/answer-normalization.js?v=20260906r',
+      'resources/check-next.js?v=20260906r',
+      'resources/learning-cycle.js?v=20260906r',
+      'resources/application-answer-ui.js?v=20260906r'
+     );
+     for(let i=0;i<files.length;i++){
+      await loadScript(d,files[i],false);
+      // Give Chrome a rendering opportunity after every file. This keeps the tab
+      // responsive instead of executing the entire enhancement stack in one burst.
+      await nextFrame();
+      if(i%5===4)await sleep(25);
+     }
+     enhancementsState='ready';badge.textContent='Application tools ready ✓';setTimeout(()=>badge.remove(),900);
+    }catch(e){
+     enhancementsState='failed';badge.textContent='Application extras could not load — basic mode still works';badge.style.background='#991b1b';console.error(e);setTimeout(()=>badge.remove(),3500);
+    }
+   }
+   d.getElementById('appTab')?.addEventListener('click',()=>{loadEnhancements()},{once:true});
   }catch(e){fail(e)}
  },{once:true});
 })();
