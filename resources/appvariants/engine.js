@@ -22,11 +22,11 @@ function applyPaperProfile(){
 applyPaperProfile();
 function uq(a){let s=new Set;return a.filter(x=>{let k=(x.question||"").toLowerCase().trim();if(!k||s.has(k))return false;s.add(k);return true})}
 BANK.forEach(e=>{
- const g=[
-  {question:e.applicationQuestion,kind:"Core"},
-  {question:`A pupil is answering a PSLE Science question about ${e.topic.toLowerCase()}. State the precise science idea that should be used.`,kind:"Reworded"},
-  {question:`A pupil gives an incomplete explanation about ${e.topic.toLowerCase()}. Write a complete scientific statement that would earn the science-concept mark.`,kind:"Precision"}
- ];
+ // Keep one direct recall/concept question in the same command-word style as the book prompt,
+ // then add the hand-written PSLE-style transfer/context questions for that concept.
+ // Avoid meta-prompts such as "A pupil is answering a PSLE question..." because pupils do not
+ // normally see that wording in the examination.
+ const g=[{question:e.phrasePrompt,kind:"Recall"}];
  const sp=(V[e.id]||[]).map(x=>({question:x.q,kind:x.k||"Transfer"}));
  e.applicationVariants=uq([...g,...sp]).slice(0,6).map(x=>({question:x.question,kind:x.kind,rubric:e.rubric,modelApplicationAnswer:e.modelApplicationAnswer}));
 });
@@ -60,8 +60,8 @@ function newQ(){let i=current();fresh(i);$("appAnswer").value="";$("appFeedback"
 function rubric(){let v=vv(current()),b=$("rubricBox");if(b.classList.contains("hide")){b.innerHTML="<b>Key ideas</b><ul>"+v.rubric.map(x=>`<li>${esc(x)}</li>`).join("")+"</ul>";b.classList.remove("hide");$("rubricBtn").textContent="Hide Key Ideas"}else{b.classList.add("hide");$("rubricBtn").textContent="Show Key Ideas"}}
 function model(){let i=current(),e=BANK[i],v=vv(i),b=$("modelAppBox");if(b.classList.contains("hide")){b.innerHTML=`<b>Audited book-backed science core</b><br><strong>${esc(v.modelApplicationAnswer)}</strong><div class="small" style="margin-top:8px">Source: ${esc(e.bookRef)}. Adapt this core to the exact context. Add D/E and L/R only when the question requires them. Scientifically equivalent wording is acceptable.</div>`;b.classList.remove("hide");$("modelAppBtn").textContent="Hide Science Core"}else{b.classList.add("hide");$("modelAppBtn").textContent="Show Science Core"}}
 let app=$("appPane"),a=app.querySelector(".actions"),row=document.createElement("div");row.className="actions";row.innerHTML='<button class="primary" id="freshAppBtn">🔄 New Application Question</button><span id="variantNote" class="small"></span>';a.before(row);$("freshAppBtn").onclick=newQ;$("rubricBtn").onclick=rubric;$("modelAppBtn").onclick=model;$("modelAppBtn").textContent="Show Science Core";
-let sub=document.querySelector("header .sub");if(sub)sub.innerHTML='<b>180 re-audited Science concepts</b> · original 108-page book photos checked page by page · <b>4–6 application questions per concept</b> · past-paper/remediation profile applied';
-let note=app.querySelector(".mode-note");if(note)note.innerHTML='<b>Written Application:</b> each concept has <b>4–6 fixed question variants</b>. Tap <b>New Application Question</b> for another context. Exact wording is not required. Start with the command word. Use <b>D/E → S/R → L/R only when the question actually requires those parts</b>. The displayed Science core has been audited against the original book photos.';
+let sub=document.querySelector("header .sub");if(sub)sub.innerHTML='<b>180 re-audited Science concepts</b> · original 108-page book photos checked page by page · <b>direct recall + PSLE-style transfer questions</b> · past-paper/remediation profile applied';
+let note=app.querySelector(".mode-note");if(note)note.innerHTML='<b>Written Application:</b> each concept keeps a <b>direct recall/concept question</b> plus its available <b>PSLE-style transfer questions</b>. Tap <b>New Application Question</b> for another question. Exact wording is not required. Start with the command word. Use <b>D/E → S/R → L/R only when the question actually requires those parts</b>.';
 
 // Workflow improvement: after a correct Exact Recall attempt, move immediately to
 // the Written Application question for the SAME concept. Learning/gaps/initials modes
