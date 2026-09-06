@@ -2,6 +2,7 @@
 const ENDPOINT='https://primary-science-ai-marker.limkimsze-maker.workers.dev/mark';
 const $id=id=>document.getElementById(id);
 const escHtml=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const norm=s=>String(s??'').toLowerCase().replace(/[’‘]/g,"'").replace(/[^a-z0-9]+/g,' ').trim().replace(/\s+/g,' ');
 let lastResult=null;
 
 function installUI(){
@@ -12,7 +13,7 @@ function installUI(){
   row.innerHTML='<button class="primary" id="aiMarkBtn">🤖 AI Mark My Answer</button><span id="aiStatus" class="small" style="font-weight:700;color:#166534">● AI ready</span>';
   answer.insertAdjacentElement('afterend',row);
   const note=document.createElement('div'); note.className='small'; note.id='aiMarkNote'; note.style.marginTop='6px';
-  note.innerHTML='AI follows the <b>same command-word rules as the 2 PSLE posters</b>: What/Identify/Suggest/Describe/How are marked according to what each asks; Explain/Why uses <b>D/E → S/R → L/R only where needed</b>; Relationship, Reliability, Aim and Conclusion follow their poster rules too.';
+  note.innerHTML='AI follows the <b>same command-word rules as the 2 PSLE posters</b>: What/Identify/State/Suggest/Describe/How/Compare/Predict are marked according to what each asks; Explain/Why uses <b>D/E → S/R → L/R only where needed</b>; Relationship, Reliability, Aim and Conclusion follow their own poster rules.';
   row.insertAdjacentElement('afterend',note);
   const rating=app.querySelector('.rating');
   if(rating){const label=document.createElement('div');label.className='small';label.style.marginTop='10px';label.style.fontWeight='700';label.textContent='Manual override (use only if you disagree with the AI mark):';rating.parentNode.insertBefore(label,rating)}
@@ -29,8 +30,30 @@ function normalizeRating(v){
   if(s==='concept'||s.includes('concept'))return 'concept';
   return null;
 }
-function extractRating(d){if(!d)return null;for(const x of [d.rating,d.verdict,d.result,d.category,d.classification,d.status,d.label]){const r=normalizeRating(x);if(r)return r}return null}
-function collectFeedback(d){if(!d)return '';let parts=[];for(const k of ['feedback','missing','strengths','reason','explanation','message']){const v=d[k];if(typeof v==='string'&&v.trim())parts.push(v.trim())}if(d.improvedAnswer)parts.push('Improved answer: '+d.improvedAnswer);return [...new Set(parts)].join(' ')}
+function noMissing(v){
+  const s=norm(v);
+  return !s||s==='none'||s==='nothing'||s==='nil'||s==='no missing ideas'||s==='nothing missing'||s==='no required ideas are missing';
+}
+function internallySaysCorrect(d,payload){
+  if(!d||!payload)return false;
+  const conceptOK=d?.criteria?.conceptCorrect===true||d.conceptCorrect===true;
+  if(!conceptOK||!noMissing(d.missing))return false;
+  const improvedSame=norm(d.improvedAnswer)&&norm(d.improvedAnswer)===norm(payload.answer);
+  const wording=norm([d.feedback,d.strengths,d.message].filter(Boolean).join(' '));
+  const saysCorrect=/\b(correct and concise|fully correct|correct answer|directly addresses the question|all required|nothing missing|no required)\b/.test(wording);
+  return improvedSame||saysCorrect;
+}
+function extractRating(d,payload){
+  // Guard against an internally contradictory model response. If the AI says the concept
+  // is correct, says nothing is missing, and its own improved answer is the pupil's answer
+  // (or its written feedback explicitly calls the answer correct), it cannot also be graded
+  // D/E, S/R or L/R missing.
+  if(internallySaysCorrect(d,payload))return 'correct';
+  if(!d)return null;
+  for(const x of [d.rating,d.verdict,d.result,d.category,d.classification,d.status,d.label]){const r=normalizeRating(x);if(r)return r}
+  return null;
+}
+function collectFeedback(d){if(!d)return '';let parts=[];for(const k of ['feedback','missing','strengths','reason','explanation','message']){const v=d[k];if(typeof v==='string'&&v.trim()&&!noMissing(v))parts.push(v.trim())}if(d.improvedAnswer)parts.push('Improved answer: '+d.improvedAnswer);return [...new Set(parts)].join(' ')}
 function ratingTitle(rate){return {correct:'✅ Correct',de:'🟨 D/E missing',sr:'🟧 S/R missing / wrong',lr:'🟪 L/R missing',concept:'❌ Concept not known'}[rate]||'AI result'}
 function currentPayload(studentAnswer){
   const i=typeof current==='function'?current():0; const e=(typeof BANK!=='undefined'&&BANK[i])?BANK[i]:{};
@@ -72,7 +95,7 @@ async function markWithAI(){
   const btn=$id('aiMarkBtn'); btn.disabled=true; btn.textContent='🤖 AI marking…'; setStatus('● AI marking…','#b45309');
   const payload=currentPayload(student);
   try{
-    const data=await requestAI(payload); const rate=extractRating(data); const detail=collectFeedback(data);
+    const data=await requestAI(payload); const rate=extractRating(data,payload); const detail=collectFeedback(data);
     if(!rate){const b=$id('appFeedback');if(b){b.className='fb warnbox';b.innerHTML='<b>AI replied, but the mark could not be read.</b><br><span class="small">'+escHtml(detail||'Please try again.')+'</span>'};setStatus('● AI response received','#b45309')}
     else{recordAIRating(rate,detail);setStatus('● AI ready','#166534')}
   }catch(err){
