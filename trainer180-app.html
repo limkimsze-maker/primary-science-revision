@@ -16,10 +16,10 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#f4f7fb;fon
 <body>
 <iframe id="trainerFrame" title="PSLE Science Structured Mastery"></iframe>
 <button id="switchStudent" type="button">👤 Jerry / Javis</button>
-<div id="boot"><div id="bootCard"><div id="bootMsg">Loading Science trainer…</div><div class="small">One concept: Recall → Memorise → Apply</div><div id="errorBox"></div></div></div>
+<div id="boot"><div id="bootCard"><div id="bootMsg">Loading Science trainer…</div><div class="small">192 items · Recall → Memorise → Apply</div><div id="errorBox"></div></div></div>
 <script>
 (async()=>{
- const V='20260906zi';
+ const V='20260906zj';
  document.getElementById('switchStudent').onclick=()=>location.replace('signin.html?v='+V);
  const student=(localStorage.getItem('psleScience_active_student')||'').toLowerCase();
  if(!['jerry','javis'].includes(student)){location.replace('signin.html?v='+V);return}
@@ -41,7 +41,8 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#f4f7fb;fon
    await loadScript(d,'resources/profile-storage.js?v='+V,true);
    try{w.eval('S=loadState(); save(); buildQueue(); setPane("phrase");')}catch(e){throw new Error('Could not restore saved progress: '+e.message)}
 
-   msg.textContent='Loading study path…';
+   msg.textContent='Loading 180 concepts + 12 Process Skills…';
+   await loadScript(d,'resources/process-skills.js?v='+V,true);
    await loadScript(d,'resources/flashcards-stable.js?v='+V,true);
    try{if(typeof w.PSLE_INSTALL_FLASHCARDS==='function')w.PSLE_INSTALL_FLASHCARDS()}catch(_e){}
    await loadScript(d,'resources/flashcard-speech-rescue.js?v='+V,false);
@@ -82,6 +83,8 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#f4f7fb;fon
    if(!await waitFor(()=>d.getElementById('guidedFlow'),5000))throw new Error('The guided study path did not initialise.');
    await loadScript(d,'resources/guided-flow-flip-speech.js?v='+V,true);
    await loadScript(d,'resources/memorise-mistake-feedback.js?v='+V,true);
+   await loadScript(d,'resources/guided-process-merge.js?v='+V,true);
+   if(!await waitFor(()=>w.PSLE_PROCESS_MERGE,5000))throw new Error('Process Skills did not merge into the study path.');
    await loadScript(d,'resources/guided-progress-sidebar.js?v='+V,true);
    msg.textContent='Ready ✓';await sleep(100);boot.style.display='none';
   }catch(e){fail(e)}
