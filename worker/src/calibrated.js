@@ -103,16 +103,30 @@ SOURCE HIERARCHY:
 3. The worked answer pages packaged with the uploaded papers are from Educational Publishing House (EPH), not official SEAB marking schemes. Treat them only as secondary structural calibration. Never let publisher wording override the gold-standard revision bank.
 4. The teacher's CER slides are also a secondary structure source. Map their function into D/E-S/R-L/R without teaching a second framework to the pupil.
 
+COMMAND-WORD-FIRST RULE:
+Before marking, FIRST identify what the question actually asks. THEN decide which answer components are required. Never force D/E-S/R-L/R onto every question.
+- State / Name / Identify / What / Which, when they are direct recall or concept questions: mark the required fact, term, property, relationship or science concept only. Set deRequired=false and lrRequired=false unless the wording explicitly asks for evidence/comparison or a linked result.
+- Explain / Why / Give a reason: S/R is normally required. D/E is required only when the explanation depends on data, observation, setup, a changed condition, comparison, graph/table/diagram evidence or experimental results. L/R is required only when the pupil still needs to link the reasoning to the specific outcome asked.
+- Describe / How: follow exactly what is being described. Do not automatically turn it into an Explain question.
+- Predict: require the prediction; require S/R only when the question also asks for a reason/explanation.
+- Compare: require a direct comparison of the named quantities/features. Do not add unrelated D/E-S/R-L/R requirements.
+- Relationship: state the changed variable, measured variable and direction of the relationship. If the trend changes, use separate relationship statements.
+- Aim / What is the aim / Find out if / Find out which / Find out how: identify what the investigation is finding out from the changed and measured variables. Do not force D/E-S/R-L/R.
+- Conclusion: answer what the results show. Use the actual results/relationship when the question requires them; do not force an explanation unless asked.
+- Reliability: repeat trials/readings and use repeated results/average when appropriate to the question.
+- Accuracy: use suitable apparatus/procedure and closeness to the actual value; do not confuse accuracy with reliability.
+
 D/E-S/R-L/R:
 - D/E = actual data, observation, setup, changed condition, graph/table value, diagram evidence or explicit comparison from THIS question.
 - S/R = the scientific principle or causal mechanism that explains the evidence. Preserve the gold-standard Primary Science terminology and key words.
 - L/R = the requested conclusion, outcome or link back, ONLY when it still needs to be stated.
 - Do not force all three parts into every answer.
 - If the claim/result is already explicitly supplied in the question and merely repeating it adds no scientific content, set lrRequired=false. D/E + S/R can be a complete answer.
+- For a direct recall/concept question, a correct concept-only answer can be fully correct with deRequired=false, srRequired=false or true only as the command word requires, and lrRequired=false.
 - Do not classify a scientific rule as D/E just because a CER slide labelled it Evidence. Classify by function.
 
 PSLE CALIBRATION RULES:
-- Obey the command word first. State/Name/Identify can be direct. Explain/Why normally needs S/R. Evidence/data questions require question-specific D/E. Compare questions must cover both sides when the comparison itself is assessed.
+- Obey the command word first.
 - When values are given and the question says 'using evidence' or equivalent, quote the relevant values or make an explicit numerical/observational comparison.
 - For relationship questions, state changed variable versus measured variable and the direction. If the trend changes, state separate relationships.
 - For fair-test/design questions, identify the changed variable and measured variable from the question and keep other relevant variables constant. Use a control setup only when comparison with/without a factor is genuinely required.
@@ -120,6 +134,7 @@ PSLE CALIBRATION RULES:
 - Compare both subjects explicitly when asked to compare; a one-sided description is incomplete unless the wording itself makes the comparison unambiguous.
 - Do not reward repeated claims as a substitute for missing evidence or reasoning.
 - Do not demand extra science beyond the question and supplied gold-standard rubric.
+- A concise answer that fully satisfies the command word and scoring ideas must be accepted even if a longer model answer exists.
 
 TOPIC CALIBRATION:
 - Magnets: movement/attraction/repulsion observed = D/E; like poles repel/unlike poles attract or magnetic-material rule = S/R.
@@ -140,23 +155,37 @@ TOPIC CALIBRATION:
 `;
 
 async function trainingModel(env, data) {
-  const isExperiment = data.conceptId >= 90;
   const system = `You write high-safety Singapore Primary 6 PSLE Science training answers.
 
 ${SOURCE_AND_MARKING_RULES}
 
 TRAINING RULES:
-1. First decide whether a D/E-S/R-L/R frame is genuinely useful. Do not force it into State/Name/Identify/simple relationship questions.
-2. For Explain/Why/Evidence/Compare questions, frameNeeded is usually true when evidence/comparison plus scientific reasoning is needed.
-3. frameNeeded=true does NOT mean all three boxes must be filled. If the claim/result is already in the question and repetition adds no mark, leave lr empty.
-4. For ordinary Science concepts 1-89, DO NOT paraphrase the supplied VERBATIM memorised explanation. The server will use it unchanged as S/R. Generate D/E and only the L/R that is genuinely needed.
-5. For experiment frameworks 90-97, fill the supplied framework with the actual variables/results. Do not leave blanks.
-6. Use actual values/observations/comparisons where the question provides them.
-7. Keep the answer concise but complete and safe for a pupil to imitate.
-8. keywords must be a comma-separated list of important scientific words/phrases to protect.
-9. Never introduce science beyond the question, gold-standard verbatim and rubric.`;
+1. Identify the command word/question type first.
+2. For State/Name/Identify/direct What/Which recall questions, give a concise direct science answer. Do not manufacture D/E or L/R.
+3. For Explain/Why/Give-a-reason questions, use D/E-S/R-L/R only to the extent the question genuinely needs those parts.
+4. frameNeeded=true does NOT mean all three boxes must be filled. If D/E is not required, leave de empty. If the result is already supplied or no link-back is needed, leave lr empty.
+5. For all 180 Science concepts, preserve the supplied VERBATIM gold-standard science wording when it is the correct S/R. Do not assume concept numbers 90+ are experiment-framework IDs; the current bank contains 180 ordinary Science concepts.
+6. Use actual values/observations/comparisons where the question provides them and asks for evidence.
+7. For Aim/Find out/Conclusion/Relationship/Reliability/Accuracy questions, answer according to that process-skill demand rather than forcing the explanation frame.
+8. Keep the answer concise but complete and safe for a pupil to imitate.
+9. keywords must be a comma-separated list of important scientific words/phrases to protect.
+10. Never introduce science beyond the question, gold-standard verbatim and rubric.`;
 
-  const user = `CONCEPT ID: ${data.conceptId}\nTYPE: ${isExperiment ? 'EXPERIMENT FRAMEWORK' : 'SCIENCE EXPLANATION'}\nTOPIC: ${data.topic}\n\nQUESTION:\n${data.question}\n\nGOLD-STANDARD VERBATIM:\n${data.verbatim}\n\nGOLD-STANDARD SCORING IDEAS:\n- ${data.rubric.join('\n- ')}\n\nOLDER APPLIED ANSWER (reference only):\n${data.modelAnswer}`;
+  const user = `CONCEPT ID: ${data.conceptId}
+TYPE: SCIENCE CONCEPT / APPLICATION
+TOPIC: ${data.topic}
+
+QUESTION:
+${data.question}
+
+GOLD-STANDARD VERBATIM:
+${data.verbatim}
+
+GOLD-STANDARD SCORING IDEAS:
+- ${data.rubric.join('\n- ')}
+
+OLDER APPLIED ANSWER (reference only):
+${data.modelAnswer}`;
 
   const out = await runStructured(env, [{role:'system',content:system},{role:'user',content:user}], TRAINING_SCHEMA, 750);
   const frameNeeded = out.frameNeeded === true;
@@ -166,23 +195,8 @@ TRAINING RULES:
   const directAnswer = text(out.directAnswer, 1800);
   const keywords = text(out.keywords, 1000);
   const note = text(out.note, 600);
+  const sr = appliedFramework || data.verbatim;
 
-  if (isExperiment) {
-    const sr = appliedFramework || data.verbatim;
-    return {
-      frameNeeded,
-      isExperiment: true,
-      de,
-      sr,
-      lr,
-      verbatimFramework: data.verbatim,
-      fullAnswer: text(frameNeeded ? [de,sr,lr].filter(Boolean).join(' ') : (directAnswer || sr || data.modelAnswer), 3000),
-      keywords,
-      note
-    };
-  }
-
-  const sr = data.verbatim;
   return {
     frameNeeded,
     isExperiment: false,
@@ -206,7 +220,9 @@ export default {
         ok: true,
         service: 'PSLE Science AI Marker',
         model: 'llama-3.1-8b-instruct-fast-json',
-        calibration: 6,
+        calibration: 7,
+        commandWordFirst: true,
+        bank180: true,
         trainingModels: true,
         goldStandardBook: true,
         cerStructureIntegrated: true,
@@ -250,19 +266,36 @@ export default {
 ${SOURCE_AND_MARKING_RULES}
 
 APPLICATION MARKING:
+- FIRST identify the command word/question type, then decide deRequired, srRequired and lrRequired. Never decide those requirements merely because the app displays a D/E-S/R-L/R teaching frame.
+- For direct recall/concept questions (State/Name/Identify/direct What/Which), a scientifically correct concept answer is enough. Normally set deRequired=false and lrRequired=false. Do not penalise the pupil for not giving evidence or a link-back that was never asked for.
+- For Explain/Why/Give-a-reason questions, require S/R. Add D/E only when the question genuinely depends on question-specific evidence/observation/comparison/setup/data. Add L/R only when the reasoning still needs to be linked to the asked result.
+- For Predict, Compare, Relationship, Aim/Find out, Conclusion, Reliability and Accuracy questions, follow the specific command-word rules above rather than forcing the explanation frame.
 - Application answers do not need to match the model or memorised sentence word-for-word. Accept scientifically equivalent wording and different sentence order when the required science is present.
 - conceptCorrect=false only for a genuine misconception or when the relevant concept is absent/wrong.
-- Set deRequired=true only when the question genuinely depends on observation/data/comparison/setup evidence. If required, deMet=true when the pupil clearly states the relevant evidence in ordinary words.
-- Set srRequired=true for Explain/Why when a scientific concept or causal mechanism is genuinely needed. Equivalent wording is acceptable but the essential scientific idea/cause-effect link must be present.
-- Set lrRequired=true only when the result/conclusion still needs to be stated. If the claim/result is already explicitly in the question and repeating it adds no content, lrRequired=false.
 - If all genuinely required components are met and the science is correct, the answer must be Correct.
 - Do not penalise grammar unless it changes the science.
-- improvedAnswer is a teaching answer: use question-specific D/E, the precise gold-standard S/R wording whenever it fits, and L/R only when needed.
+- improvedAnswer is a teaching answer that should be no longer than needed for full credit. Use D/E, the precise gold-standard S/R wording and L/R only when each is genuinely required.
 - If the question asks for evidence from results, use actual values or explicit comparisons when available.
 - If the question asks to compare, cover both sides.
 - Do not treat the EPH worked answers as official mark schemes or require their exact phrasing.`;
 
-    const user = `CONCEPT ID: ${data.conceptId}\nTOPIC: ${data.topic}\n\nQUESTION:\n${data.question}\n\nPUPIL ANSWER:\n${data.pupilAnswer}\n\nGOLD-STANDARD VERBATIM CORE:\n${data.verbatim}\n\nGOLD-STANDARD SCORING IDEAS:\n- ${data.rubric.join('\n- ')}\n\nOLDER APPLIED ANSWER (reference only):\n${data.modelAnswer}`;
+    const user = `CONCEPT ID: ${data.conceptId}
+TOPIC: ${data.topic}
+
+QUESTION:
+${data.question}
+
+PUPIL ANSWER:
+${data.pupilAnswer}
+
+GOLD-STANDARD VERBATIM CORE:
+${data.verbatim}
+
+GOLD-STANDARD SCORING IDEAS:
+- ${data.rubric.join('\n- ')}
+
+OLDER APPLIED ANSWER (reference only):
+${data.modelAnswer}`;
 
     try {
       const out = await runStructured(env, [{role:'system',content:system},{role:'user',content:user}], EVAL_SCHEMA, 900);
