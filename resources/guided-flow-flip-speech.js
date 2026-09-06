@@ -11,6 +11,23 @@ function installStyle(){
   `;document.head.appendChild(s);
 }
 
+function chooseVoice(){
+  try{
+    const vs=speechSynthesis.getVoices?.()||[];
+    return vs.find(v=>/^en[-_]GB$/i.test(v.lang||''))||vs.find(v=>/^en/i.test(v.lang||''))||null;
+  }catch(_e){return null}
+}
+function speakCard(text){
+  const t=String(text||'').trim();
+  if(!t||typeof speechSynthesis==='undefined'||typeof SpeechSynthesisUtterance==='undefined')return;
+  try{
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(t);u.lang='en-GB';u.rate=.86;u.pitch=1;
+    const v=chooseVoice();if(v)u.voice=v;
+    speechSynthesis.speak(u);
+  }catch(_e){}
+}
+
 function cardMarkup(e,side){
   const answer=side==='answer';
   return `<div class="gf-freeflip-tag">${answer?'ANSWER':'QUESTION'}</div><div class="gf-freeflip-text">${esc(answer?e.phrase:e.phrasePrompt)}</div><div class="gf-freeflip-note">Click the card anytime to see the ${answer?'question':'answer'}.</div>`;
@@ -23,9 +40,11 @@ function wireFreeFlip(body,advance){
   body.innerHTML=pills+`<div id="gfFreeFlip" class="gf-freeflip" role="button" tabindex="0" aria-label="Flashcard question. Click to show answer."></div><div class="gf-hint">Refer to the question and answer as many times as you need. Move on only when you feel confident.</div><div class="gf-actions"><button id="gfFlashConfident" class="gf-btn gf-confident">I'm confident — Memorise →</button></div>`;
   const card=$('gfFreeFlip');let side='question';
   const draw=()=>{card.classList.toggle('answer',side==='answer');card.innerHTML=cardMarkup(e,side);card.setAttribute('aria-label',side==='answer'?'Flashcard answer. Click to show question.':'Flashcard question. Click to show answer.')};
-  const flip=()=>{side=side==='question'?'answer':'question';draw()};
+  const readSide=()=>speakCard(side==='answer'?e.phrase:`${e.topic||''}. ${e.phrasePrompt||''}`);
+  const flip=()=>{side=side==='question'?'answer':'question';draw();readSide()};
   card.onclick=flip;card.onkeydown=ev=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();flip()}};draw();
-  $('gfFlashConfident').onclick=advance;
+  setTimeout(readSide,80);
+  $('gfFlashConfident').onclick=()=>{try{speechSynthesis.cancel()}catch(_e){}advance()};
 }
 
 function advanceFromFront(reveal,revealAction){
@@ -72,6 +91,7 @@ function enhanceSpeech(body){
   const stop=()=>{try{recognition?.stop()}catch(_e){}setIdle()};
   btn.onclick=()=>{
     if(listening){stop();return}
+    try{speechSynthesis.cancel()}catch(_e){}
     const seed=ta.value.trim();
     recognition=new SR();recognition.lang='en-SG';recognition.continuous=true;recognition.interimResults=true;recognition.maxAlternatives=1;
     recognition.onstart=()=>{listening=true;btn.classList.add('listening');btn.textContent='⏹ Stop listening';status.className='gf-speech-status live';status.textContent='Listening… speak the full Science sentence.'};
