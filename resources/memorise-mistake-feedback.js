@@ -1,66 +1,54 @@
 (()=>{
 const $=id=>document.getElementById(id);
-const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const h=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 
-// Memorisation comparison deliberately ignores capitalisation and punctuation.
-// Apostrophes are removed so "mother's" and speech-recognised "mothers" match.
-function clean(s){
-  return String(s??'').toLowerCase().replace(/[’‘']/g,'').replace(/[^a-z0-9]+/g,' ').trim().replace(/\s+/g,' ');
+// Restores the previous trainer's exact-recall behaviour:
+// punctuation, apostrophes/quotes and capitalisation do not affect correctness.
+function recallNorm(s){
+  return String(s??'')
+    .toLowerCase()
+    .replace(/[’'"“”‘`]/g,'')
+    .replace(/[^a-z0-9]+/g,' ')
+    .trim()
+    .replace(/\s+/g,' ');
 }
-function words(s){const x=clean(s);return x?x.split(' '):[]}
-
-function diffWords(actualText,targetText){
-  const a=words(actualText),b=words(targetText),m=a.length,n=b.length;
-  const dp=Array.from({length:m+1},()=>Array(n+1).fill(0));
-  for(let i=0;i<=m;i++)dp[i][0]=i;
-  for(let j=0;j<=n;j++)dp[0][j]=j;
-  for(let i=1;i<=m;i++)for(let j=1;j<=n;j++){
-    if(a[i-1]===b[j-1])dp[i][j]=dp[i-1][j-1];
-    else dp[i][j]=Math.min(dp[i-1][j-1]+1,dp[i-1][j]+1,dp[i][j-1]+1);
+function recallDiff(a,b){
+  const A=recallNorm(a).split(' ').filter(Boolean),B=recallNorm(b).split(' ').filter(Boolean);
+  const D=Array.from({length:A.length+1},()=>Array(B.length+1).fill(0));
+  for(let i=A.length-1;i>=0;i--)for(let j=B.length-1;j>=0;j--)
+    D[i][j]=A[i]===B[j]?1+D[i+1][j+1]:Math.max(D[i+1][j],D[i][j+1]);
+  let i=0,j=0,o=[];
+  while(i<A.length&&j<B.length){
+    if(A[i]===B[j]){o.push(`<span class="mmf-same">${h(A[i])}</span>`);i++;j++}
+    else if(D[i+1][j]>=D[i][j+1])o.push(`<del>${h(A[i++])}</del>`);
+    else o.push(`<ins>${h(B[j++])}</ins>`);
   }
-  const ops=[];let i=m,j=n;
-  while(i||j){
-    if(i&&j&&a[i-1]===b[j-1]){ops.push({t:'same',a:a[i-1],b:b[j-1]});i--;j--;continue}
-    const rep=i&&j?dp[i-1][j-1]:Infinity,del=i?dp[i-1][j]:Infinity,ins=j?dp[i][j-1]:Infinity;
-    const best=Math.min(rep,del,ins);
-    if(best===rep){ops.push({t:'change',a:a[i-1],b:b[j-1]});i--;j--}
-    else if(best===del){ops.push({t:'extra',a:a[i-1]});i--}
-    else{ops.push({t:'missing',b:b[j-1]});j--}
-  }
-  return ops.reverse();
+  while(i<A.length)o.push(`<del>${h(A[i++])}</del>`);
+  while(j<B.length)o.push(`<ins>${h(B[j++])}</ins>`);
+  return o.join(' ');
 }
-function mistakeHTML(actual,target){
-  const ops=diffWords(actual,target),missing=[],extra=[],change=[];
-  for(const o of ops){
-    if(o.t==='missing')missing.push(o.b);
-    else if(o.t==='extra')extra.push(o.a);
-    else if(o.t==='change')change.push([o.a,o.b]);
-  }
-  const bits=[];
-  if(change.length)bits.push(`<div><b>Change:</b> ${change.slice(0,6).map(x=>`<span class="mmf-bad">${esc(x[0])}</span> → <span class="mmf-good">${esc(x[1])}</span>`).join(' · ')}</div>`);
-  if(missing.length)bits.push(`<div><b>Missing:</b> ${missing.slice(0,8).map(x=>`<span class="mmf-good">${esc(x)}</span>`).join(' · ')}</div>`);
-  if(extra.length)bits.push(`<div><b>Extra:</b> ${extra.slice(0,8).map(x=>`<span class="mmf-bad">${esc(x)}</span>`).join(' · ')}</div>`);
-  if(!bits.length)bits.push('<div>The words are very close. Check the word order carefully.</div>');
-  return `<div class="gf-feedback bad mmf-box"><b>Almost — check these word differences:</b>${bits.join('')}<small>Punctuation and capital letters are ignored, including speech-recognition punctuation.</small></div>`;
+function feedbackHTML(actual,target){
+  return `<div class="gf-feedback bad mmf-box"><b>Not exact yet — here is what changed:</b><div class="mmf-key"><span class="mmf-red">Red</span> = different / extra words · <span class="mmf-green">Green</span> = target words to add</div><div class="mmf-diff">${recallDiff(actual,target)}</div><small>Punctuation and capitalisation are ignored. Speech-recognition punctuation will not make an answer wrong.</small></div>`;
 }
 function installStyle(){
   if($('memoriseMistakeStyle'))return;
-  const s=document.createElement('style');s.id='memoriseMistakeStyle';s.textContent=`.mmf-box{display:grid;gap:7px}.mmf-box small{display:block;color:#64748b;font-weight:700;margin-top:3px}.mmf-good{display:inline-block;background:#dcfce7;color:#166534;border-radius:7px;padding:2px 6px}.mmf-bad{display:inline-block;background:#fee2e2;color:#991b1b;border-radius:7px;padding:2px 6px;text-decoration:line-through}`;document.head.appendChild(s);
+  const s=document.createElement('style');s.id='memoriseMistakeStyle';s.textContent=`
+  .mmf-box{display:grid;gap:9px}.mmf-box small{display:block;color:#64748b;font-weight:700}.mmf-key{font-size:12px;color:#475569}.mmf-red{color:#991b1b;font-weight:900}.mmf-green{color:#166534;font-weight:900}.mmf-diff{font-size:17px;line-height:1.9;background:#fff;border:1px solid #fecaca;border-radius:12px;padding:12px}.mmf-diff del{background:#fee2e2;color:#991b1b;text-decoration:line-through;border-radius:5px;padding:2px 4px}.mmf-diff ins{background:#dcfce7;color:#166534;text-decoration:none;border-radius:5px;padding:2px 4px;font-weight:900}.mmf-same{color:#334155}`;document.head.appendChild(s);
 }
 function showAfterRender(html){
-  let tries=0;const tick=()=>{const fb=$('gfMemFeedback');if(fb){fb.innerHTML=html;return}if(tries++<30)setTimeout(tick,20)};setTimeout(tick,0);
+  let tries=0;const tick=()=>{const fb=$('gfMemFeedback');if(fb){fb.innerHTML=html;return}if(tries++<35)setTimeout(tick,20)};setTimeout(tick,0);
 }
 function onCheck(ev){
   const btn=ev.target.closest?.('#gfCheckRecall');if(!btn)return;
   const ta=$('gfRecall');if(!ta||typeof BANK==='undefined'||typeof current!=='function')return;
   const actual=ta.value,target=String(BANK[current()]?.phrase||'');
-  if(!clean(actual))return;
-  // If only punctuation/capitalisation differs, feed the exact target to the existing
-  // checker so it is accepted rather than wrongly escalating support.
-  if(clean(actual)===clean(target)){
+  if(!recallNorm(actual))return;
+  // If wording matches once punctuation/capitalisation are ignored, let the existing
+  // guided checker see the target itself so the pupil is credited immediately.
+  if(recallNorm(actual)===recallNorm(target)){
     ta.value=target;ta.dispatchEvent(new Event('input',{bubbles:true}));return;
   }
-  showAfterRender(mistakeHTML(actual,target));
+  showAfterRender(feedbackHTML(actual,target));
 }
 function boot(){
   if(!$('guidedFlow')){setTimeout(boot,80);return}
