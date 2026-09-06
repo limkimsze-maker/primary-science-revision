@@ -12,7 +12,7 @@ function installUI(){
   row.innerHTML='<button class="primary" id="aiMarkBtn">🤖 AI Mark My Answer</button><span id="aiStatus" class="small" style="font-weight:700;color:#166534">● AI ready</span>';
   answer.insertAdjacentElement('afterend',row);
   const note=document.createElement('div'); note.className='small'; note.id='aiMarkNote'; note.style.marginTop='6px';
-  note.innerHTML='AI first follows the <b>command word</b>. Recall questions are marked on the required Science concept; <b>D/E → S/R → L/R</b> is used only when the question needs those parts. Scientifically equivalent wording is accepted.';
+  note.innerHTML='AI follows the <b>same command-word rules as the 2 PSLE posters</b>: What/Identify/Suggest/Describe/How are marked according to what each asks; Explain/Why uses <b>D/E → S/R → L/R only where needed</b>; Relationship, Reliability, Aim and Conclusion follow their poster rules too.';
   row.insertAdjacentElement('afterend',note);
   const rating=app.querySelector('.rating');
   if(rating){const label=document.createElement('div');label.className='small';label.style.marginTop='10px';label.style.fontWeight='700';label.textContent='Manual override (use only if you disagree with the AI mark):';rating.parentNode.insertBefore(label,rating)}
