@@ -51,7 +51,7 @@
   scripts.push('resources/flashcard-results-filter-fix.js?v=20260905a');
   scripts.push('resources/flashcard-top-result-filter.js?v=20260906b');
   scripts.push('resources/adaptive-engine.js?v=20260905a');
-  scripts.push('resources/learning-cycle.js?v=20260906a');
+  scripts.push('resources/learning-cycle.js?v=20260906b');
   const tags=scripts.map(src=>`<script src="${src}"><\/script>`).join('');
   html=html.replace('</body>',tags+'</body>');
   document.open();document.write(html);document.close();
