@@ -13,8 +13,10 @@ function boot(){
   const sleep=ms=>new Promise(r=>setTimeout(r,ms));
   const waitFor=(fn,ms=12000)=>new Promise(resolve=>{const st=Date.now();const tick=()=>{let ok=false;try{ok=!!fn()}catch(_e){}if(ok)return resolve(true);if(Date.now()-st>=ms)return resolve(false);setTimeout(tick,90)};tick()});
   const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const firstLetters=t=>typeof initials==='function'?initials(t):String(t||'').split(/(\s+)/).map(w=>/^\s+$/.test(w)?w:(w[0]||'')+(/^[A-Za-z]/.test(w)?'_'.repeat(Math.max(2,w.replace(/[^A-Za-z]/g,'').length-1)):'')).join('');
+  const fillGaps=t=>typeof gaps==='function'?gaps(t):String(t||'').split(' ').map((w,i)=>i%4===2?'______':w).join(' ');
 
-  let stage='flash',flashBack=false,memMode='study',classic=false,appPreparedFor=-1,empty=false;
+  let stage='flash',flashBack=false,memMode='exact',memNotice='',classic=false,appPreparedFor=-1,empty=false;
   const picker={search:'',topic:'all',status:'notdone',sort:'book'};
   const categories=[...new Set(BANK.map(e=>e.category).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
 
@@ -36,28 +38,18 @@ function boot(){
     else a.sort((i,j)=>BANK[i].id-BANK[j].id);
     return a;
   }
-  function resetStage(){stage='flash';flashBack=false;memMode='study';appPreparedFor=-1}
+  function resetStage(){stage='flash';flashBack=false;memMode='exact';memNotice='';appPreparedFor=-1}
   function applyPicker(keepCurrent=true){
     if(stage!=='flash'||flashBack)return;
-    const cur=current(),a=matches();
-    empty=!a.length;
+    const cur=current(),a=matches();empty=!a.length;
     if(empty){order=[];pos=0;render();return}
-    order=a;
-    const at=keepCurrent?a.indexOf(cur):-1;pos=at>=0?at:0;
-    resetStage();render();
+    order=a;const at=keepCurrent?a.indexOf(cur):-1;pos=at>=0?at:0;resetStage();render();
   }
 
   const header=document.querySelector('body>.wrap>header');
   const flow=document.createElement('section');flow.id='guidedFlow';
   flow.innerHTML=`
-    <div class="gf-top">
-      <div>
-        <div class="gf-eyebrow">ONE CONCEPT AT A TIME</div>
-        <h2 id="gfTitle">Science Memory Path</h2>
-        <div id="gfMeta" class="gf-meta"></div>
-      </div>
-      <button id="gfClassic" class="gf-ghost">More practice options</button>
-    </div>
+    <div class="gf-top"><div><div class="gf-eyebrow">ONE CONCEPT AT A TIME</div><h2 id="gfTitle">Science Memory Path</h2><div id="gfMeta" class="gf-meta"></div></div><button id="gfClassic" class="gf-ghost">More practice options</button></div>
     <div class="gf-picker">
       <div class="gf-searchwrap"><span>⌕</span><input id="gfSearch" type="search" autocomplete="off" placeholder="Search concept, question or Science idea…"></div>
       <select id="gfTopic"><option value="all">All topics</option>${categories.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('')}</select>
@@ -67,153 +59,67 @@ function boot(){
     </div>
     <div id="gfFilterNote" class="gf-filter-note"></div>
     <div class="gf-steps" aria-label="learning path">
-      <div id="gfStepFlash" class="gf-step"><span>1</span><b>Recall</b><small>Flashcard</small></div>
-      <div class="gf-line"></div>
-      <div id="gfStepMem" class="gf-step"><span>2</span><b>Memorise</b><small>Exact recall once</small></div>
-      <div class="gf-line"></div>
+      <div id="gfStepFlash" class="gf-step"><span>1</span><b>Recall</b><small>Flashcard</small></div><div class="gf-line"></div>
+      <div id="gfStepMem" class="gf-step"><span>2</span><b>Memorise</b><small>Hints only if needed</small></div><div class="gf-line"></div>
       <div id="gfStepApp" class="gf-step"><span>3</span><b>Apply</b><small>1 question</small></div>
     </div>
     <div id="gfBody" class="gf-card"></div>`;
   header.insertAdjacentElement('afterend',flow);
 
   const style=document.createElement('style');style.id='guidedFlowStyle';style.textContent=`
-  body.gf-on{background:linear-gradient(180deg,#eef2ff 0,#f8fafc 38%,#f4f7fb 100%)}
-  body.gf-on> .wrap>header .tabs,body.gf-on> .wrap>.controls,body.gf-on> .wrap>.stats,body.gf-on> .wrap>.main-grid,body.gf-on #flashcardPanel{display:none!important}
-  body.gf-on> .wrap{max-width:1120px;padding-top:18px}body.gf-on> .wrap>header{margin-bottom:8px}body.gf-on> .wrap>header .sub{max-width:850px}
+  body.gf-on{background:linear-gradient(180deg,#eef2ff 0,#f8fafc 38%,#f4f7fb 100%)}body.gf-on> .wrap>header .tabs,body.gf-on> .wrap>.controls,body.gf-on> .wrap>.stats,body.gf-on> .wrap>.main-grid,body.gf-on #flashcardPanel{display:none!important}body.gf-on> .wrap{max-width:1120px;padding-top:18px}body.gf-on> .wrap>header{margin-bottom:8px}body.gf-on> .wrap>header .sub{max-width:850px}
   #guidedFlow{margin:12px auto 28px;max-width:1020px}.gf-top{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:12px}.gf-eyebrow{font-size:12px;letter-spacing:.13em;font-weight:900;color:#4f46e5}.gf-top h2{font-size:clamp(26px,4vw,38px);margin:3px 0}.gf-meta{color:#64748b;font-weight:700;line-height:1.5}.gf-ghost{background:#fff;color:#475569;border:1px solid #dbe3ee;font-size:12px;padding:8px 10px}
   .gf-picker{display:grid;grid-template-columns:minmax(260px,1.7fr) 1fr .85fr .9fr auto;gap:8px;background:#fff;border:1px solid #dbe3ee;border-radius:16px;padding:10px;box-shadow:0 7px 22px #0f172a0b;margin-bottom:6px}.gf-picker input,.gf-picker select{width:100%;border:1px solid #dbe3ee;border-radius:11px;padding:10px;background:#fff}.gf-searchwrap{position:relative}.gf-searchwrap span{position:absolute;left:10px;top:8px;color:#64748b;font-size:20px}.gf-searchwrap input{padding-left:34px}.gf-counts{white-space:nowrap;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:#475569;padding:0 5px}.gf-filter-note{min-height:18px;color:#64748b;font-size:11px;font-weight:700;margin:0 4px 8px}.gf-picker.locked{opacity:.62}.gf-picker.locked input,.gf-picker.locked select{cursor:not-allowed}
   .gf-steps{display:flex;align-items:center;background:#fff;border:1px solid #dbe3ee;border-radius:18px;padding:12px 16px;box-shadow:0 8px 28px #0f172a0b;margin-bottom:14px}.gf-step{display:grid;grid-template-columns:34px auto;column-gap:9px;align-items:center;min-width:145px;color:#94a3b8}.gf-step span{grid-row:1/3;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#e2e8f0;color:#64748b;font-weight:900}.gf-step b{font-size:14px}.gf-step small{font-size:11px}.gf-step.active{color:#3730a3}.gf-step.active span{background:#4f46e5;color:#fff;box-shadow:0 0 0 5px #eef2ff}.gf-step.done{color:#047857}.gf-step.done span{background:#10b981;color:#fff}.gf-line{height:3px;flex:1;background:#e2e8f0;border-radius:999px;margin:0 8px}.gf-line.done{background:#86efac}
   .gf-card{background:#fff;border:1px solid #dbe3ee;border-radius:24px;box-shadow:0 18px 50px #0f172a12;padding:clamp(20px,4vw,38px);min-height:440px}.gf-pillrow{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:18px}.gf-pill{padding:6px 10px;border-radius:999px;font-size:12px;font-weight:900;background:#eef2ff;color:#3730a3}.gf-pill.status.done{background:#dcfce7;color:#166534}.gf-pill.status.todo{background:#f8fafc;color:#475569}.gf-prompt{font-size:clamp(28px,4.5vw,45px);font-weight:900;line-height:1.22;text-align:center;margin:42px auto 22px;max-width:850px}.gf-answer{font-size:clamp(27px,4vw,40px);font-weight:900;line-height:1.35;text-align:center;margin:32px auto;max-width:850px;color:#14532d}.gf-hint{text-align:center;color:#64748b;font-weight:700;margin:18px 0}.gf-actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:22px}.gf-btn{border:0;border-radius:14px;padding:13px 18px;font-weight:900;font-size:15px;cursor:pointer}.gf-primary{background:#4f46e5;color:#fff}.gf-good{background:#ecfdf5;color:#047857;border:1px solid #a7f3d0}.gf-warn{background:#fff1f2;color:#991b1b;border:1px solid #fecdd3}.gf-next{background:#047857;color:#fff}.gf-muted{background:#f8fafc;color:#475569;border:1px solid #dbe3ee}.gf-study{background:linear-gradient(180deg,#f8fafc,#eef2ff);border:1px solid #c7d2fe;border-radius:18px;padding:24px;text-align:center}.gf-study .gf-answer{margin:8px auto 2px}.gf-textarea{width:100%;min-height:150px;border:2px solid #cbd5e1;border-radius:16px;padding:16px;font:inherit;font-size:18px;line-height:1.55;resize:vertical}.gf-textarea:focus{outline:none;border-color:#4f46e5;box-shadow:0 0 0 4px #eef2ff}.gf-feedback{margin-top:16px;padding:14px 16px;border-radius:14px;line-height:1.5;font-weight:700}.gf-feedback.good{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}.gf-feedback.bad{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}.gf-feedback.info{background:#eef2ff;border:1px solid #c7d2fe;color:#3730a3}.gf-guide{margin:14px 0;background:#f8fafc;border:1px solid #dbe3ee;border-radius:16px;padding:14px;color:#334155;line-height:1.45}.gf-guide .frame-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}.gf-guide .frame-box{border:1px solid #dbe3ee;border-radius:11px;background:#fff;padding:10px}.gf-guide .frame-box b{display:block;margin-bottom:4px}.gf-source{text-align:center;color:#166534;font-weight:800;font-size:12px;margin-top:12px}.gf-loading{display:grid;place-items:center;min-height:310px;text-align:center;color:#475569;font-weight:800}.gf-spinner{width:38px;height:38px;border:4px solid #e2e8f0;border-top-color:#4f46e5;border-radius:50%;animation:gfspin .8s linear infinite;margin:0 auto 12px}@keyframes gfspin{to{transform:rotate(360deg)}}.gf-empty{text-align:center;padding:72px 18px}.gf-empty h3{font-size:27px;margin:0 0 8px}.gf-empty p{color:#64748b;line-height:1.5}
+  .gf-memladder{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:8px 0 18px}.gf-memstep{padding:9px 8px;border-radius:11px;background:#f8fafc;border:1px solid #e2e8f0;color:#94a3b8;font-size:11px;font-weight:900;text-align:center}.gf-memstep.active{background:#eef2ff;border-color:#a5b4fc;color:#3730a3}.gf-memstep.done{background:#ecfdf5;border-color:#a7f3d0;color:#047857}.gf-cue{margin:14px 0;padding:18px;border:1px solid #c7d2fe;border-radius:16px;background:#f8faff;font-size:clamp(20px,3vw,27px);font-weight:800;line-height:1.55;text-align:center;white-space:pre-wrap}.gf-learncue{background:#ecfdf5;border-color:#a7f3d0;color:#14532d}
   body.gf-classic #guidedFlow{display:none!important}body.gf-classic> .wrap>header .tabs,body.gf-classic> .wrap>.controls,body.gf-classic> .wrap>.stats,body.gf-classic> .wrap>.main-grid{display:flex}body.gf-classic> .wrap>.stats{display:grid}body.gf-classic> .wrap>.main-grid{display:grid}
-  @media(max-width:850px){.gf-picker{grid-template-columns:1fr 1fr}.gf-searchwrap{grid-column:1/-1}.gf-counts{grid-column:1/-1;justify-content:flex-start}.gf-top{align-items:center}.gf-steps{padding:10px;overflow-x:auto}.gf-step{min-width:110px;grid-template-columns:30px auto}.gf-step span{width:30px;height:30px}.gf-line{min-width:22px}.gf-card{padding:18px;min-height:410px}.gf-guide .frame-grid{grid-template-columns:1fr}}
+  @media(max-width:850px){.gf-picker{grid-template-columns:1fr 1fr}.gf-searchwrap{grid-column:1/-1}.gf-counts{grid-column:1/-1;justify-content:flex-start}.gf-top{align-items:center}.gf-steps{padding:10px;overflow-x:auto}.gf-step{min-width:110px;grid-template-columns:30px auto}.gf-step span{width:30px;height:30px}.gf-line{min-width:22px}.gf-card{padding:18px;min-height:410px}.gf-guide .frame-grid{grid-template-columns:1fr}.gf-memladder{grid-template-columns:1fr 1fr}}
   @media(max-width:520px){.gf-picker{grid-template-columns:1fr}.gf-searchwrap,.gf-counts{grid-column:auto}.gf-steps{border-radius:14px}.gf-step{min-width:100px}.gf-top h2{font-size:26px}}
   `;document.head.appendChild(style);
 
   function concept(){const i=current();return BANK[i]||BANK[0]}
-  function updatePicker(){
-    const locked=stage!=='flash'||flashBack;const box=flow.querySelector('.gf-picker');box.classList.toggle('locked',locked);
-    ['gfSearch','gfTopic','gfStatus','gfSort'].forEach(id=>{const el=$(id);if(el)el.disabled=locked});
-    $('gfFilterNote').textContent=locked?'Finish this concept first. Topic/search filters unlock before the next concept.':'Choose a topic, search a concept, or show only Known / Not done.';
-    const c=allCounts();$('gfCounts').textContent=`✅ ${c.known} known · ○ ${c.notdone} not done`;
-  }
-  function setSteps(){
-    const stages=['flash','mem','app'],at=stages.indexOf(stage);
-    stages.forEach((s,idx)=>{const el=$(s==='flash'?'gfStepFlash':s==='mem'?'gfStepMem':'gfStepApp');el.classList.toggle('active',idx===at);el.classList.toggle('done',idx<at)});
-    document.querySelectorAll('#guidedFlow .gf-line').forEach((el,idx)=>el.classList.toggle('done',idx<at));
-  }
-  function meta(){
-    if(empty){$('gfTitle').textContent='Science Memory Path';$('gfMeta').textContent='No concepts match the current selection.';return}
-    const e=concept();$('gfTitle').textContent=e.topic||'Science concept';$('gfMeta').textContent=`Concept ${e.id} · ${e.category} · ${pos+1} of ${order.length} selected · ${statusLabel(current())}`;
-  }
+  function updatePicker(){const locked=stage!=='flash'||flashBack,box=flow.querySelector('.gf-picker');box.classList.toggle('locked',locked);['gfSearch','gfTopic','gfStatus','gfSort'].forEach(id=>{const el=$(id);if(el)el.disabled=locked});$('gfFilterNote').textContent=locked?'Finish this concept first. Topic/search filters unlock before the next concept.':'Choose a topic, search a concept, or show only Known / Not done.';const c=allCounts();$('gfCounts').textContent=`✅ ${c.known} known · ○ ${c.notdone} not done`}
+  function setSteps(){const stages=['flash','mem','app'],at=stages.indexOf(stage);stages.forEach((s,idx)=>{const el=$(s==='flash'?'gfStepFlash':s==='mem'?'gfStepMem':'gfStepApp');el.classList.toggle('active',idx===at);el.classList.toggle('done',idx<at)});document.querySelectorAll('#guidedFlow .gf-line').forEach((el,idx)=>el.classList.toggle('done',idx<at))}
+  function meta(){if(empty){$('gfTitle').textContent='Science Memory Path';$('gfMeta').textContent='No concepts match the current selection.';return}const e=concept();$('gfTitle').textContent=e.topic||'Science concept';$('gfMeta').textContent=`Concept ${e.id} · ${e.category} · ${pos+1} of ${order.length} selected · ${statusLabel(current())}`}
   function speak(text){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(String(text||''));u.lang='en-GB';u.rate=.86;speechSynthesis.speak(u)}catch(_e){}}
-  function render(){
-    document.body.classList.add('gf-on');document.body.classList.toggle('gf-classic',classic);if(classic)return;
-    updatePicker();meta();setSteps();
-    if(empty){$('gfBody').innerHTML=`<div class="gf-empty"><h3>No matching concepts</h3><p>Change the topic, search or Known / Not done filter.</p><div class="gf-actions"><button id="gfShowNotDone" class="gf-btn gf-primary">Show all not done</button><button id="gfShowAll" class="gf-btn gf-muted">Show all concepts</button></div></div>`;$('gfShowNotDone').onclick=()=>{picker.search='';picker.topic='all';picker.status='notdone';syncPicker();applyPicker(false)};$('gfShowAll').onclick=()=>{picker.search='';picker.topic='all';picker.status='all';syncPicker();applyPicker(false)};return}
-    if(stage==='flash')renderFlash();else if(stage==='mem')renderMem();else renderAppShell();
-  }
-  function syncPicker(){ $('gfSearch').value=picker.search;$('gfTopic').value=picker.topic;$('gfStatus').value=picker.status;$('gfSort').value=picker.sort }
+  function render(){document.body.classList.add('gf-on');document.body.classList.toggle('gf-classic',classic);if(classic)return;updatePicker();meta();setSteps();if(empty){$('gfBody').innerHTML=`<div class="gf-empty"><h3>No matching concepts</h3><p>Change the topic, search or Known / Not done filter.</p><div class="gf-actions"><button id="gfShowNotDone" class="gf-btn gf-primary">Show all not done</button><button id="gfShowAll" class="gf-btn gf-muted">Show all concepts</button></div></div>`;$('gfShowNotDone').onclick=()=>{picker.search='';picker.topic='all';picker.status='notdone';syncPicker();applyPicker(false)};$('gfShowAll').onclick=()=>{picker.search='';picker.topic='all';picker.status='all';syncPicker();applyPicker(false)};return}if(stage==='flash')renderFlash();else if(stage==='mem')renderMem();else renderAppShell()}
+  function syncPicker(){$('gfSearch').value=picker.search;$('gfTopic').value=picker.topic;$('gfStatus').value=picker.status;$('gfSort').value=picker.sort}
   function pills(e){const d=known(current());return `<div class="gf-pillrow"><span class="gf-pill">#${e.id}</span><span class="gf-pill">${esc(e.category)}</span><span class="gf-pill status ${d?'done':'todo'}">${d?'✅ Known':'○ Not done'}</span></div>`}
 
-  function renderFlash(){
-    const e=concept(),b=$('gfBody');
-    b.innerHTML=pills(e)+(flashBack?`<div class="gf-answer">${esc(e.phrase)}</div><div class="gf-source">📘 ${esc(e.bookRef||'Book-backed Science core')}</div><div class="gf-hint">How did that compare with what you recalled?</div><div class="gf-actions"><button id="gfWrong" class="gf-btn gf-warn">✕ Need practice</button><button id="gfRight" class="gf-btn gf-good">✓ I knew it</button></div>`:`<div class="gf-prompt">${esc(e.phrasePrompt)}</div><div class="gf-hint">Try to answer in your head first.</div><div class="gf-actions"><button id="gfReveal" class="gf-btn gf-primary">Show answer</button></div>`);
-    if(!flashBack)$('gfReveal').onclick=()=>{flashBack=true;render();speak(e.phrase)};
-    else{$('gfWrong').onclick=()=>finishFlash('wrong');$('gfRight').onclick=()=>finishFlash('right')}
-  }
-  function finishFlash(result){
-    try{const x=rec(current());x.flashcardResult=result;save()}catch(_e){}
-    stage='mem';memMode='study';flashBack=false;render();speak(concept().phrase);
-  }
+  function renderFlash(){const e=concept(),b=$('gfBody');b.innerHTML=pills(e)+(flashBack?`<div class="gf-answer">${esc(e.phrase)}</div><div class="gf-source">📘 ${esc(e.bookRef||'Book-backed Science core')}</div><div class="gf-hint">How did that compare with what you recalled?</div><div class="gf-actions"><button id="gfWrong" class="gf-btn gf-warn">✕ Need practice</button><button id="gfRight" class="gf-btn gf-good">✓ I knew it</button></div>`:`<div class="gf-prompt">${esc(e.phrasePrompt)}</div><div class="gf-hint">Try to answer in your head first.</div><div class="gf-actions"><button id="gfReveal" class="gf-btn gf-primary">Show answer</button></div>`);if(!flashBack)$('gfReveal').onclick=()=>{flashBack=true;render();speak(e.phrase)};else{$('gfWrong').onclick=()=>finishFlash('wrong');$('gfRight').onclick=()=>finishFlash('right')}}
+  function finishFlash(result){try{const x=rec(current());x.flashcardResult=result;save()}catch(_e){}stage='mem';memMode='exact';memNotice='';flashBack=false;render();setTimeout(()=>$('gfRecall')?.focus(),50)}
 
+  function memIndex(){return ['exact','initials','gaps','learn'].indexOf(memMode)}
+  function memLadder(){const labels=[['exact','Exact recall'],['initials','First letters'],['gaps','Fill blanks'],['learn','Learn / copy']],at=memIndex();return `<div class="gf-memladder">${labels.map(([m,l],i)=>`<div class="gf-memstep ${i<at?'done':i===at?'active':''}">${i+1}. ${l}</div>`).join('')}</div>`}
   function renderMem(){
-    const e=concept(),b=$('gfBody');
-    if(memMode==='study'){
-      b.innerHTML=pills(e)+`<div class="gf-study"><div class="gf-hint">Study this exact Science sentence</div><div class="gf-answer">${esc(e.phrase)}</div></div><div class="gf-actions"><button id="gfTestMe" class="gf-btn gf-primary">I'm ready — exact recall</button></div>`;
-      $('gfTestMe').onclick=()=>{memMode='recall';render();setTimeout(()=>$('gfRecall')?.focus(),50)};return;
-    }
-    b.innerHTML=pills(e)+`<div class="gf-hint"><b>One correct exact recall completes this step.</b></div><textarea id="gfRecall" class="gf-textarea" spellcheck="false" placeholder="Type the exact Science sentence from memory..."></textarea><div class="gf-actions"><button id="gfCheckRecall" class="gf-btn gf-primary">Check exact recall</button></div><div id="gfMemFeedback"></div>`;
+    const e=concept(),b=$('gfBody'),titles={exact:'Exact recall — no hints',initials:'Try again with first-letter cues',gaps:'Try again with fill-in-the-blanks support',learn:'Learn — copy the exact sentence'},sub={exact:'Type the sentence from memory. If you need help, the app will step down the support automatically.',initials:'Use the first letters to rebuild the full sentence.',gaps:'Use the visible words and fill the missing parts by typing the full sentence.',learn:'The full sentence is visible. Copy it exactly once, then move on to Application.'};
+    let cue='';if(memMode==='initials')cue=`<div class="gf-cue">${esc(firstLetters(e.phrase))}</div>`;else if(memMode==='gaps')cue=`<div class="gf-cue">${esc(fillGaps(e.phrase))}</div>`;else if(memMode==='learn')cue=`<div class="gf-cue gf-learncue">${esc(e.phrase)}</div>`;
+    const notice=memNotice?`<div class="gf-feedback info" style="margin:0 0 14px">${esc(memNotice)}</div>`:'';
+    b.innerHTML=pills(e)+memLadder()+notice+`<div class="gf-hint"><b>${titles[memMode]}</b><br><span style="font-weight:600">${sub[memMode]}</span></div>${cue}<textarea id="gfRecall" class="gf-textarea" spellcheck="false" placeholder="Type the full Science sentence..."></textarea><div class="gf-actions"><button id="gfCheckRecall" class="gf-btn gf-primary">${memMode==='learn'?'Check exact copy':'Check answer'}</button></div><div id="gfMemFeedback"></div>`;
     $('gfCheckRecall').onclick=checkRecall;
   }
   function checkRecall(){
-    const e=concept(),ta=$('gfRecall'),u=ta.value,fb=$('gfMemFeedback');
-    if(!norm(u)){fb.innerHTML='<div class="gf-feedback info">Type your answer first.</div>';return}
-    if(norm(u)===norm(e.phrase)){
-      try{const x=rec(current()),d=today();x.phraseDates=Array.isArray(x.phraseDates)?x.phraseDates:[];if(!x.phraseDates.includes(d))x.phraseDates.push(d);x.phraseLast='correct';x.guidedExactRecallAt=Date.now();save()}catch(_e){}
-      fb.innerHTML='<div class="gf-feedback good">✅ Exact recall complete. Moving to one application question for the same concept.</div>';$('gfCheckRecall').disabled=true;setTimeout(prepareApp,500);
-    }else{
-      try{const x=rec(current());x.phraseWrong=(x.phraseWrong||0)+1;x.phraseLast='wrong';save()}catch(_e){}
-      const comparison=typeof diff==='function'?`<div style="margin-top:8px;background:#fff;padding:9px;border-radius:10px">${diff(u,e.phrase)}</div>`:'';
-      fb.innerHTML=`<div class="gf-feedback bad">Not exact yet. Study the sentence once and retry.${comparison}</div><div class="gf-study" style="margin-top:10px"><div class="gf-answer" style="font-size:24px">${esc(e.phrase)}</div></div><div class="gf-actions"><button id="gfRetryMem" class="gf-btn gf-muted">Try again</button></div>`;
-      $('gfRetryMem').onclick=()=>{renderMem();setTimeout(()=>$('gfRecall')?.focus(),50)};
+    const e=concept(),ta=$('gfRecall'),u=ta.value,fb=$('gfMemFeedback');if(!norm(u)){fb.innerHTML='<div class="gf-feedback info">Type your answer first.</div>';return}
+    const correct=norm(u)===norm(e.phrase),mode=memMode;
+    if(correct){
+      try{const x=rec(current()),d=today();x.phraseLast='correct';x.guidedRecallSupport=mode;x.guidedRecallCompletedAt=Date.now();if(mode==='exact'){x.phraseDates=Array.isArray(x.phraseDates)?x.phraseDates:[];if(!x.phraseDates.includes(d))x.phraseDates.push(d);x.guidedExactRecallAt=Date.now()}save()}catch(_e){}
+      const msg=mode==='exact'?'✅ Exact recall complete.':'✅ Correct with support. Memorisation step complete.';fb.innerHTML=`<div class="gf-feedback good">${msg} Moving to one application question for the same concept.</div>`;$('gfCheckRecall').disabled=true;setTimeout(prepareApp,500);return;
     }
+    try{const x=rec(current());x.phraseWrong=(x.phraseWrong||0)+1;x.phraseLast='wrong';x.guidedRecallLastFailMode=mode;save()}catch(_e){}
+    const comparison=typeof diff==='function'?`<div style="margin-top:8px;background:#fff;padding:9px;border-radius:10px">${diff(u,e.phrase)}</div>`:'';
+    if(mode==='learn'){fb.innerHTML=`<div class="gf-feedback bad"><b>Almost — copy the visible sentence exactly.</b>${comparison}</div>`;return}
+    const nextMode=mode==='exact'?'initials':mode==='initials'?'gaps':'learn';const nextText=nextMode==='initials'?'First-letter cues':nextMode==='gaps'?'Fill-in-the-blanks':'Learn / exact copy';fb.innerHTML=`<div class="gf-feedback bad">Not exact yet.${comparison}<br><b>Next:</b> ${nextText}.</div>`;$('gfCheckRecall').disabled=true;memNotice=`That attempt needed more support. The app has stepped down to ${nextText}.`;setTimeout(()=>{memMode=nextMode;render();if(nextMode==='learn')speak(e.phrase);setTimeout(()=>$('gfRecall')?.focus(),50)},650);
   }
 
   function readCandidate(){const q=String($('appQuestion')?.textContent||'').trim(),note=String($('variantNote')?.textContent||'').trim();return{q,note,key:norm(q),recall:/recall/i.test(note),explain:/^\s*(explain|why)\b/i.test(q)||(!/^\s*(state|compare|suggest|predict|describe|identify|name|which|what|how)\b/i.test(q)&&/\b(explain|why|give\s+(?:a\s+)?reason)\b/i.test(q))}}
-  async function chooseApplication(i){
-    const e=BANK[i],fresh=$('freshAppBtn'),n=Math.max(1,e.applicationVariants?.length||1),found=new Map();
-    for(let k=0;k<Math.max(4,n*2+2);k++){
-      const c=readCandidate();if(c.q&&!found.has(c.key))found.set(c.key,c);if(found.size>=n)break;if(fresh)fresh.click();await sleep(24);
-    }
-    let pool=[...found.values()],nonRecall=pool.filter(c=>!c.recall);if(nonRecall.length)pool=nonRecall;if(!pool.length)return readCandidate();
-    const x=rec(i),history=Array.isArray(x.guidedAppHistory)?x.guidedAppHistory:[],firstGuided=history.length===0;
-    let target=null;
-    if(firstGuided)target=pool.find(c=>c.explain)||pool[0];
-    else{
-      const unseen=pool.filter(c=>!history.includes(c.key));
-      if(unseen.length)target=unseen[0];
-      else target=pool.slice().sort((a,b)=>history.indexOf(a.key)-history.indexOf(b.key))[0];
-    }
-    for(let k=0;k<Math.max(5,n*2+3);k++){
-      const c=readCandidate();if(c.key===target.key)break;if(fresh)fresh.click();await sleep(24);
-    }
-    const chosen=readCandidate(),h=history.filter(k=>k!==chosen.key);h.push(chosen.key);x.guidedAppHistory=h.slice(-20);x.guidedLastAppQuestion=chosen.key;save();return chosen;
-  }
-  async function prepareApp(){
-    stage='app';renderAppShell(true);const i=current();
-    try{
-      $('appTab')?.click();
-      const ready=await waitFor(()=>$('aiMarkBtn')&&$('freshAppBtn')&&$('variantNote')&&$('appLiteTip'),15000);if(!ready)throw new Error('Application question tools are still loading.');
-      const chosen=await chooseApplication(i);appPreparedFor=i;renderAppShell(false,chosen);setTimeout(()=>$('gfAppAnswer')?.focus(),50);
-    }catch(err){$('gfBody').innerHTML=`<div class="gf-feedback bad">Could not prepare the application question yet.<br><small>${esc(err.message||err)}</small></div><div class="gf-actions"><button id="gfRetryAppLoad" class="gf-btn gf-primary">Try again</button></div>`;$('gfRetryAppLoad').onclick=prepareApp}
-  }
-  function renderAppShell(loading=false,chosen=null){
-    const b=$('gfBody'),e=concept();
-    if(loading||appPreparedFor!==current()){b.innerHTML=`<div class="gf-loading"><div><div class="gf-spinner"></div>Preparing one application question for <b>${esc(e.topic)}</b>…</div></div>`;return}
-    const q=String($('appQuestion')?.textContent||e.applicationQuestion||'').trim(),tip=$('appLiteTip')?.innerHTML||'Read the command word first and answer only what is asked.',frame=$('appPane')?.querySelector('.frame')?.innerHTML||'';
-    const firstNote=chosen?.explain?'<div class="gf-feedback info" style="margin-bottom:12px"><b>First application round:</b> this Explain/Why question practises D/E → S/R → L/R where the question needs those parts.</div>':'';
-    b.innerHTML=pills(e)+firstNote+`<div class="gf-guide">${tip}</div><div class="gf-prompt" style="text-align:left;font-size:clamp(24px,3.5vw,34px);margin:22px 0">${esc(q)}</div>${frame?`<div class="gf-guide">${frame}</div>`:''}<textarea id="gfAppAnswer" class="gf-textarea" spellcheck="false" placeholder="Write your PSLE Science answer..."></textarea><div class="gf-actions"><button id="gfMarkApp" class="gf-btn gf-primary">🤖 Check my answer</button></div><div id="gfAppFeedback"></div>`;
-    $('gfMarkApp').onclick=markApplication;
-  }
-  async function markApplication(){
-    const ta=$('gfAppAnswer'),u=ta.value.trim(),fb=$('gfAppFeedback'),btn=$('gfMarkApp');if(!u){fb.innerHTML='<div class="gf-feedback info">Write your answer first.</div>';return}
-    const hiddenAns=$('appAnswer'),ai=$('aiMarkBtn');if(!hiddenAns||!ai){fb.innerHTML='<div class="gf-feedback bad">AI marker is still loading. Try again in a moment.</div>';return}
-    hiddenAns.value=u;hiddenAns.dispatchEvent(new Event('input',{bubbles:true}));let before=0;try{before=rec(current()).appAttempts||0}catch(_e){}
-    btn.disabled=true;btn.textContent='🤖 Checking…';fb.innerHTML='<div class="gf-feedback info">AI is checking the Science and the command word…</div>';ai.click();
-    const done=await waitFor(()=>{try{return (rec(current()).appAttempts||0)>before||(!ai.disabled&&String($('aiStatus')?.textContent||'').includes('unavailable'))}catch(_e){return false}},35000);btn.disabled=false;btn.textContent='🤖 Check my answer';
-    if(!done){fb.innerHTML='<div class="gf-feedback bad">The AI marker took too long. Please try again.</div>';return}
-    const source=$('appFeedback'),text=source?source.textContent.trim():'Answer checked.';let correct=false;try{correct=rec(current()).appLast==='correct'}catch(_e){}
-    if(correct){
-      try{const x=rec(current());x.guidedCycleCompletedAt=Date.now();x.guidedCycles=(x.guidedCycles||0)+1;save()}catch(_e){}
-      fb.innerHTML=`<div class="gf-feedback good">${esc(text||'✅ Correct')}<br><b>Cycle complete — this concept is now Known.</b> One application question is enough. The question just used has moved to the back for a future round.</div><div class="gf-actions"><button id="gfNextConcept" class="gf-btn gf-next">Next concept →</button></div>`;$('gfNextConcept').onclick=advanceConcept;
-    }else fb.innerHTML=`<div class="gf-feedback bad">${esc(text||'Not correct yet.')}<br>Repair this same question and try again. The cycle is not complete yet, so the concept remains Not done.</div>`;
-  }
-  function advanceConcept(){
-    const oldOrder=Array.isArray(order)?order.slice():[],oldPos=Number(pos)||0,cur=current(),available=matches();empty=!available.length;
-    resetStage();
-    if(empty){order=[];pos=0;render();return}
-    let candidate=null;
-    for(let n=1;n<=oldOrder.length;n++){const v=oldOrder[(oldPos+n)%oldOrder.length];if(v!==cur&&available.includes(v)){candidate=v;break}}
-    if(candidate==null)candidate=available.find(v=>v!==cur)??available[0];order=available;pos=Math.max(0,available.indexOf(candidate));render();if(!empty)speak(`${concept().topic}. ${concept().phrasePrompt}`);
-  }
+  async function chooseApplication(i){const e=BANK[i],fresh=$('freshAppBtn'),n=Math.max(1,e.applicationVariants?.length||1),found=new Map();for(let k=0;k<Math.max(4,n*2+2);k++){const c=readCandidate();if(c.q&&!found.has(c.key))found.set(c.key,c);if(found.size>=n)break;if(fresh)fresh.click();await sleep(24)}let pool=[...found.values()],nonRecall=pool.filter(c=>!c.recall);if(nonRecall.length)pool=nonRecall;if(!pool.length)return readCandidate();const x=rec(i),history=Array.isArray(x.guidedAppHistory)?x.guidedAppHistory:[],firstGuided=history.length===0;let target=null;if(firstGuided)target=pool.find(c=>c.explain)||pool[0];else{const unseen=pool.filter(c=>!history.includes(c.key));if(unseen.length)target=unseen[0];else target=pool.slice().sort((a,b)=>history.indexOf(a.key)-history.indexOf(b.key))[0]}for(let k=0;k<Math.max(5,n*2+3);k++){const c=readCandidate();if(c.key===target.key)break;if(fresh)fresh.click();await sleep(24)}const chosen=readCandidate(),h=history.filter(k=>k!==chosen.key);h.push(chosen.key);x.guidedAppHistory=h.slice(-20);x.guidedLastAppQuestion=chosen.key;save();return chosen}
+  async function prepareApp(){stage='app';renderAppShell(true);const i=current();try{$('appTab')?.click();const ready=await waitFor(()=>$('aiMarkBtn')&&$('freshAppBtn')&&$('variantNote')&&$('appLiteTip'),15000);if(!ready)throw new Error('Application question tools are still loading.');const chosen=await chooseApplication(i);appPreparedFor=i;renderAppShell(false,chosen);setTimeout(()=>$('gfAppAnswer')?.focus(),50)}catch(err){$('gfBody').innerHTML=`<div class="gf-feedback bad">Could not prepare the application question yet.<br><small>${esc(err.message||err)}</small></div><div class="gf-actions"><button id="gfRetryAppLoad" class="gf-btn gf-primary">Try again</button></div>`;$('gfRetryAppLoad').onclick=prepareApp}}
+  function renderAppShell(loading=false,chosen=null){const b=$('gfBody'),e=concept();if(loading||appPreparedFor!==current()){b.innerHTML=`<div class="gf-loading"><div><div class="gf-spinner"></div>Preparing one application question for <b>${esc(e.topic)}</b>…</div></div>`;return}const q=String($('appQuestion')?.textContent||e.applicationQuestion||'').trim(),tip=$('appLiteTip')?.innerHTML||'Read the command word first and answer only what is asked.',frame=$('appPane')?.querySelector('.frame')?.innerHTML||'';const firstNote=chosen?.explain?'<div class="gf-feedback info" style="margin-bottom:12px"><b>First application round:</b> this Explain/Why question practises D/E → S/R → L/R where the question needs those parts.</div>':'';b.innerHTML=pills(e)+firstNote+`<div class="gf-guide">${tip}</div><div class="gf-prompt" style="text-align:left;font-size:clamp(24px,3.5vw,34px);margin:22px 0">${esc(q)}</div>${frame?`<div class="gf-guide">${frame}</div>`:''}<textarea id="gfAppAnswer" class="gf-textarea" spellcheck="false" placeholder="Write your PSLE Science answer..."></textarea><div class="gf-actions"><button id="gfMarkApp" class="gf-btn gf-primary">🤖 Check my answer</button></div><div id="gfAppFeedback"></div>`;$('gfMarkApp').onclick=markApplication}
+  async function markApplication(){const ta=$('gfAppAnswer'),u=ta.value.trim(),fb=$('gfAppFeedback'),btn=$('gfMarkApp');if(!u){fb.innerHTML='<div class="gf-feedback info">Write your answer first.</div>';return}const hiddenAns=$('appAnswer'),ai=$('aiMarkBtn');if(!hiddenAns||!ai){fb.innerHTML='<div class="gf-feedback bad">AI marker is still loading. Try again in a moment.</div>';return}hiddenAns.value=u;hiddenAns.dispatchEvent(new Event('input',{bubbles:true}));let before=0;try{before=rec(current()).appAttempts||0}catch(_e){}btn.disabled=true;btn.textContent='🤖 Checking…';fb.innerHTML='<div class="gf-feedback info">AI is checking the Science and the command word…</div>';ai.click();const done=await waitFor(()=>{try{return (rec(current()).appAttempts||0)>before||(!ai.disabled&&String($('aiStatus')?.textContent||'').includes('unavailable'))}catch(_e){return false}},35000);btn.disabled=false;btn.textContent='🤖 Check my answer';if(!done){fb.innerHTML='<div class="gf-feedback bad">The AI marker took too long. Please try again.</div>';return}const source=$('appFeedback'),text=source?source.textContent.trim():'Answer checked.';let correct=false;try{correct=rec(current()).appLast==='correct'}catch(_e){}if(correct){try{const x=rec(current());x.guidedCycleCompletedAt=Date.now();x.guidedCycles=(x.guidedCycles||0)+1;save()}catch(_e){}fb.innerHTML=`<div class="gf-feedback good">${esc(text||'✅ Correct')}<br><b>Cycle complete — this concept is now Known.</b> One application question is enough. The question just used has moved to the back for a future round.</div><div class="gf-actions"><button id="gfNextConcept" class="gf-btn gf-next">Next concept →</button></div>`;$('gfNextConcept').onclick=advanceConcept}else fb.innerHTML=`<div class="gf-feedback bad">${esc(text||'Not correct yet.')}<br>Repair this same question and try again. The cycle is not complete yet, so the concept remains Not done.</div>`}
+  function advanceConcept(){const oldOrder=Array.isArray(order)?order.slice():[],oldPos=Number(pos)||0,cur=current(),available=matches();empty=!available.length;resetStage();if(empty){order=[];pos=0;render();return}let candidate=null;for(let n=1;n<=oldOrder.length;n++){const v=oldOrder[(oldPos+n)%oldOrder.length];if(v!==cur&&available.includes(v)){candidate=v;break}}if(candidate==null)candidate=available.find(v=>v!==cur)??available[0];order=available;pos=Math.max(0,available.indexOf(candidate));render();if(!empty)speak(`${concept().topic}. ${concept().phrasePrompt}`)}
 
-  let searchTimer=null;
-  $('gfSearch').addEventListener('input',e=>{picker.search=e.target.value;clearTimeout(searchTimer);searchTimer=setTimeout(()=>applyPicker(false),120)});
-  $('gfTopic').addEventListener('change',e=>{picker.topic=e.target.value;applyPicker(false)});
-  $('gfStatus').addEventListener('change',e=>{picker.status=e.target.value;applyPicker(false)});
-  $('gfSort').addEventListener('change',e=>{picker.sort=e.target.value;applyPicker(true)});
-  $('gfClassic').onclick=()=>{classic=!classic;document.body.classList.toggle('gf-classic',classic);$('gfClassic').textContent=classic?'Return to guided flow':'More practice options';if(!classic)render()};
-
+  let searchTimer=null;$('gfSearch').addEventListener('input',e=>{picker.search=e.target.value;clearTimeout(searchTimer);searchTimer=setTimeout(()=>applyPicker(false),120)});$('gfTopic').addEventListener('change',e=>{picker.topic=e.target.value;applyPicker(false)});$('gfStatus').addEventListener('change',e=>{picker.status=e.target.value;applyPicker(false)});$('gfSort').addEventListener('change',e=>{picker.sort=e.target.value;applyPicker(true)});$('gfClassic').onclick=()=>{classic=!classic;document.body.classList.toggle('gf-classic',classic);$('gfClassic').textContent=classic?'Return to guided flow':'More practice options';if(!classic)render()};
   syncPicker();const initial=matches();order=initial;pos=0;empty=!initial.length;document.body.classList.add('gf-on');render();if(!empty)setTimeout(()=>speak(`${concept().topic}. ${concept().phrasePrompt}`),250);
 }
 boot();
