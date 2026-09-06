@@ -8,11 +8,19 @@ function install(){
  }
  if(document.getElementById('appQuestionModeBar'))return;
  const originalFresh=freshBtn.onclick,originalNext=nextBtn.onclick;
+ const baseFreshLabel='🔄 New Application Question';
  let mode='all';
  const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const qText=()=>String(question.textContent||'').trim();
  const kindText=()=>String(document.getElementById('variantNote')?.textContent||'').toLowerCase();
  const isExplain=()=>/\b(explain|why|give\s+(?:a\s+)?reason)\b/i.test(qText());
+ const dayKey=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
+ function correctToday(){
+  try{
+   const x=typeof rec==='function'?rec(current()):null;
+   return !!(x&&Array.isArray(x.appCorrectDates)&&x.appCorrectDates.includes(dayKey()));
+  }catch(_e){return false}
+ }
  function categoryOf(){
   const q=qText().toLowerCase(),k=kindText();
   if(/\b(explain|why|give\s+(?:a\s+)?reason)\b/.test(q))return'explain';
@@ -36,13 +44,27 @@ function install(){
   const b=document.getElementById('appCommandCoach');if(!b)return;
   const c=categoryOf();b.classList.remove('hide');b.innerHTML=tips[c]||tips.other;
  }
+ function workload(){
+  const b=document.getElementById('appWorkloadGuide');if(!b)return;
+  if(correctToday()){
+   b.className='app-workload-guide done';
+   b.innerHTML='<b>✅ Enough for this concept today</b><span>You have one correct application today. <strong>Move to Next.</strong> The other variants are optional extra practice — you do not need to finish them all.</span>';
+   freshBtn.textContent='➕ Optional extra question';
+   freshBtn.classList.add('optional-extra');
+  }else{
+   b.className='app-workload-guide';
+   b.innerHTML='<b>🎯 Today’s target: 1 application question for this concept</b><span>If it is correct, move on. If it is wrong, repair the idea and try one more. Long-term mastery comes from returning on another day, not from doing all the variants at once.</span>';
+   freshBtn.textContent=baseFreshLabel;
+   freshBtn.classList.remove('optional-extra');
+  }
+ }
  function resetModel(){modelBox.classList.add('hide');syncUnlock()}
  function syncUnlock(){
   const tried=!!answer.value.trim();modelBtn.disabled=!tried;
   modelBtn.textContent=tried?'Show Model Answer':'🔒 Try first to unlock model answer';
   modelBtn.title=tried?'Compare your answer with a PSLE-style model answer.':'Write your own answer first.';
  }
- function afterQuestionChange(){resetModel();coach();setTimeout(coach,0)}
+ function afterQuestionChange(){resetModel();coach();workload();setTimeout(()=>{coach();workload()},0)}
  function tryFreshMatch(target,max=8){
   const start=current(),seen=new Set();
   for(let n=0;n<max;n++){
@@ -73,6 +95,7 @@ function install(){
  const bar=document.createElement('div');bar.id='appQuestionModeBar';bar.className='app-question-mode';bar.innerHTML='<b>Question type</b><button type="button" data-app-question-mode="all" class="active">All</button><button type="button" data-app-question-mode="recall">Recall</button><button type="button" data-app-question-mode="explain">Explain / Why</button><button type="button" data-app-question-mode="describe">Describe / How</button><button type="button" data-app-question-mode="suggest">Suggest / Predict</button><button type="button" data-app-question-mode="experiment">Experiment / Relationship</button>';
  question.insertAdjacentElement('beforebegin',bar);
  const coachBox=document.createElement('div');coachBox.id='appCommandCoach';coachBox.className='app-command-coach';question.insertAdjacentElement('beforebegin',coachBox);
+ const workloadBox=document.createElement('div');workloadBox.id='appWorkloadGuide';workloadBox.className='app-workload-guide';question.insertAdjacentElement('beforebegin',workloadBox);
  bar.querySelectorAll('[data-app-question-mode]').forEach(b=>b.onclick=()=>setMode(b.dataset.appQuestionMode));
  freshBtn.onclick=function(){
   if(mode==='all'){if(typeof originalFresh==='function')originalFresh.call(freshBtn)}
@@ -110,11 +133,13 @@ function install(){
   modelBox.innerHTML=`<div class="app-answer-card your"><b>✍️ Your answer</b><div>${esc(student)}</div></div><div class="app-answer-card model"><b>✅ Model answer</b>${isExplain()?'<div class="app-mini-frame"><span>D/E if needed</span>→<span>S/R</span>→<span>L/R if needed</span></div>':''}<div><strong>${esc(model)}</strong></div><small>${fallback?'AI model could not be prepared, so the audited Science core is shown. Adapt it to the question context.':'PSLE-style model for this exact question. Scientifically equivalent wording is acceptable.'}</small></div>`;
   modelBtn.disabled=false;modelBtn.textContent='Hide Model Answer';
  };
- const note=app.querySelector('.mode-note');if(note)note.innerHTML='<b>Written Application:</b> practise by command-word family: <b>Recall · Explain/Why · Describe/How · Suggest/Predict · Experiment/Relationship</b>, or choose <b>All</b>. The coach below the buttons follows the same rules as the 2 PSLE posters. Write your own answer first; then <b>Show Model Answer</b> compares it with a PSLE-style model.';
+ const note=app.querySelector('.mode-note');if(note)note.innerHTML='<b>Written Application:</b> practise by command-word family: <b>Recall · Explain/Why · Describe/How · Suggest/Predict · Experiment/Relationship</b>, or choose <b>All</b>. <strong>You do not need to finish every variant.</strong> Aim for one correct application for a concept today, then revisit it on another day for spaced mastery.';
+ const feedback=document.getElementById('appFeedback');
+ if(feedback)new MutationObserver(()=>setTimeout(workload,0)).observe(feedback,{childList:true,subtree:true,attributes:true,characterData:true});
  const style=document.createElement('style');style.textContent=`
- .app-question-mode{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:4px 0 9px;padding:10px 12px;border:1px solid #dbe3ee;border-radius:13px;background:#fff}.app-question-mode>b{font-size:13px;color:#475569;margin-right:2px}.app-question-mode button{font-weight:800;padding:8px 10px}.app-question-mode button.active{background:#4338ca;color:#fff;border-color:#4338ca}.app-command-coach{margin:7px 0 11px;padding:10px 12px;border:1px solid #c7d2fe;border-radius:12px;background:#eef2ff;color:#3730a3}.app-command-coach>b{display:block}.app-command-coach span{display:block;margin-top:4px;font-size:12px;color:#475569;line-height:1.45}.app-answer-compare{display:grid!important;grid-template-columns:1fr 1fr;gap:10px;background:transparent!important;border:0!important;padding:0!important}.app-answer-card{padding:13px;border-radius:13px;border:1px solid #dbe3ee;background:#fff;line-height:1.55}.app-answer-card>b{display:block;margin-bottom:7px}.app-answer-card.your{background:#f8fafc}.app-answer-card.model{background:#f0fdf4;border-color:#bbf7d0}.app-answer-card small{display:block;margin-top:8px;color:#64748b}.app-mini-frame{display:flex;align-items:center;gap:5px;margin-bottom:8px;color:#64748b;font-size:12px;flex-wrap:wrap}.app-mini-frame span{background:#eef2ff;color:#3730a3;border-radius:999px;padding:3px 7px;font-weight:900}@media(max-width:720px){.app-answer-compare{grid-template-columns:1fr}.app-question-mode{display:grid;grid-template-columns:1fr 1fr}.app-question-mode>b{grid-column:1/-1}.app-question-mode button{width:100%;font-size:12px}.app-question-mode button:first-of-type{grid-column:1/-1}}
+ .app-question-mode{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:4px 0 9px;padding:10px 12px;border:1px solid #dbe3ee;border-radius:13px;background:#fff}.app-question-mode>b{font-size:13px;color:#475569;margin-right:2px}.app-question-mode button{font-weight:800;padding:8px 10px}.app-question-mode button.active{background:#4338ca;color:#fff;border-color:#4338ca}.app-command-coach{margin:7px 0 8px;padding:10px 12px;border:1px solid #c7d2fe;border-radius:12px;background:#eef2ff;color:#3730a3}.app-command-coach>b,.app-workload-guide>b{display:block}.app-command-coach span,.app-workload-guide span{display:block;margin-top:4px;font-size:12px;color:#475569;line-height:1.45}.app-workload-guide{margin:7px 0 11px;padding:10px 12px;border:1px solid #fde68a;border-radius:12px;background:#fffbeb;color:#92400e}.app-workload-guide.done{border-color:#a7f3d0;background:#ecfdf5;color:#047857}.optional-extra{background:#fff!important;color:#475569!important;border-color:#cbd5e1!important;font-weight:700!important}.app-answer-compare{display:grid!important;grid-template-columns:1fr 1fr;gap:10px;background:transparent!important;border:0!important;padding:0!important}.app-answer-card{padding:13px;border-radius:13px;border:1px solid #dbe3ee;background:#fff;line-height:1.55}.app-answer-card>b{display:block;margin-bottom:7px}.app-answer-card.your{background:#f8fafc}.app-answer-card.model{background:#f0fdf4;border-color:#bbf7d0}.app-answer-card small{display:block;margin-top:8px;color:#64748b}.app-mini-frame{display:flex;align-items:center;gap:5px;margin-bottom:8px;color:#64748b;font-size:12px;flex-wrap:wrap}.app-mini-frame span{background:#eef2ff;color:#3730a3;border-radius:999px;padding:3px 7px;font-weight:900}@media(max-width:720px){.app-answer-compare{grid-template-columns:1fr}.app-question-mode{display:grid;grid-template-columns:1fr 1fr}.app-question-mode>b{grid-column:1/-1}.app-question-mode button{width:100%;font-size:12px}.app-question-mode button:first-of-type{grid-column:1/-1}}
  `;document.head.appendChild(style);
- coach();syncUnlock();
+ coach();workload();syncUnlock();
 }
 install();
 })();
