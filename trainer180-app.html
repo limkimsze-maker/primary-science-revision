@@ -25,7 +25,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#f4f7fb;fon
  const loadScript=(doc,src,critical=false)=>new Promise((resolve,reject)=>{const s=doc.createElement('script');s.src=src;s.async=false;s.onload=()=>resolve(true);s.onerror=()=>critical?reject(new Error('Could not load '+src)):resolve(false);doc.head.appendChild(s)});
  const fail=e=>{console.error(e);msg.textContent='Could not initialise the trainer';errBox.style.display='block';errBox.textContent=String(e&&e.message?e.message:e)};
 
- frame.src='trainer180.html?v=20260906s';
+ frame.src='trainer180.html?v=20260906t';
  frame.addEventListener('load',async()=>{
   try{
    const w=frame.contentWindow,d=frame.contentDocument;
@@ -33,7 +33,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#f4f7fb;fon
    const coreReady=await waitFor(()=>w.eval('typeof BANK!=="undefined" && Array.isArray(BANK) && BANK.length===180 && typeof rec==="function" && typeof save==="function" && typeof buildQueue==="function"'));
    if(!coreReady)throw new Error('The 180-concept core trainer did not finish loading.');
 
-   await loadScript(d,'resources/profile-storage.js?v=20260906s',true);
+   await loadScript(d,'resources/profile-storage.js?v=20260906t',true);
    try{w.eval('S=loadState(); save(); buildQueue(); setPane("phrase");')}catch(e){throw new Error('Could not restore this pupil\'s saved progress: '+e.message)}
 
    try{
@@ -44,30 +44,28 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#f4f7fb;fon
    }catch(_e){}
 
    msg.textContent='Loading Flashcards…';
-   await loadScript(d,'resources/flashcards-stable.js?v=20260906s',true);
+   await loadScript(d,'resources/flashcards-stable.js?v=20260906t',true);
    try{if(typeof w.PSLE_INSTALL_FLASHCARDS==='function')w.PSLE_INSTALL_FLASHCARDS()}catch(_e){}
    const flashReady=await waitFor(()=>d.getElementById('flashcardTab')&&d.getElementById('flashcardPanel'),5000);
    if(!flashReady)throw new Error('Flashcards could not be added.');
+   await loadScript(d,'resources/flashcard-speech-rescue.js?v=20260906t',false);
 
    msg.textContent='Ready ✓';await sleep(100);boot.style.display='none';
 
-   // Application is deliberately lightweight: no 22-file audit/variant stack.
-   // On first use we load only the compact question engine, PSLE-style question bank,
-   // AI marker and a bounded question-family UI. This prevents synchronous loops and
-   // long script bursts that previously made Chrome report "Page Unresponsive".
    let appState='idle';
    async function loadApplication(){
     if(appState==='ready'||appState==='loading')return;
     appState='loading';
     const badge=d.createElement('div');badge.id='appEnhanceStatus';badge.style.cssText='position:fixed;right:12px;bottom:12px;z-index:99999;padding:8px 11px;border-radius:10px;background:#172033;color:#fff;font:700 12px Arial;box-shadow:0 4px 18px #0003';badge.textContent='Preparing Application questions…';d.body.appendChild(badge);
     try{
+     // Four scripts only. No audit stack, no 180-concept synchronous seeking.
      const files=[
-      'resources/appvariants/engine.js?v=20260906s',
-      'resources/psle-style-questions.js?v=20260906s',
-      'resources/ai-marker.js?v=20260906s',
-      'resources/application-lite-ui.js?v=20260906s'
+      'resources/appvariants/engine.js?v=20260906t',
+      'resources/psle-style-questions.js?v=20260906t',
+      'resources/ai-marker.js?v=20260906t',
+      'resources/application-lite-ui.js?v=20260906t'
      ];
-     for(const src of files){await loadScript(d,src,true);await sleep(60)}
+     for(const src of files){await loadScript(d,src,true);await sleep(80)}
      try{w.eval('render();')}catch(_e){}
      appState='ready';badge.textContent='Application ready ✓';setTimeout(()=>badge.remove(),800);
     }catch(e){appState='failed';badge.textContent='Application extras failed — basic mode still works';badge.style.background='#991b1b';console.error(e);setTimeout(()=>badge.remove(),3500)}
