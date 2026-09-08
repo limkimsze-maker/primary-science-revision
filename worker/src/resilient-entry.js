@@ -1,5 +1,6 @@
 import base from './speech-and-process.js';
 import { handleProgressSync } from './progress-sync.js';
+import { handleAuth } from './auth.js';
 
 const RETRYABLE = new Set([429, 500, 502, 503, 504]);
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -7,6 +8,11 @@ const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+
+    if (url.pathname.startsWith('/auth/')) {
+      const authResponse = await handleAuth(request, env);
+      if (authResponse) return authResponse;
+    }
 
     if (url.pathname === '/progress/sync') {
       const progressResponse = await handleProgressSync(request, env);
