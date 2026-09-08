@@ -1,5 +1,5 @@
 (()=>{
-const VERSION='20260908e';
+const VERSION='20260908f';
 const TARGET_KEY='psleScience_revisit_known_target_v1';
 const DRAFT_KEY='psleScience_revisit_drafts_v1';
 let tries=0,observer=null;
