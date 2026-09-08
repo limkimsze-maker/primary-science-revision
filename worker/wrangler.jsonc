@@ -5,5 +5,12 @@
   "compatibility_date": "2026-09-04",
   "ai": {
     "binding": "AI"
-  }
+  },
+  "d1_databases": [
+    {
+      "binding": "PROGRESS_DB",
+      "database_name": "primary-science-progress",
+      "database_id": "8f4436b4-d569-4d2f-9382-8de2e25605bd"
+    }
+  ]
 }
