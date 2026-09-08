@@ -1,5 +1,5 @@
 (()=>{
-const VERSION='20260908a';
+const VERSION='20260908b';
 const TARGET_KEY='psleScience_revisit_known_target_v1';
 const DRAFT_KEY='psleScience_revisit_drafts_v1';
 let tries=0,observer=null;
@@ -41,7 +41,7 @@ function captureKnownClick(e){
  if(!row.classList.contains('locked'))return;
  const target=targetFromRow(row);if(!target)return;
  e.preventDefault();e.stopPropagation();if(typeof e.stopImmediatePropagation==='function')e.stopImmediatePropagation();
- const m=$('gpsMessage');if(m)m.textContent='Opening this Known item for review… your mastery progress is preserved.';
+ const m=$('gpsMessage');if(m)m.textContent='Opening this exact Known item for review… your mastery progress is preserved.';
  hardOpen(target);
 }
 function openTarget(){
@@ -61,7 +61,7 @@ function openTarget(){
 function enhanceSidebar(){
  const side=$('guidedProgressSidebar');if(!side)return;
  const foot=side.querySelector('.gps-foot');if(foot&&!$('gpsReviewKnownNote')){
-  const n=document.createElement('div');n.id='gpsReviewKnownNote';n.style.cssText='margin-top:7px;padding:8px 9px;border-radius:9px;background:#ecfdf5;color:#047857;font-weight:800;line-height:1.35';n.innerHTML='🔁 <b>Known items stay available.</b> Reopen them at any time. Review attempts never remove your Known progress.';foot.appendChild(n)
+  const n=document.createElement('div');n.id='gpsReviewKnownNote';n.style.cssText='margin-top:7px;padding:8px 9px;border-radius:9px;background:#ecfdf5;color:#047857;font-weight:800;line-height:1.35';n.innerHTML='🔁 <b>Known items stay available.</b> Use the finder above to jump to the exact concept you want. Review attempts never remove your Known progress.';foot.appendChild(n)
  }
  const known=$('gpsKnown');if(known&&!known.title)known.title='Open this list anytime to revisit mastered concepts';
 }
