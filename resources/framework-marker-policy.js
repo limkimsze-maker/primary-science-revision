@@ -16,13 +16,13 @@ const FRAMEWORKS={
 function classify(q){
  const t=norm(q);if(!isExplain(q))return null;
  if(/experiment|investigat|fair test|variable|kept same|keep .* same|repeat|reliab|accurac|apparatus|instrument|controlled/.test(t))return'experiment';
- if(/\bevidence\b|\bresults?\b|\bgraph\b|\btable\b|\bdata\b|what .* show|shows? about|observ(?:e|ed|ation)|using .* result|based on .* result|from .* result/.test(t))return'evidence';
+ if(/\bevidence\b|\bresults?\b|\bgraph\b|\btable\b|\bdata\b|what .* show|shows? about|observ(?:e|ed|ation)|using .* result|based on .* result|based on .* graph|based on .* observation|from .* result|conclusion/.test(t))return'evidence';
  if(/\bcompare\b|two (?:similar|identical)|plant a .* plant b|one .* while another|explain .* difference|\bthan\b.*\bexplain|explain .*\bthan\b|which .* (?:higher|lower|greater|faster|slower|stronger|more|less).*\bexplain/.test(t))return'compare';
- const feature=/feature|structure|adapt|body covering|beak|wing|hooks?|hairs?|webbed|camouflage|surface area|trapped air|material property|transparent|opaque|migration|hibernation|aerial roots?|suitable for|suited to/;
- const functionWord=/help|advantage|function|surviv|dispers|protect|support|suitable|suited|reduce .* chance|obtain food|cope|allows?|enables?/;
+ const feature=/feature|structure|adapt|body covering|beak|wing|hooks?|hairs?|webbed|camouflage|surface area|trapped air|material property|transparent|opaque|migration|hibernation|aerial roots?|suitable for|suited to|nest|thorn|fat layer/;
+ const functionWord=/help|advantage|function|surviv|dispers|protect|support|suitable|suited|reduce .* chance|obtain food|cope|allows?|enables?|safe|predator/;
  if(feature.test(t)&&functionWord.test(t))return'feature';
- const changed=/block(?:s|ed|ing)?|damag(?:e|es|ed|ing)|remov(?:e|es|ed|ing)|injur(?:e|ed)|cover(?:s|ed|ing)?|fewer|\bfew\b|\bless\b|\bmore\b|increas(?:e|es|ed|ing)|decreas(?:e|es|ed|ing)|rises?|falls?|higher|lower|add(?:s|ed|ing)|lost|loses|stops?|cannot|unable|weak|moved closer|moved farther|hotter|cooler|rough|smooth|open(?:s|ed|ing)?|clos(?:e|es|ed|ing)|break|scarce|cleared|pollution|no light|without light|darkness|another battery/;
- const effect=/affect|reduce|increase|decrease|may|eventually|predict|what happens|what may happen|what could happen|does not|cannot|difficulty|why .* die|why .* grow|why .* receive|why .* obtain|why .* absorb|why .* brighter|why .* dimmer|why .* important|why .* not|effect on|lead to|helps?|brighter|dimmer|goes out|stays lit|easier/;
+ const changed=/block(?:s|ed|ing)?|damag(?:e|es|ed|ing)|remov(?:e|es|ed|ing)|injur(?:e|ed)|cover(?:s|ed|ing)?|fewer|\bfew\b|\bless\b|\bmore\b|increas(?:e|es|ed|ing)|decreas(?:e|es|ed|ing)|rises?|falls?|higher|lower|add(?:s|ed|ing)|lost|loses|stops?|cannot|unable|weak|moved closer|moved farther|hotter|cooler|rough|smooth|open(?:s|ed|ing)?|clos(?:e|es|ed|ing)|break|scarce|cleared|pollution|no light|without light|darkness|another battery|figurine|lubricant/;
+ const effect=/affect|reduce|increase|decrease|may|eventually|predict|what happens|what may happen|what could happen|does not|cannot|difficulty|why .* die|why .* grow|why .* receive|why .* obtain|why .* absorb|why .* brighter|why .* dimmer|why .* important|why .* not|effect on|lead to|helps?|brighter|dimmer|goes out|stays lit|easier|slower|faster/;
  if(changed.test(t)&&effect.test(t))return'change';
  return'mechanism';
 }
@@ -34,10 +34,9 @@ function rubricFor(question){
    key,
    f,
    items:[
-     `EXPLAIN FRAMEWORK — Type ${f.n}: ${f.name}. Required logical pattern: ${f.chain}. ${f.rule}`,
-     'SEMANTIC EQUIVALENCE: Mark Science ideas and links, not model wording. Accept scientifically equivalent vocabulary, sentence order and connectors. Minor grammar errors do not make correct Science wrong unless they change the meaning.',
-     'AUDITED CONTEXT/EVIDENCE RULE: Use the actual object, variable, observation or data from this question. An observation must be what was seen/measured, not a restated conclusion. Do not accept generic fair-test/evidence wording when the specific variable or evidence is required. Direction/comparison such as more/less, greater/lower, open/closed and can/cannot must be correct.',
-     'QUALITY: Correct means all mark-bearing ideas required by the command word are clear; never infer a missing causal link from keywords. If correct and every framework link is explicit, context-specific and unambiguous, start STRENGTHS "FRAMEWORK-EXCELLENT:". Otherwise if correct, start STRENGTHS "PSLE-ACCEPTABLE:". Labels are training only.'
+     `10-SCHOOL CALIBRATION + EXPLAIN FRAMEWORK — Type ${f.n}: ${f.name}. Required logical pattern: ${f.chain}. ${f.rule} Full credit requires every mark-bearing Science idea/link needed by the command word to be explicit enough; do not infer a missing causal link merely because the right keywords appear.`,
+     'SEMANTIC + CONTEXT RULE: Accept scientifically equivalent wording, sentence order and connectors; minor grammar errors do not make correct Science wrong unless meaning changes. However, use the actual object/source/variable/observation from THIS question. Evidence must be what was observed/measured (or a valid comparison), not a restated conclusion. Comparative questions need the correct direction/comparative meaning (more/less, greater/lower, faster/slower, open/closed, can/cannot).',
+     'PROCESS-SKILL + QUALITY RULE: Fair test answers must name the relevant variable/condition rather than give only generic wording. Reliability and accuracy are different; for improving reliability of numerical results, repeat trials and average them, while accuracy needs a suitable measurement/procedure. If the answer is correct AND every framework link is explicit, context-specific and unambiguous, start STRENGTHS with "FRAMEWORK-EXCELLENT:". If it is still sufficient for likely full credit but less explicit/polished, start STRENGTHS with "PSLE-ACCEPTABLE:". These are training labels, not official PSLE grades.'
    ]
  };
 }
@@ -53,9 +52,9 @@ window.fetch=async function(input,init){
   if(!policy)return originalFetch(input,init);
 
   const existing=Array.isArray(body.rubric)?body.rubric.slice():[];
-  const merged=[...existing];
-  for(const item of policy.items){if(!merged.includes(item))merged.push(item)}
-  body.rubric=merged.slice(0,12);
+  // The worker reads at most 12 rubric lines. Put the cross-school calibration first
+  // so it can never be silently truncated by a long concept-specific rubric.
+  body.rubric=[...policy.items,...existing].slice(0,12);
   body.frameworkType=policy.f.name;
   body.frameworkChain=policy.f.chain;
 
@@ -73,7 +72,7 @@ window.fetch=async function(input,init){
   const prefix=excellent
     ? `🌟 Excellent — Framework ${policy.f.n}: ${policy.f.name}. All required Science links are explicit and context-specific.`
     : psleAcceptable
-      ? `✅ PSLE-acceptable — Framework ${policy.f.n}: ${policy.f.name}. The required Science meaning is present; exact wording is not required.`
+      ? `✅ PSLE-acceptable — Framework ${policy.f.n}: ${policy.f.name}. The required mark-bearing Science meaning is present; exact wording is not required.`
       : `Use Framework ${policy.f.n} — ${policy.f.name}: ${policy.f.chain}.`;
   data.framework={number:policy.f.n,name:policy.f.name,chain:policy.f.chain};
   data.feedback=[prefix,String(data.feedback||'').trim()].filter(Boolean).join(' ');
@@ -89,11 +88,11 @@ function updateNote(){
  const note=document.getElementById('aiMarkNote');if(!note)return;
  const q=String(document.getElementById('appQuestion')?.textContent||document.querySelector('#gfBody .gf-prompt')?.textContent||'').trim();
  const p=rubricFor(q);
- if(p)note.innerHTML=`AI marks this as <b>Framework ${p.f.n}: ${p.f.name}</b> — ${p.f.chain}. <b>Meaning and mark-bearing links matter; exact wording does not.</b> 🌟 Excellent means the full framework chain is explicit. ✅ PSLE-acceptable means the Science is still sufficient even if the expression is less polished.`;
+ if(p)note.innerHTML=`AI uses the <b>10-school P6 prelim calibration</b> and marks this as <b>Framework ${p.f.n}: ${p.f.name}</b> — ${p.f.chain}. <b>Meaning and mark-bearing links matter; exact wording does not.</b> 🌟 Excellent = full chain explicit. ✅ PSLE-acceptable = likely full-credit Science with less polished expression.`;
 }
 
 const obs=new MutationObserver(()=>setTimeout(updateNote,20));
 try{obs.observe(document.documentElement,{subtree:true,childList:true,characterData:true})}catch(_e){}
 window.addEventListener('load',updateNote,{once:true});setTimeout(updateNote,100);
-window.PSLE_FRAMEWORK_MARKER_POLICY={FRAMEWORKS,classify,rubricFor};
+window.PSLE_FRAMEWORK_MARKER_POLICY={FRAMEWORKS,classify,rubricFor,calibration:'10-school P6 prelim/mock 2026'};
 })();
