@@ -9,7 +9,8 @@ function student(){try{return (localStorage.getItem('psleScience_active_student'
 function api(){return window.PSLE_PROCESS_MERGE||null}
 function flow(){return $('guidedFlow')}
 function scienceIndex(){try{return typeof current==='function'?current():-1}catch(_e){return -1}}
-function stage(){const f=flow();if(api()?.isActive?.())return 'process-'+(api()?.getStage?.()||'flash');return f?.dataset?.stage||'flash'}
+function scienceKnown(){try{const i=scienceIndex();return i>=0&&new Set(rec(i)?.appCorrectDates||[]).size>=1}catch(_e){return false}}
+function currentKnown(){try{return api()?.isActive?.()?!!api()?.isKnown?.(api()?.getCurrentId?.()):scienceKnown()}catch(_e){return false}}
 function draftStore(){return parse(sessionStorage.getItem(DRAFT_KEY),{})}
 function draftId(type){if(api()?.isActive?.())return `${student()}:process:${api()?.getCurrentId?.()||0}:${type}`;return `${student()}:science:${scienceIndex()}:${type}`}
 function saveDraft(el,type){if(!el)return;const all=draftStore(),key=draftId(type);if(!key)return;const value=String(el.value||'');if(value)all[key]=value;else delete all[key];sessionStorage.setItem(DRAFT_KEY,JSON.stringify(all))}
@@ -17,6 +18,16 @@ function restoreDraft(el,type){if(!el||el.value)return;const value=draftStore()[
 function wireDrafts(){
  const recall=$('gfRecall');if(recall&&!recall.dataset.revisitDraft){recall.dataset.revisitDraft='1';restoreDraft(recall,'recall');recall.addEventListener('input',()=>saveDraft(recall,'recall'))}
  const app=$('gfAppAnswer');if(app&&!app.dataset.revisitDraft){app.dataset.revisitDraft='1';restoreDraft(app,'app');app.addEventListener('input',()=>saveDraft(app,'app'))}
+}
+function fixKnownReviewFeedback(){
+ if(!currentKnown())return;
+ const box=$('gfAppFeedback');if(!box)return;
+ let h=box.innerHTML;
+ const next=h
+  .replace(/Cycle complete — this concept is now Known\./g,'Review complete — this concept remains Known.')
+  .replace(/The concept remains Not done until this Application question is correct\./g,'This review attempt does not remove your existing Known progress.')
+  .replace(/The item remains Not done until this Application question is correct\./g,'This review attempt does not remove your existing Known progress.');
+ if(next!==h)box.innerHTML=next;
 }
 function isKnownRow(row){return !!row&&String(row.querySelector('.gps-dot')?.textContent||'').includes('✅')}
 function saveVisibleDraft(){const r=$('gfRecall'),a=$('gfAppAnswer');if(r)saveDraft(r,'recall');if(a)saveDraft(a,'app')}
@@ -27,7 +38,6 @@ function hardOpen(target){
 }
 function captureKnownClick(e){
  const row=e.target?.closest?.('#gpsList .gps-row');if(!row||!isKnownRow(row))return;
- // When the normal sidebar is unlocked, let its existing direct-jump behaviour run.
  if(!row.classList.contains('locked'))return;
  const target=targetFromRow(row);if(!target)return;
  e.preventDefault();e.stopPropagation();if(typeof e.stopImmediatePropagation==='function')e.stopImmediatePropagation();
@@ -38,7 +48,7 @@ function openTarget(){
  const t=parse(sessionStorage.getItem(TARGET_KEY),null);if(!t||t.student!==student())return false;
  sessionStorage.removeItem(TARGET_KEY);
  if(t.kind==='process'){
-  const a=api();if(a?.enter){a.enter(t.id);return true}return false;
+  const a=api();if(a?.enter){a.enter(t.id);const m=$('gpsMessage');if(m)m.textContent=`Reviewing Known Process Skill P${t.id}. Existing mastery remains Known.`;return true}return false;
  }
  const e=typeof BANK!=='undefined'?BANK[t.id]:null,status=$('gfStatus'),topic=$('gfTopic'),search=$('gfSearch');
  if(!e||!status||!topic||!search)return false;
@@ -51,15 +61,15 @@ function openTarget(){
 function enhanceSidebar(){
  const side=$('guidedProgressSidebar');if(!side)return;
  const foot=side.querySelector('.gps-foot');if(foot&&!$('gpsReviewKnownNote')){
-  const n=document.createElement('div');n.id='gpsReviewKnownNote';n.style.cssText='margin-top:7px;padding:8px 9px;border-radius:9px;background:#ecfdf5;color:#047857;font-weight:800;line-height:1.35';n.innerHTML='🔁 <b>Known items stay available.</b> You can reopen them at any time. Reviewing never removes your Known progress.';foot.appendChild(n)
+  const n=document.createElement('div');n.id='gpsReviewKnownNote';n.style.cssText='margin-top:7px;padding:8px 9px;border-radius:9px;background:#ecfdf5;color:#047857;font-weight:800;line-height:1.35';n.innerHTML='🔁 <b>Known items stay available.</b> Reopen them at any time. Review attempts never remove your Known progress.';foot.appendChild(n)
  }
  const known=$('gpsKnown');if(known&&!known.title)known.title='Open this list anytime to revisit mastered concepts';
 }
 function boot(){
  tries++;if(!flow()||!$('guidedProgressSidebar')||typeof BANK==='undefined'||!api()){if(tries<240)setTimeout(boot,80);return}
  document.addEventListener('click',captureKnownClick,true);
- enhanceSidebar();wireDrafts();
- observer=new MutationObserver(()=>{enhanceSidebar();wireDrafts()});observer.observe(flow(),{childList:true,subtree:true});
+ enhanceSidebar();wireDrafts();fixKnownReviewFeedback();
+ observer=new MutationObserver(()=>{enhanceSidebar();wireDrafts();fixKnownReviewFeedback()});observer.observe(flow(),{childList:true,subtree:true,characterData:true});
  setTimeout(openTarget,120);
 }
 boot();
