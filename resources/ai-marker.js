@@ -35,9 +35,9 @@ function noMissing(v){
   return !s||s==='none'||s==='nothing'||s==='nil'||s==='no missing ideas'||s==='nothing missing'||s==='no required ideas are missing';
 }
 
-// Local semantic-equivalence safety net. This does NOT replace the AI marker.
-// It only rescues answers that are already very close in scientific content to the
-// trusted model answer, while rejecting obvious opposite-direction meanings.
+// Local semantic-equivalence safety net. This is deliberately NOT used as a
+// shortcut for Explain/Why answers: those must pass the six-framework audit so
+// a keyword-heavy answer cannot bypass a missing causal link.
 const STOPWORDS=new Set('a an the is are was were be been being to of on in at by for from with and or but so since because therefore hence this that these those it its they them their there as which who whom what when where how used use using'.split(' '));
 function contentTokens(s){return norm(s).split(' ').filter(w=>w&&w.length>1&&!STOPWORDS.has(w))}
 function overlapCount(a,b){const counts=new Map();for(const w of b)counts.set(w,(counts.get(w)||0)+1);let n=0;for(const w of a){const c=counts.get(w)||0;if(c){n++;counts.set(w,c-1)}}return n}
@@ -57,7 +57,6 @@ function nearModelMeaningMatch(payload){
   const A=contentTokens(answer),M=contentTokens(model);
   if(A.length<4||M.length<4)return false;
   const matched=overlapCount(M,A),recall=matched/M.length,precision=matched/A.length;
-  // High threshold: intended for grammar/connector/small wording differences, not loose keyword matching.
   return recall>=0.78&&precision>=0.68&&A.length>=Math.max(4,Math.floor(M.length*0.62));
 }
 
@@ -107,25 +106,25 @@ function rawRating(d){
   return null;
 }
 function auditedRating(d,payload){
-  if(previousImprovedMatch(payload))return {rate:'correct',reason:'previous-improved'};
-  if(nearModelMeaningMatch(payload))return {rate:'correct',reason:'near-model'};
+  const p=questionPolicy(payload?.question);
+  // For Explain/Why, never auto-rescue on wording overlap or a previously improved
+  // sentence. The answer must still be checked for the mark-bearing framework links.
+  if(!p.reason&&previousImprovedMatch(payload))return {rate:'correct',reason:'previous-improved'};
+  if(!p.reason&&nearModelMeaningMatch(payload))return {rate:'correct',reason:'near-model'};
   if(internallySaysCorrect(d,payload))return {rate:'correct',reason:'self-contradiction'};
   if(!d)return {rate:null,reason:''};
-  const p=questionPolicy(payload.question),c=d.criteria||{},raw=rawRating(d);
+  const c=d.criteria||{},raw=rawRating(d);
   const conceptOK=c.conceptCorrect===true||d.conceptCorrect===true;
   const srOK=c.srRequired!==true||c.srMet===true;
   const lrOK=c.lrRequired!==true||c.lrMet===true;
 
-  // Framework categories are not extra marks on questions whose command word does not ask for them.
-  // Keep this conservative: an actual missing Science idea should still be returned as concept/S-R.
   if(conceptOK&&(p.directOnly||p.compareOnly||p.predictOnly||p.suggestOnly||p.describeOnly)&&['de','lr'].includes(raw)){
     return {rate:'correct',reason:'command-word'};
   }
   if(conceptOK&&p.relationship&&['de','sr','lr'].includes(raw))return {rate:'correct',reason:'command-word'};
 
-  // For ordinary Explain/Why questions, S/R is the mark-bearing core. A scenario already printed
-  // in the question does not create a separate D/E mark. Require D/E only when the wording really
-  // calls for data/evidence/results/experimental evidence.
+  // Ordinary Explain/Why questions do not need a separately invented D/E if the
+  // scenario is merely printed in the question. But evidence/data questions do.
   if(raw==='de'&&p.reason&&!p.evidence&&!p.experiment){
     if(!srOK)return {rate:'sr',reason:'command-word'};
     if(!lrOK)return {rate:'lr',reason:'command-word'};
@@ -133,8 +132,13 @@ function auditedRating(d,payload){
   }
   return {rate:raw,reason:''};
 }
-function collectFeedback(d){if(!d)return '';let parts=[];for(const k of ['feedback','missing','strengths','reason','explanation','message']){const v=d[k];if(typeof v==='string'&&v.trim()&&!noMissing(v))parts.push(v.trim())}if(d.improvedAnswer)parts.push('Improved answer: '+d.improvedAnswer);return [...new Set(parts)].join(' ')}
-function ratingTitle(rate){return {correct:'✅ Correct',de:'🟨 D/E missing',sr:'🟧 S/R missing / wrong',lr:'🟪 L/R missing',concept:'❌ Concept not known'}[rate]||'AI result'}
+function cleanFeedbackText(v){return String(v||'').replace(/FRAMEWORK-EXCELLENT:\s*/gi,'').replace(/PSLE-ACCEPTABLE:\s*/gi,'').trim()}
+function collectFeedback(d){if(!d)return '';let parts=[];for(const k of ['feedback','missing','strengths','reason','explanation','message']){const v=d[k];if(typeof v==='string'&&v.trim()&&!noMissing(v))parts.push(cleanFeedbackText(v))}if(d.improvedAnswer)parts.push('Improved answer: '+d.improvedAnswer);return [...new Set(parts.filter(Boolean))].join(' ')}
+function ratingTitle(rate,quality){
+  if(rate==='correct'&&quality==='excellent')return '🌟 Excellent';
+  if(rate==='correct'&&quality==='acceptable')return '✅ PSLE-acceptable';
+  return {correct:'✅ Correct',de:'🟨 D/E missing',sr:'🟧 S/R missing / wrong',lr:'🟪 L/R missing',concept:'❌ Concept not known'}[rate]||'AI result';
+}
 function currentPayload(studentAnswer){
   const i=typeof current==='function'?current():0; const e=(typeof BANK!=='undefined'&&BANK[i])?BANK[i]:{};
   const question=($id('appQuestion')&&$id('appQuestion').textContent||e.applicationQuestion||'').trim();
@@ -144,8 +148,11 @@ function currentPayload(studentAnswer){
   };
 }
 function locallyCertainCorrect(payload){
-  const q=norm(payload?.question),a=norm(payload?.answer),m=norm(payload?.modelAnswer);
+  const q=norm(payload?.question),a=norm(payload?.answer),m=norm(payload?.modelAnswer),p=questionPolicy(payload?.question);
   if(!a)return '';
+  // The 10-school calibration shows that Explain marks often depend on explicit
+  // intermediate links. Do not let token overlap skip that audit.
+  if(p.reason)return '';
   if(previousImprovedMatch(payload))return 'Correct. This is the improved PSLE answer that the marker itself gave. The app will not reject its own model answer.';
   if(m&&a===m&&q&&typeof BANK!=='undefined'){
     const i=typeof current==='function'?current():0,e=BANK[i]||{};
@@ -176,13 +183,13 @@ async function requestAI(payload){
     return data;
   }finally{clearTimeout(timer)}
 }
-function recordAIRating(rate,detail){
+function recordAIRating(rate,detail,quality){
   if(typeof rateApp==='function')rateApp(rate);
   const box=$id('appFeedback'); if(!box)return;
   const cls=rate==='correct'?'good':rate==='lr'?'purplebox':'wrong';
   const i=typeof current==='function'?current():0; let mastery='';
   try{const x=typeof rec==='function'?rec(i):null;if(x&&rate==='correct')mastery=`<br><span class="small">Application mastery: ${new Set(x.appCorrectDates||[]).size}/2 different days.</span>`}catch(_e){}
-  box.className=`fb ${cls}`; box.innerHTML=`<b>🤖 ${ratingTitle(rate)}</b>${detail?`<br>${escHtml(detail)}`:''}${mastery}`;
+  box.className=`fb ${cls}`; box.innerHTML=`<b>🤖 ${ratingTitle(rate,quality)}</b>${detail?`<br>${escHtml(detail)}`:''}${mastery}`;
 }
 async function markWithAI(){
   const ans=$id('appAnswer'); const student=(ans&&ans.value||'').trim();
@@ -191,14 +198,15 @@ async function markWithAI(){
   const payload=currentPayload(student);
   try{
     const certain=locallyCertainCorrect(payload);
-    if(certain){recordAIRating('correct',certain);setStatus('● AI ready','#166534');return}
+    if(certain){recordAIRating('correct',certain,'');setStatus('● AI ready','#166534');return}
     const data=await requestAI(payload); const audit=auditedRating(data,payload); let detail=collectFeedback(data);
+    const quality=audit.rate==='correct'?String(data?.frameworkQuality||''):'';
     if(audit.rate==='correct'&&audit.reason==='command-word')detail='Correct after PSLE command-word audit. The first AI pass asked for a D/E, S/R or L/R component that this exact question does not separately require.';
     if(audit.rate==='correct'&&audit.reason==='previous-improved')detail='Correct. This matches the improved PSLE answer previously supplied by the marker.';
     if(audit.rate==='correct'&&audit.reason==='near-model')detail='Correct. The scientific meaning matches the model closely; minor grammar, connector or sentence-structure differences are not penalised.';
     if(audit.rate==='correct'&&audit.reason==='self-contradiction')detail='Correct. The AI response was internally contradictory, so the app accepted the scientifically complete answer.';
     if(!audit.rate){const b=$id('appFeedback');if(b){b.className='fb warnbox';b.innerHTML='<b>AI replied, but the mark could not be read.</b><br><span class="small">'+escHtml(detail||'Please try again.')+'</span>'};setStatus('● AI response received','#b45309')}
-    else{recordAIRating(audit.rate,detail);setStatus('● AI ready','#166534')}
+    else{recordAIRating(audit.rate,detail,quality);setStatus('● AI ready','#166534')}
   }catch(err){
     const msg=err&&err.name==='AbortError'?'AI marking timed out. Please try again.':`AI marker unavailable: ${err&&err.message?err.message:err}`;
     const b=$id('appFeedback');if(b){b.className='fb wrong';b.innerHTML='<b>Could not reach the AI marker.</b><br><span class="small">'+escHtml(msg)+'</span>'};setStatus('● AI unavailable','#991b1b')
