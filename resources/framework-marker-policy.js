@@ -37,7 +37,7 @@ function rubricFor(question){
      `EXPLAIN FRAMEWORK — Type ${f.n}: ${f.name}. Required logical pattern: ${f.chain}. ${f.rule}`,
      'SEMANTIC EQUIVALENCE: Mark Science ideas and links, not model wording. Accept scientifically equivalent vocabulary, sentence order and connectors. Minor grammar errors do not make correct Science wrong unless they change the meaning.',
      'AUDITED CONTEXT/EVIDENCE RULE: Use the actual object, variable, observation or data from this question. An observation must be what was seen/measured, not a restated conclusion. Do not accept generic fair-test/evidence wording when the specific variable or evidence is required. Direction/comparison such as more/less, greater/lower, open/closed and can/cannot must be correct.',
-     'FULL-CREDIT/QUALITY RULE: Correct means every mark-bearing Science idea needed by the command word is explicit enough for likely full credit; do not infer a missing causal link from keywords. If correct AND every framework link is explicit, context-specific and unambiguous, begin STRENGTHS with "FRAMEWORK-EXCELLENT:". If correct but scientifically clear with a compressed/implicit non-mark-bearing link, begin STRENGTHS with "PSLE-ACCEPTABLE:". These are training labels, not official PSLE grades.'
+     'QUALITY: Correct means all mark-bearing ideas required by the command word are clear; never infer a missing causal link from keywords. If correct and every framework link is explicit, context-specific and unambiguous, start STRENGTHS "FRAMEWORK-EXCELLENT:". Otherwise if correct, start STRENGTHS "PSLE-ACCEPTABLE:". Labels are training only.'
    ]
  };
 }
