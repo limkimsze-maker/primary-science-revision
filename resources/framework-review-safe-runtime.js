@@ -15,7 +15,11 @@ function key(){
 }
 function refresh(){
   if(busy)return;busy=true;
-  try{window.PSLE_FRAMEWORK_192?.refresh?.()}catch(_e){}
+  try{
+    window.PSLE_FRAMEWORK_192?.refresh?.();
+    window.PSLE_FRAMEWORK_192_VARIANTS?.apply?.();
+    window.PSLE_FRAMEWORK_QUESTION_QUALITY?.apply?.();
+  }catch(_e){}
   finally{setTimeout(()=>busy=false,80)}
 }
 realSet(()=>{const k=key();if(k&&k!==lastKey){lastKey=k;refresh()}},650);
@@ -26,5 +30,6 @@ document.addEventListener('change',e=>{
   if(['fcFrameworkFilter','gfStatus','gfTopic','gfSort'].includes(e.target?.id))setTimeout(refresh,80);
 });
 document.addEventListener('psle-cloud-progress-updated',()=>setTimeout(refresh,100));
+document.addEventListener('psle-framework-192-updated',()=>setTimeout(()=>window.PSLE_FRAMEWORK_QUESTION_QUALITY?.apply?.(),40));
 setTimeout(refresh,100);
 })();
