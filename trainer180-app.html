@@ -78,6 +78,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#f4f7fb;fon
      await Promise.all([loadScript(d,'resources/ai-marker.js?v='+V,true),loadScript(d,'resources/application-lite-ui.js?v='+V,true)]);
      try{w.eval('render();')}catch(_e){}
      if(w.PSLE_FRAMEWORK_192?.refresh)try{w.PSLE_FRAMEWORK_192.refresh()}catch(_e){}
+     if(w.PSLE_FRAMEWORK_192_VARIANTS?.apply)try{w.PSLE_FRAMEWORK_192_VARIANTS.apply()}catch(_e){}
      appState='ready';badge.textContent='Application ready ✓';setTimeout(()=>badge.remove(),450);
     }catch(e){appState='failed';badge.textContent='Application tools failed to load';badge.style.background='#991b1b';console.error(e);setTimeout(()=>badge.remove(),3500)}
    }
@@ -97,6 +98,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#f4f7fb;fon
    await loadScript(d,'resources/known-answer.js?v='+V,true);
    await loadScript(d,'resources/framework-coach.js?v='+V,true);
    await loadScript(d,'resources/framework-review-192.js?v='+V,true);
+   await loadScript(d,'resources/framework-review-variants.js?v='+V,true);
    await loadScript(d,'resources/psle-acceptable-rescue.js?v='+V,false);
    await loadScript(d,'resources/motivation-layer.js?v='+V,true);
    await loadScript(d,'resources/universal-display.js?v='+V,true);
