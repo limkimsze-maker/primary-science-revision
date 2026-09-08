@@ -28,6 +28,7 @@ function boot(){
 function installDesktop(layout,side,flow){
   if(!$('gpsSidebarToggleStyle')){
     const s=d.createElement('style');s.id='gpsSidebarToggleStyle';s.textContent=`
+    #gfClassic{display:none!important}
     #gpsMasteryToggle{border:1px solid #c7d2fe;border-radius:11px;background:#fff;color:#3730a3;padding:8px 11px;min-height:40px;font:900 12px Arial;cursor:pointer;white-space:nowrap;box-shadow:0 3px 10px #0f172a0b}
     #gpsMasteryToggle:hover{background:#eef2ff}
     #gpsMasteryToggle[aria-expanded="true"]{background:#4338ca;color:#fff;border-color:#4338ca}
@@ -41,6 +42,7 @@ function installDesktop(layout,side,flow){
   if(!$('gpsMasteryToggle')){
     const b=d.createElement('button');b.id='gpsMasteryToggle';b.type='button';b.setAttribute('aria-controls','guidedProgressSidebar');
     const top=flow.querySelector('.gf-top');const classic=$('gfClassic');
+    if(classic)classic.style.display='none';
     if(classic)classic.insertAdjacentElement('beforebegin',b);else top?.appendChild(b);
     b.onclick=()=>{
       const show=layout.classList.contains('gps-sidebar-hidden');
