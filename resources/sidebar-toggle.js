@@ -1,5 +1,5 @@
 (()=>{
-const KEY='psleScience_sidebar_visible_v1';
+const KEY='psleScience_sidebar_visible_v2';
 let tries=0;
 const d=document,$=id=>d.getElementById(id);
 function wanted(){try{return localStorage.getItem(KEY)==='1'}catch(_e){return false}}
