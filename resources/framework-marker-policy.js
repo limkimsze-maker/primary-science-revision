@@ -34,10 +34,10 @@ function rubricFor(question){
    key,
    f,
    items:[
-     `EXPLAIN FRAMEWORK — Type ${f.n}: ${f.name}. Required logical pattern: ${f.chain}.`,
-     `FRAMEWORK MEANING CHECK: ${f.rule}`,
-     'SEMANTIC EQUIVALENCE RULE: Accept different wording, sentence structure and connectors when the same scientific meaning and logical links are clear. Minor grammar errors must NOT make a scientifically correct answer wrong unless they change the meaning. Do not require the literal words “because”, “therefore”, “hence”, “allows” or any model-answer phrase.',
-     'FRAMEWORK COMPLETENESS RULE: Do not award full credit for isolated Science keywords. The pupil must express the required relationship or causal/mechanistic link for this framework. If one link is missing, say which framework step is missing and give a concise repair.'
+     `EXPLAIN FRAMEWORK — Type ${f.n}: ${f.name}. Required logical pattern: ${f.chain}. ${f.rule}`,
+     'SEMANTIC EQUIVALENCE: Mark Science ideas and links, not model wording. Accept scientifically equivalent vocabulary, sentence order and connectors. Minor grammar errors do not make correct Science wrong unless they change the meaning.',
+     'AUDITED CONTEXT/EVIDENCE RULE: Use the actual object, variable, observation or data from this question. An observation must be what was seen/measured, not a restated conclusion. Do not accept generic fair-test/evidence wording when the specific variable or evidence is required. Direction/comparison such as more/less, greater/lower, open/closed and can/cannot must be correct.',
+     'FULL-CREDIT/QUALITY RULE: Correct means every mark-bearing Science idea needed by the command word is explicit enough for likely full credit; do not infer a missing causal link from keywords. If correct AND every framework link is explicit, context-specific and unambiguous, begin STRENGTHS with "FRAMEWORK-EXCELLENT:". If correct but scientifically clear with a compressed/implicit non-mark-bearing link, begin STRENGTHS with "PSLE-ACCEPTABLE:". These are training labels, not official PSLE grades.'
    ]
  };
 }
@@ -66,9 +66,15 @@ window.fetch=async function(input,init){
 
   const rating=String(data.rating||data.verdict||'').toLowerCase();
   const accepted=rating==='correct'||rating==='accepted'||rating==='pass'||rating==='full';
-  const prefix=accepted
-    ? `Framework ${policy.f.n} — ${policy.f.name}: accepted. The scientific meaning follows ${policy.f.chain}; exact wording is not required.`
-    : `Use Framework ${policy.f.n} — ${policy.f.name}: ${policy.f.chain}.`;
+  const strengths=String(data.strengths||'');
+  const excellent=accepted&&/FRAMEWORK-EXCELLENT:/i.test(strengths);
+  const psleAcceptable=accepted&&!excellent;
+  data.frameworkQuality=excellent?'excellent':psleAcceptable?'acceptable':'needs-work';
+  const prefix=excellent
+    ? `🌟 Excellent — Framework ${policy.f.n}: ${policy.f.name}. All required Science links are explicit and context-specific.`
+    : psleAcceptable
+      ? `✅ PSLE-acceptable — Framework ${policy.f.n}: ${policy.f.name}. The required Science meaning is present; exact wording is not required.`
+      : `Use Framework ${policy.f.n} — ${policy.f.name}: ${policy.f.chain}.`;
   data.framework={number:policy.f.n,name:policy.f.name,chain:policy.f.chain};
   data.feedback=[prefix,String(data.feedback||'').trim()].filter(Boolean).join(' ');
 
@@ -83,7 +89,7 @@ function updateNote(){
  const note=document.getElementById('aiMarkNote');if(!note)return;
  const q=String(document.getElementById('appQuestion')?.textContent||document.querySelector('#gfBody .gf-prompt')?.textContent||'').trim();
  const p=rubricFor(q);
- if(p)note.innerHTML=`AI marks this as <b>Framework ${p.f.n}: ${p.f.name}</b> — ${p.f.chain}. <b>Meaning and logical links matter; exact wording does not.</b> Minor grammar differences are accepted if the Science remains clear.`;
+ if(p)note.innerHTML=`AI marks this as <b>Framework ${p.f.n}: ${p.f.name}</b> — ${p.f.chain}. <b>Meaning and mark-bearing links matter; exact wording does not.</b> 🌟 Excellent means the full framework chain is explicit. ✅ PSLE-acceptable means the Science is still sufficient even if the expression is less polished.`;
 }
 
 const obs=new MutationObserver(()=>setTimeout(updateNote,20));
