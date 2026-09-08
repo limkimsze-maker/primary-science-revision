@@ -31,7 +31,7 @@ function scoreCandidate(c,e){
 }
 function f5Fallback(e){
  const t=norm(`${e?.topic||''} ${e?.phrasePrompt||''}`),cue=String(e?.phrasePrompt||'').trim().replace(/\?$/,'');
- if(/leaves gaseous exchange|stomata/.test(t))return 'Leaves have tiny openings called stomata. Explain how these openings enable gaseous exchange with the surroundings.';
+ if(/leaves gaseous exchange|stomata/.test(t))return 'A pupil observes tiny openings called stomata on a leaf. Explain how the stomata allow gaseous exchange with the surroundings.';
  if(/roots anchorage/.test(t))return 'A plant has many roots growing through the soil. Explain how the roots help to keep the plant firmly in place.';
  if(/roots absorption/.test(t))return 'Roots are in contact with the soil. Explain how roots help the plant obtain water and mineral salts from the soil.';
  if(/stem support/.test(t))return 'The stem holds a plant upright. Explain how this helps the leaves receive light for food-making.';
@@ -40,7 +40,7 @@ function f5Fallback(e){
  if(/flowers?/.test(t))return 'Explain how flowers help a flowering plant reproduce.';
  if(/fruits? and seeds?|fruit/.test(t))return 'A fruit contains seeds. Explain how the fruit and seeds help the flowering plant reproduce successfully.';
  if(/^how\b/i.test(cue))return `Explain ${cue.charAt(0).toLowerCase()+cue.slice(1)}.`;
- return `Explain how the structure or feature described in ${String(e?.topic||'this concept').toLowerCase()} helps it carry out its function.`;
+ return `Explain how the feature described in ${String(e?.topic||'this concept').toLowerCase()} helps to carry out its function.`;
 }
 function choose(item,e){
  const cs=candidates(e,item.id).map(c=>({...c,f:classify(c.q)}));
@@ -78,5 +78,7 @@ function apply(){
  return true;
 }
 window.PSLE_FRAMEWORK_QUESTION_QUALITY={apply,classify};
-let n=0;const wait=()=>{n++;if(apply()&&window.APP_VARIANTS)return;if(n<80)setTimeout(wait,250)};wait();
+// Do not poll while the pupil is studying. The trainer calls apply() once the
+// authored Application variants are loaded, so this layer never blocks stage changes.
+if(window.APP_VARIANTS)apply();
 })();
