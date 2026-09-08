@@ -35,7 +35,7 @@ document.addEventListener('psle-framework-192-updated',()=>setTimeout(light,40))
 
 // Teacher/debug viewer: shows the Application question for the currently selected
 // flashcard without changing Known status, recall history or cloud progress.
-const DBG_VERSION='20260909b';
+const DBG_VERSION='20260909c';
 const DBG_Q_FILES=[
  'resources/appvariants/01-diversity-classification.js',
  'resources/appvariants/02-plant-structures-functions.js',
@@ -86,6 +86,9 @@ function dbgInstall(){
   `;document.head.appendChild(style);
   const btn=document.createElement('button');btn.id='psleDebugQuestionBtn';btn.type='button';btn.textContent='🔧 Debug App Q';document.body.appendChild(btn);
   btn.onclick=async()=>{
+    const entered=window.prompt('Teacher password');
+    if(entered===null)return;
+    if(String(entered).trim()!=='67'){window.alert('Incorrect password.');return}
     btn.disabled=true;const old=btn.textContent;btn.textContent='Loading question…';
     try{
       await dbgEnsureQuestions();
