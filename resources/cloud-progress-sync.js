@@ -2,7 +2,6 @@
 if(window.PSLE_CLOUD_PROGRESS)return;
 
 const ENDPOINT='https://primary-science-ai-marker.limkimsze-maker.workers.dev/progress/sync';
-const SYNC_CODE_KEY='psleScience_cloud_sync_code_v1';
 const SCIENCE_KEY='psleScience180_book_master_v1';
 const PROCESS_KEY='psleScience_process_skills_v1';
 const SYNC_KEYS=new Set([SCIENCE_KEY,PROCESS_KEY]);
@@ -14,9 +13,8 @@ let syncing=false,timer=0,lastStatus='idle';
 const validStudent=['jerry','javis'].includes(student);
 const now=()=>Date.now();
 const parse=s=>{try{return JSON.parse(String(s||''))||{}}catch(_e){return{}}};
-const uniq=(a,b)=>[...new Set([...(Array.isArray(a)?a:[]),...(Array.isArray(b)?b:[])])].sort();
-const max=(a,b)=>Math.max(Number(a)||0,Number(b)||0);
-
+function tokenKey(){return `psleScience_cloud_auth_token_${student}`}
+function getToken(){return String(rawGet.call(localStorage,tokenKey())||'').trim()}
 function profileRawKey(base){return `${base}__profile_${student}`}
 function readProfile(base){return parse(rawGet.call(localStorage,profileRawKey(base)))}
 function writeProfile(base,obj){rawSet.call(localStorage,profileRawKey(base),JSON.stringify(obj))}
@@ -45,22 +43,9 @@ function stampProcess(next,prev){
   return out;
 }
 
-function getSyncCode(){return String(rawGet.call(localStorage,SYNC_CODE_KEY)||'').trim()}
-function setSyncCode(code){
-  const v=String(code||'').trim();
-  if(v&&v.length<16)throw new Error('Cloud sync code must be at least 16 characters.');
-  if(v)rawSet.call(localStorage,SYNC_CODE_KEY,v);else localStorage.removeItem(SYNC_CODE_KEY);
-  return v;
-}
-function generateSyncCode(){
-  const bytes=new Uint8Array(18);crypto.getRandomValues(bytes);
-  const code='PSLE-'+[...bytes].map(b=>b.toString(16).padStart(2,'0')).join('');
-  setSyncCode(code);return code;
-}
-
 async function postSync(){
   if(!validStudent)return {ok:false,reason:'no-student'};
-  const syncCode=getSyncCode();if(!syncCode)return {ok:false,reason:'no-code'};
+  const token=getToken();if(!token)return {ok:false,reason:'not-signed-in'};
   if(syncing)return {ok:false,reason:'busy'};
   syncing=true;lastStatus='syncing';
   try{
@@ -68,12 +53,13 @@ async function postSync(){
       [SCIENCE_KEY]:readProfile(SCIENCE_KEY),
       [PROCESS_KEY]:readProfile(PROCESS_KEY)
     };
-    const ctl=new AbortController();const t=setTimeout(()=>ctl.abort(),10000);
+    const ctl=new AbortController();const t=setTimeout(()=>ctl.abort(),12000);
     let res;
     try{
-      res=await fetch(ENDPOINT,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({student,syncCode,states}),signal:ctl.signal});
+      res=await fetch(ENDPOINT,{method:'POST',headers:{'content-type':'application/json','authorization':`Bearer ${token}`},body:JSON.stringify({states}),signal:ctl.signal});
     }finally{clearTimeout(t)}
     const data=await res.json().catch(()=>({}));
+    if(res.status===401){rawSet.call(localStorage,tokenKey(),'');throw new Error('Your cloud session expired. Please sign in again.');}
     if(!res.ok)throw new Error(data?.error||`Cloud sync HTTP ${res.status}`);
     if(data?.states?.[SCIENCE_KEY])writeProfile(SCIENCE_KEY,data.states[SCIENCE_KEY]);
     if(data?.states?.[PROCESS_KEY])writeProfile(PROCESS_KEY,data.states[PROCESS_KEY]);
@@ -88,17 +74,15 @@ async function postSync(){
 }
 
 function scheduleSync(delay=2500){
-  if(!getSyncCode()||!validStudent)return;
+  if(!getToken()||!validStudent)return;
   clearTimeout(timer);timer=setTimeout(()=>postSync(),delay);
 }
 
-// Wrap writes after profile-storage.js. The wrapper adds per-item timestamps so
-// future two-device conflicts can be resolved without throwing away additive progress.
 const previousSet=Storage.prototype.setItem;
 Storage.prototype.setItem=function(k,v){
   if(this===localStorage&&SYNC_KEYS.has(k)&&validStudent){
     try{
-      const prev=readProfile(k);const next=parse(v);
+      const prev=readProfile(k),next=parse(v);
       const stamped=k===SCIENCE_KEY?stampScience(next,prev):stampProcess(next,prev);
       const result=previousSet.call(this,k,JSON.stringify(stamped));
       scheduleSync();return result;
@@ -108,19 +92,10 @@ Storage.prototype.setItem=function(k,v){
 };
 
 async function initialSync(){
-  if(!getSyncCode()||!validStudent)return {ok:false,reason:'no-code'};
+  if(!getToken()||!validStudent)return {ok:false,reason:'not-signed-in'};
   return postSync();
 }
 
-window.PSLE_CLOUD_PROGRESS={
-  endpoint:ENDPOINT,
-  student,
-  getSyncCode,
-  setSyncCode,
-  generateSyncCode,
-  initialSync,
-  syncNow:postSync,
-  scheduleSync,
-  get status(){return lastStatus}
-};
+window.PSLE_CLOUD_PROGRESS={endpoint:ENDPOINT,student,getToken,initialSync,syncNow:postSync,scheduleSync,get status(){return lastStatus}};
+setTimeout(()=>initialSync(),180);
 })();
