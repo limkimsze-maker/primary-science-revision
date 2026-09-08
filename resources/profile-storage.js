@@ -88,7 +88,17 @@
   // writes only this child's scoped records and merges them with D1.
   try{
     const s=document.createElement('script');
-    s.src='resources/cloud-progress-sync.js?v=20260908r';
+    s.src='resources/cloud-progress-sync.js?v=20260908t';
+    s.async=false;
+    document.head.appendChild(s);
+  }catch(_e){}
+
+  // Marking safeguard: the six frameworks are thinking scaffolds, not rigid
+  // sentence slots. A scientifically complete Change→Effect answer may compress
+  // the chain into two sentences and should still be PSLE-acceptable.
+  try{
+    const s=document.createElement('script');
+    s.src='resources/psle-acceptable-rescue.js?v=20260908t';
     s.async=false;
     document.head.appendChild(s);
   }catch(_e){}
