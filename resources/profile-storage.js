@@ -46,9 +46,6 @@
     return rawRemove.call(this,k);
   };
   Storage.prototype.clear=function(){
-    // Do not allow the trainer to wipe the other child's records accidentally.
-    // Current app reset buttons use removeItem/setItem rather than clear(), but this
-    // defensive override preserves profile separation if clear() is ever called.
     const keep=[];
     for(let i=0;i<this.length;i++){
       const k=this.key(i);
@@ -60,4 +57,35 @@
 
   window.PSLE_ACTIVE_STUDENT=active;
   window.PSLE_ACTIVE_STUDENT_NAME=active==='jerry'?'Jerry':'Javis';
+
+  // After the cloud has merged this device with the server copy, reload the
+  // trainer's in-memory state so the combined progress is visible immediately.
+  document.addEventListener('psle-cloud-synced',()=>{
+    try{
+      if(typeof loadState==='function')window.S=loadState();
+      if(typeof buildQueue==='function')buildQueue();
+      if(typeof render==='function')render();
+    }catch(_e){}
+    try{
+      let b=document.getElementById('cloudSyncBadge');
+      if(!b){b=document.createElement('div');b.id='cloudSyncBadge';b.style.cssText='position:fixed;left:10px;bottom:10px;z-index:99999;background:#ecfdf5;color:#047857;border:1px solid #a7f3d0;border-radius:999px;padding:6px 9px;font:800 11px Arial;box-shadow:0 3px 12px #0001';document.body.appendChild(b)}
+      b.textContent='☁ Cloud progress synced';setTimeout(()=>{if(b)b.style.opacity='.55'},1800);
+    }catch(_e){}
+  });
+  document.addEventListener('psle-cloud-sync-error',e=>{
+    try{
+      let b=document.getElementById('cloudSyncBadge');
+      if(!b){b=document.createElement('div');b.id='cloudSyncBadge';b.style.cssText='position:fixed;left:10px;bottom:10px;z-index:99999;border-radius:999px;padding:6px 9px;font:800 11px Arial;box-shadow:0 3px 12px #0001';document.body.appendChild(b)}
+      b.style.background='#fff7ed';b.style.color='#9a3412';b.style.border='1px solid #fed7aa';b.textContent='☁ Local save active · cloud unavailable';
+    }catch(_e){}
+  });
+
+  // The sync layer is intentionally loaded after profile scoping. It reads and
+  // writes only this child's scoped records and merges them with D1.
+  try{
+    const s=document.createElement('script');
+    s.src='resources/cloud-progress-sync.js?v=20260908p';
+    s.async=false;
+    document.head.appendChild(s);
+  }catch(_e){}
 })();
