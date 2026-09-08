@@ -16,6 +16,23 @@ function installStabilityFix(){
     return nativeScrollIntoView.apply(this,args);
   };
 }
+function showAllFrameworkRows(){
+  const sel=$('fcFrameworkFilter');if(sel)sel.value='all';
+  const list=$('gpsList');if(list){
+    list.querySelectorAll('.gps-row,.gps-group').forEach(el=>el.style.display='');
+  }
+  const first=$('gpsOpenFirst');if(first)first.style.display='';
+}
+function installKnownListFix(){
+  if(window.__PSLE_KNOWN_LIST_FRAMEWORK_FIX__)return;
+  window.__PSLE_KNOWN_LIST_FRAMEWORK_FIX__=true;
+  const reset=()=>setTimeout(showAllFrameworkRows,90);
+  $('gpsKnown')?.addEventListener('click',reset);
+  $('gpsNotDone')?.addEventListener('click',reset);
+  // The framework dropdown is optional. Known / Not done tabs must always reopen
+  // as complete lists so framework grouping never makes mastered items seem lost.
+  showAllFrameworkRows();
+}
 function boot(){
   tries++;
   const layout=$('guidedLayout'),side=$('guidedProgressSidebar'),flow=$('guidedFlow');
@@ -23,6 +40,7 @@ function boot(){
   installStabilityFix();
   installDesktop(layout,side,flow);
   wireMobile();
+  installKnownListFix();
   addEventListener('resize',()=>{syncDesktop(layout);wireMobile()},{passive:true});
 }
 function installDesktop(layout,side,flow){
