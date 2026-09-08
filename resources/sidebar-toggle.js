@@ -5,10 +5,22 @@ const d=document,$=id=>d.getElementById(id);
 function wanted(){try{return localStorage.getItem(KEY)==='1'}catch(_e){return false}}
 function save(v){try{localStorage.setItem(KEY,v?'1':'0')}catch(_e){}}
 function mobile(){return matchMedia('(max-width:700px)').matches}
+function installStabilityFix(){
+  if(window.__PSLE_GPS_SCROLL_STABILITY__)return;
+  window.__PSLE_GPS_SCROLL_STABILITY__=true;
+  const nativeScrollIntoView=Element.prototype.scrollIntoView;
+  Element.prototype.scrollIntoView=function(...args){
+    try{
+      if(this?.classList?.contains('gps-row')&&this.closest?.('#gpsList'))return;
+    }catch(_e){}
+    return nativeScrollIntoView.apply(this,args);
+  };
+}
 function boot(){
   tries++;
   const layout=$('guidedLayout'),side=$('guidedProgressSidebar'),flow=$('guidedFlow');
   if(!layout||!side||!flow){if(tries<240)setTimeout(boot,80);return}
+  installStabilityFix();
   installDesktop(layout,side,flow);
   wireMobile();
   addEventListener('resize',()=>{syncDesktop(layout);wireMobile()},{passive:true});
