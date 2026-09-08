@@ -36,12 +36,18 @@ function installDesktop(layout,side,flow){
       if(show)setTimeout(()=>$('gpsFind')?.focus(),80);
     };
   }
+  const collapse=$('gpsCollapse');
+  if(collapse){
+    collapse.textContent='×';collapse.title='Hide sidebar';collapse.setAttribute('aria-label','Hide sidebar');
+    collapse.onclick=()=>{setDesktop(layout,false);save(false)};
+  }
   setDesktop(layout,wanted());
 }
 function setDesktop(layout,show){
   if(mobile())return;
+  layout.classList.remove('gps-collapsed');
   layout.classList.toggle('gps-sidebar-hidden',!show);
-  const b=$('gpsMasteryToggle');if(b){b.setAttribute('aria-expanded',show?'true':'false');b.textContent=show?'✕ Hide mastery list':'☰ Show mastery list'}
+  const b=$('gpsMasteryToggle');if(b){b.setAttribute('aria-expanded',show?'true':'false');b.textContent=show?'✕ Hide sidebar':'☰ Show sidebar'}
 }
 function syncDesktop(layout){if(!mobile())setDesktop(layout,wanted())}
 function wireMobile(){
@@ -51,7 +57,8 @@ function wireMobile(){
     if(b.dataset.showHideReady)return;b.dataset.showHideReady='1';
     const update=()=>{
       const open=d.body.classList.contains('ud-list-open'),badge=$('udListBadge')?.textContent||'';
-      b.innerHTML=`<span>${open?'✕ Hide mastery list':'☰ Show mastery list'}</span>${badge?`<span class="ud-badge" id="udListBadge">${badge}</span>`:''}`;
+      b.innerHTML=`<span>${open?'✕ Hide sidebar':'☰ Show sidebar'}</span>${badge?`<span class="ud-badge" id="udListBadge">${badge}</span>`:''}`;
+      b.setAttribute('aria-expanded',open?'true':'false');b.setAttribute('aria-controls','guidedProgressSidebar');
     };
     b.addEventListener('click',()=>setTimeout(update,0));
     $('udCloseList')?.addEventListener('click',()=>setTimeout(update,0));
