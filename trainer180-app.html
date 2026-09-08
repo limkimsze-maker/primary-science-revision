@@ -20,7 +20,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#f4f7fb;fon
 <div id="boot"><div id="bootCard"><div id="bootMsg">Loading Science trainer…</div><div class="small">192 items · Recall → Memorise → Apply</div><div id="errorBox"></div></div></div>
 <script>
 (async()=>{
- const V='20260909b';
+ const V='20260909c';
  document.getElementById('switchStudent').onclick=()=>location.replace('signin.html?v='+V);
  const student=(localStorage.getItem('psleScience_active_student')||'').toLowerCase();
  if(!['jerry','javis'].includes(student)){location.replace('signin.html?v='+V);return}
@@ -76,8 +76,6 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#f4f7fb;fon
     const badge=d.createElement('div');badge.id='appEnhanceStatus';badge.style.cssText='position:fixed;right:12px;bottom:12px;z-index:99999;padding:8px 11px;border-radius:10px;background:#172033;color:#fff;font:700 12px Arial;box-shadow:0 4px 18px #0003';badge.textContent='Preparing a prelim-linked Application question…';d.body.appendChild(badge);
     try{
      await Promise.all(variantFiles.map(src=>loadScript(d,src,true)));
-     // General audit first; uploaded-2026-prelim source layer last so a suitable
-     // paper question has first priority for every matching flashcard.
      await loadScript(d,overrideFiles[0],true);
      await loadScript(d,overrideFiles[1],true);
      await loadScript(d,'resources/appvariants/engine.js?v='+V,true);
