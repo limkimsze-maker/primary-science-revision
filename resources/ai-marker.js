@@ -13,7 +13,7 @@ function installUI(){
   row.innerHTML='<button class="primary" id="aiMarkBtn">🤖 AI Mark My Answer</button><span id="aiStatus" class="small" style="font-weight:700;color:#166534">● AI ready</span>';
   answer.insertAdjacentElement('afterend',row);
   const note=document.createElement('div'); note.className='small'; note.id='aiMarkNote'; note.style.marginTop='6px';
-  note.innerHTML='AI follows the <b>same command-word rules as the 2 PSLE posters</b>. A second local PSLE audit checks every AI result so a pupil is not penalised for D/E, S/R or L/R that the question did not actually require.';
+  note.innerHTML='AI follows the <b>same command-word rules as the PSLE posters</b>. Scientifically equivalent wording is accepted; minor grammar, connector, punctuation or sentence-order differences do <b>not</b> turn correct Science into a wrong answer.';
   row.insertAdjacentElement('afterend',note);
   const rating=app.querySelector('.rating');
   if(rating){const label=document.createElement('div');label.className='small';label.style.marginTop='10px';label.style.fontWeight='700';label.textContent='Manual override (use only if you disagree with the AI mark):';rating.parentNode.insertBefore(label,rating)}
@@ -34,6 +34,33 @@ function noMissing(v){
   const s=norm(v);
   return !s||s==='none'||s==='nothing'||s==='nil'||s==='no missing ideas'||s==='nothing missing'||s==='no required ideas are missing';
 }
+
+// Local semantic-equivalence safety net. This does NOT replace the AI marker.
+// It only rescues answers that are already very close in scientific content to the
+// trusted model answer, while rejecting obvious opposite-direction meanings.
+const STOPWORDS=new Set('a an the is are was were be been being to of on in at by for from with and or but so since because therefore hence this that these those it its they them their there as which who whom what when where how used use using'.split(' '));
+function contentTokens(s){return norm(s).split(' ').filter(w=>w&&w.length>1&&!STOPWORDS.has(w))}
+function overlapCount(a,b){const counts=new Map();for(const w of b)counts.set(w,(counts.get(w)||0)+1);let n=0;for(const w of a){const c=counts.get(w)||0;if(c){n++;counts.set(w,c-1)}}return n}
+function oppositeMeaning(answer,model){
+  const a=norm(answer),m=norm(model);
+  const down=/\b(reduce\w*|decrease\w*|fewer|less|lower|slower|weaker)\b/;
+  const up=/\b(increase\w*|more|greater|higher|faster|stronger)\b/;
+  if(down.test(m)&&up.test(a)&&!down.test(a))return true;
+  if(up.test(m)&&down.test(a)&&!up.test(a))return true;
+  const mNeg=/\b(no|not|cannot|can't|unable|without)\b/.test(m),aNeg=/\b(no|not|cannot|can't|unable|without)\b/.test(a);
+  if(mNeg!==aNeg&&(/\b(can|cannot|can't|able|unable|with|without)\b/.test(m)||/\b(can|cannot|can't|able|unable|with|without)\b/.test(a)))return true;
+  return false;
+}
+function nearModelMeaningMatch(payload){
+  const answer=String(payload?.answer||''),model=String(payload?.modelAnswer||'');
+  if(!answer||!model||oppositeMeaning(answer,model))return false;
+  const A=contentTokens(answer),M=contentTokens(model);
+  if(A.length<4||M.length<4)return false;
+  const matched=overlapCount(M,A),recall=matched/M.length,precision=matched/A.length;
+  // High threshold: intended for grammar/connector/small wording differences, not loose keyword matching.
+  return recall>=0.78&&precision>=0.68&&A.length>=Math.max(4,Math.floor(M.length*0.62));
+}
+
 function questionPolicy(question){
   const q=String(question||'').trim(),t=q.toLowerCase();
   const reason=/\b(explain|why|give\s+(?:a\s+)?reason)\b/i.test(q);
@@ -81,6 +108,7 @@ function rawRating(d){
 }
 function auditedRating(d,payload){
   if(previousImprovedMatch(payload))return {rate:'correct',reason:'previous-improved'};
+  if(nearModelMeaningMatch(payload))return {rate:'correct',reason:'near-model'};
   if(internallySaysCorrect(d,payload))return {rate:'correct',reason:'self-contradiction'};
   if(!d)return {rate:null,reason:''};
   const p=questionPolicy(payload.question),c=d.criteria||{},raw=rawRating(d);
@@ -123,6 +151,7 @@ function locallyCertainCorrect(payload){
     const i=typeof current==='function'?current():0,e=BANK[i]||{};
     if(q===norm(e.phrasePrompt||''))return 'Your answer matches the model answer. Punctuation and capitalisation are ignored.';
   }
+  if(nearModelMeaningMatch(payload))return 'Correct. Your answer is scientifically equivalent to the model answer. Minor grammar, connector and sentence-structure differences are not penalised.';
   if(q.includes('coloured water')&&q.includes('leaves')){
     const hasTube=/\bwater carrying tubes?\b|\bxylem\b/.test(a),hasWater=/\bcoloured water\b|\bcolored water\b|\bwater\b/.test(a),hasLeaf=/\bleaf\b|\bleaves\b/.test(a),hasMove=/\btransport(?:ed|s|ing)?\b|\bcarried\b|\bcarry\b|\breach(?:es|ed|ing)?\b/.test(a);
     if(hasTube&&hasWater&&hasLeaf&&hasMove)return 'Correct. The required pathway is present: coloured water is carried through the water-carrying tubes to the leaves.';
@@ -166,6 +195,7 @@ async function markWithAI(){
     const data=await requestAI(payload); const audit=auditedRating(data,payload); let detail=collectFeedback(data);
     if(audit.rate==='correct'&&audit.reason==='command-word')detail='Correct after PSLE command-word audit. The first AI pass asked for a D/E, S/R or L/R component that this exact question does not separately require.';
     if(audit.rate==='correct'&&audit.reason==='previous-improved')detail='Correct. This matches the improved PSLE answer previously supplied by the marker.';
+    if(audit.rate==='correct'&&audit.reason==='near-model')detail='Correct. The scientific meaning matches the model closely; minor grammar, connector or sentence-structure differences are not penalised.';
     if(audit.rate==='correct'&&audit.reason==='self-contradiction')detail='Correct. The AI response was internally contradictory, so the app accepted the scientifically complete answer.';
     if(!audit.rate){const b=$id('appFeedback');if(b){b.className='fb warnbox';b.innerHTML='<b>AI replied, but the mark could not be read.</b><br><span class="small">'+escHtml(detail||'Please try again.')+'</span>'};setStatus('● AI response received','#b45309')}
     else{recordAIRating(audit.rate,detail);setStatus('● AI ready','#166534')}
@@ -181,6 +211,6 @@ async function previewModel(){
 }
 window.PSLE_AI_PREVIEW_MODEL=previewModel;
 window.PSLE_AI_GET_LAST=()=>lastResult;
-window.PSLE_MARKING_AUDIT={questionPolicy,auditedRating,locallyCertainCorrect,storedImproved};
+window.PSLE_MARKING_AUDIT={questionPolicy,auditedRating,locallyCertainCorrect,storedImproved,nearModelMeaningMatch};
 installUI();window.addEventListener('load',installUI,{once:true});
 })();
