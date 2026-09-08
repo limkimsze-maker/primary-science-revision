@@ -58,13 +58,17 @@
   window.PSLE_ACTIVE_STUDENT=active;
   window.PSLE_ACTIVE_STUDENT_NAME=active==='jerry'?'Jerry':'Javis';
 
-  // After the cloud has merged this device with the server copy, reload the
-  // trainer's in-memory state so the combined progress is visible immediately.
+  // After cloud merge, refresh the in-memory progress without rebuilding the
+  // queue while the guided trainer is open. Rebuilding the queue changes
+  // current()/order/pos behind the visible question and can make the AI marker
+  // grade the displayed question against a different concept.
   document.addEventListener('psle-cloud-synced',()=>{
     try{
       if(typeof loadState==='function')window.S=loadState();
-      if(typeof buildQueue==='function')buildQueue();
+      const guidedOpen=!!document.getElementById('guidedFlow');
+      if(!guidedOpen&&typeof buildQueue==='function')buildQueue();
       if(typeof render==='function')render();
+      document.dispatchEvent(new Event('psle-cloud-progress-updated'));
     }catch(_e){}
     try{
       let b=document.getElementById('cloudSyncBadge');
@@ -84,7 +88,7 @@
   // writes only this child's scoped records and merges them with D1.
   try{
     const s=document.createElement('script');
-    s.src='resources/cloud-progress-sync.js?v=20260908p';
+    s.src='resources/cloud-progress-sync.js?v=20260908r';
     s.async=false;
     document.head.appendChild(s);
   }catch(_e){}
