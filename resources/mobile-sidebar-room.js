@@ -1,15 +1,38 @@
 (()=>{
 'use strict';
-if(window.__PSLE_MOBILE_SIDEBAR_ROOM_V4__)return;
-window.__PSLE_MOBILE_SIDEBAR_ROOM_V4__=true;
+if(window.__PSLE_MOBILE_SIDEBAR_ROOM_V5__)return;
+window.__PSLE_MOBILE_SIDEBAR_ROOM_V5__=true;
 const d=document,$=id=>d.getElementById(id);
 let tries=0;
 const mobile=()=>matchMedia('(max-width:700px)').matches;
 
+function patchRespirationClarity(){
+  try{
+    if(!Array.isArray(window.BANK))return;
+    const respiratory=window.BANK.find(x=>Number(x?.id)===51);
+    if(respiratory){
+      respiratory.topic='Respiratory system and circulatory system';
+      respiratory.phrasePrompt='What is the function of the respiratory system, and how does it work with the circulatory system?';
+      respiratory.phrase='The respiratory system takes in oxygen and removes carbon dioxide through gaseous exchange at the lungs. The circulatory system then transports oxygen to body parts and carries carbon dioxide back to the lungs for removal.';
+      respiratory.modelApplicationAnswer=respiratory.phrase;
+      respiratory.rubric=['Respiratory system takes in oxygen','Respiratory system removes carbon dioxide','Gaseous exchange occurs at the lungs','Circulatory system transports oxygen to body parts','Circulatory system carries carbon dioxide back to the lungs'];
+    }
+    const respiration=window.BANK.find(x=>Number(x?.id)===65);
+    if(respiration){
+      respiration.topic='Respiration — definition';
+      respiration.phrasePrompt='What is respiration?';
+      respiration.phrase='Respiration is the process in living cells that releases energy from food. Oxygen is used, while carbon dioxide and water are produced. Respiration is not the same as breathing.';
+      respiration.modelApplicationAnswer=respiration.phrase;
+      respiration.rubric=['Respiration occurs in living cells','Energy is released from food','Oxygen is used','Carbon dioxide and water are produced','Respiration is different from breathing'];
+    }
+    if(typeof window.render==='function')window.render();
+  }catch(_e){}
+}
+
 function installStyle(){
-  if($('mobileSidebarRoomStyleV4'))return;
+  if($('mobileSidebarRoomStyleV5'))return;
   const s=d.createElement('style');
-  s.id='mobileSidebarRoomStyleV4';
+  s.id='mobileSidebarRoomStyleV5';
   s.textContent=`
   /* Framework codes stay available in the framework filter/coach, but are never
      rendered beside individual mastery-list rows. Keeping them out of the row
@@ -74,9 +97,10 @@ function resetListTop(){
 function wire(){
   const side=$('guidedProgressSidebar'),list=$('gpsList');
   if(!side||!list)return false;
+  patchRespirationClarity();
   installStyle();
-  if(side.dataset.mobileScrollFixReadyV4)return true;
-  side.dataset.mobileScrollFixReadyV4='1';
+  if(side.dataset.mobileScrollFixReadyV5)return true;
+  side.dataset.mobileScrollFixReadyV5='1';
 
   // Only reset after actions that replace the list. Never adjust scroll while the user is swiping.
   ['gpsNotDone','gpsKnown'].forEach(id=>$(id)?.addEventListener('click',()=>setTimeout(resetListTop,70)));
@@ -93,6 +117,6 @@ function wire(){
   return true;
 }
 
-function boot(){tries++;if(wire())return;if(tries<240)setTimeout(boot,80)}
+function boot(){tries++;patchRespirationClarity();if(wire())return;if(tries<240)setTimeout(boot,80)}
 boot();
 })();
