@@ -1,16 +1,21 @@
 (()=>{
 'use strict';
-if(window.__PSLE_MOBILE_SIDEBAR_ROOM_V3__)return;
-window.__PSLE_MOBILE_SIDEBAR_ROOM_V3__=true;
+if(window.__PSLE_MOBILE_SIDEBAR_ROOM_V4__)return;
+window.__PSLE_MOBILE_SIDEBAR_ROOM_V4__=true;
 const d=document,$=id=>d.getElementById(id);
 let tries=0;
 const mobile=()=>matchMedia('(max-width:700px)').matches;
 
 function installStyle(){
-  if($('mobileSidebarRoomStyleV3'))return;
+  if($('mobileSidebarRoomStyleV4'))return;
   const s=d.createElement('style');
-  s.id='mobileSidebarRoomStyleV3';
+  s.id='mobileSidebarRoomStyleV4';
   s.textContent=`
+  /* Framework codes stay available in the framework filter/coach, but are never
+     rendered beside individual mastery-list rows. Keeping them out of the row
+     layout prevents F1/F2 label flicker and reflow while the list is updated. */
+  #guidedProgressSidebar .gps-row .fc-tag{display:none!important}
+
   @media(max-width:700px){
     #guidedProgressSidebar{
       top:max(6px,env(safe-area-inset-top))!important;
@@ -54,8 +59,6 @@ function installStyle(){
       scroll-margin-top:8px!important;
       scroll-margin-bottom:8px!important;
     }
-    /* Keep mobile rows clean: framework codes are available in the framework filter/coach, not beside every concept. */
-    #guidedProgressSidebar .gps-row .fc-tag{display:none!important}
     #guidedProgressSidebar .gps-foot{display:none!important}
     #fcMap{display:none!important}
   }`;
@@ -72,15 +75,15 @@ function wire(){
   const side=$('guidedProgressSidebar'),list=$('gpsList');
   if(!side||!list)return false;
   installStyle();
-  if(side.dataset.mobileScrollFixReadyV3)return true;
-  side.dataset.mobileScrollFixReadyV3='1';
+  if(side.dataset.mobileScrollFixReadyV4)return true;
+  side.dataset.mobileScrollFixReadyV4='1';
 
   // Only reset after actions that replace the list. Never adjust scroll while the user is swiping.
   ['gpsNotDone','gpsKnown'].forEach(id=>$(id)?.addEventListener('click',()=>setTimeout(resetListTop,70)));
   $('gpsFind')?.addEventListener('input',()=>setTimeout(resetListTop,40));
   d.addEventListener('change',e=>{if(e.target?.id==='fcFrameworkFilter')setTimeout(resetListTop,70)});
 
-  // Opening the mobile panel starts at a clean row boundary instead of a half-clipped saved position.
+  // Opening the mobile panel starts at the top without touching scroll position during a swipe.
   d.addEventListener('click',e=>{
     if(e.target?.closest?.('#udListToggle')&&!d.body.classList.contains('ud-list-open')){
       setTimeout(resetListTop,60);
