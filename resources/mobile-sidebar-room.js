@@ -1,15 +1,15 @@
 (()=>{
 'use strict';
-if(window.__PSLE_MOBILE_SIDEBAR_ROOM_V2__)return;
-window.__PSLE_MOBILE_SIDEBAR_ROOM_V2__=true;
+if(window.__PSLE_MOBILE_SIDEBAR_ROOM_V3__)return;
+window.__PSLE_MOBILE_SIDEBAR_ROOM_V3__=true;
 const d=document,$=id=>d.getElementById(id);
 let tries=0;
 const mobile=()=>matchMedia('(max-width:700px)').matches;
 
 function installStyle(){
-  if($('mobileSidebarRoomStyleV2'))return;
+  if($('mobileSidebarRoomStyleV3'))return;
   const s=d.createElement('style');
-  s.id='mobileSidebarRoomStyleV2';
+  s.id='mobileSidebarRoomStyleV3';
   s.textContent=`
   @media(max-width:700px){
     #guidedProgressSidebar{
@@ -54,6 +54,8 @@ function installStyle(){
       scroll-margin-top:8px!important;
       scroll-margin-bottom:8px!important;
     }
+    /* Keep mobile rows clean: framework codes are available in the framework filter/coach, not beside every concept. */
+    #guidedProgressSidebar .gps-row .fc-tag{display:none!important}
     #guidedProgressSidebar .gps-foot{display:none!important}
     #fcMap{display:none!important}
   }`;
@@ -70,8 +72,8 @@ function wire(){
   const side=$('guidedProgressSidebar'),list=$('gpsList');
   if(!side||!list)return false;
   installStyle();
-  if(side.dataset.mobileScrollFixReady)return true;
-  side.dataset.mobileScrollFixReady='1';
+  if(side.dataset.mobileScrollFixReadyV3)return true;
+  side.dataset.mobileScrollFixReadyV3='1';
 
   // Only reset after actions that replace the list. Never adjust scroll while the user is swiping.
   ['gpsNotDone','gpsKnown'].forEach(id=>$(id)?.addEventListener('click',()=>setTimeout(resetListTop,70)));
