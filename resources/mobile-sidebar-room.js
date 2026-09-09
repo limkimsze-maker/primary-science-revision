@@ -1,62 +1,93 @@
 (()=>{
 'use strict';
-if(window.__PSLE_MOBILE_SIDEBAR_ROOM__)return;
-window.__PSLE_MOBILE_SIDEBAR_ROOM__=true;
+if(window.__PSLE_MOBILE_SIDEBAR_ROOM_V2__)return;
+window.__PSLE_MOBILE_SIDEBAR_ROOM_V2__=true;
 const d=document,$=id=>d.getElementById(id);
-let tries=0,observer=null;
+let tries=0;
 const mobile=()=>matchMedia('(max-width:700px)').matches;
-const visible=el=>!!el&&getComputedStyle(el).display!=='none'&&getComputedStyle(el).visibility!=='hidden';
-function afterLayout(fn){requestAnimationFrame(()=>requestAnimationFrame(fn));}
-function list(){return $('gpsList')}
-function resetTop(){const l=list();if(!l||!mobile())return;l.scrollTop=0;}
-function alignFirstVisibleRow(){
-  const l=list(),side=$('guidedProgressSidebar');
-  if(!mobile()||!l||!side||!d.body.classList.contains('ud-list-open'))return;
-  const box=l.getBoundingClientRect();
-  if(box.height<20)return;
-  if(l.scrollTop<=2){l.scrollTop=0;return;}
-  const rows=[...l.querySelectorAll('.gps-row')].filter(visible);
-  const first=rows.find(r=>r.getBoundingClientRect().bottom>box.top+1);
-  if(!first)return;
-  const r=first.getBoundingClientRect();
-  /* Never leave the first visible concept chopped off under the controls. */
-  if(r.top<box.top-0.5&&r.bottom>box.top+4){
-    l.scrollTop=Math.max(0,l.scrollTop-(box.top-r.top)-7);
-  }
-}
-function settle(){afterLayout(()=>{alignFirstVisibleRow();setTimeout(alignFirstVisibleRow,80)});}
+
 function installStyle(){
-  if($('mobileSidebarRoomStyle'))return;
-  const s=d.createElement('style');s.id='mobileSidebarRoomStyle';s.textContent=`
+  if($('mobileSidebarRoomStyleV2'))return;
+  const s=d.createElement('style');
+  s.id='mobileSidebarRoomStyleV2';
+  s.textContent=`
   @media(max-width:700px){
-    #guidedProgressSidebar .gps-list{scroll-padding-top:8px!important;scroll-padding-bottom:10px!important;overflow-anchor:none!important}
-    #guidedProgressSidebar .gps-row{scroll-margin-top:8px!important;scroll-margin-bottom:8px!important}
-    #guidedProgressSidebar .gps-message{position:relative!important;z-index:1!important;background:#fff!important}
+    #guidedProgressSidebar{
+      top:max(6px,env(safe-area-inset-top))!important;
+      right:6px!important;
+      bottom:max(6px,env(safe-area-inset-bottom))!important;
+      left:6px!important;
+      height:auto!important;
+      max-height:none!important;
+      min-height:0!important;
+      overflow:hidden!important;
+      display:none!important;
+      flex-direction:column!important;
+      overscroll-behavior:contain!important;
+    }
+    .ud-list-open #guidedProgressSidebar{display:flex!important}
+    #guidedProgressSidebar .gps-head,
+    #guidedProgressSidebar .gps-find,
+    #guidedProgressSidebar .gps-findhint,
+    #guidedProgressSidebar .gps-tabs,
+    #guidedProgressSidebar .gps-tools,
+    #guidedProgressSidebar .gps-message{flex:0 0 auto!important}
+    #guidedProgressSidebar .gps-list{
+      position:relative!important;
+      display:block!important;
+      flex:1 1 auto!important;
+      min-height:0!important;
+      max-height:none!important;
+      overflow-x:hidden!important;
+      overflow-y:auto!important;
+      -webkit-overflow-scrolling:touch!important;
+      overscroll-behavior-y:contain!important;
+      touch-action:pan-y!important;
+      scroll-behavior:auto!important;
+      scroll-padding-top:8px!important;
+      scroll-padding-bottom:12px!important;
+      padding:0 7px 14px!important;
+    }
+    #guidedProgressSidebar .gps-row{
+      min-height:54px!important;
+      touch-action:pan-y!important;
+      scroll-margin-top:8px!important;
+      scroll-margin-bottom:8px!important;
+    }
+    #guidedProgressSidebar .gps-foot{display:none!important}
+    #fcMap{display:none!important}
   }`;
   d.head.appendChild(s);
 }
+
+function resetListTop(){
+  const l=$('gpsList');
+  if(!mobile()||!l)return;
+  requestAnimationFrame(()=>{l.scrollTop=0;});
+}
+
 function wire(){
-  const side=$('guidedProgressSidebar'),l=list();
-  if(!side||!l)return false;
+  const side=$('guidedProgressSidebar'),list=$('gpsList');
+  if(!side||!list)return false;
   installStyle();
-  if(!l.dataset.mobileRoomReady){
-    l.dataset.mobileRoomReady='1';
-    observer=new MutationObserver(()=>settle());
-    observer.observe(l,{childList:true,subtree:true});
-  }
-  ['gpsNotDone','gpsKnown'].forEach(id=>$(id)?.addEventListener('click',()=>setTimeout(resetTop,120)));
-  $('gpsFind')?.addEventListener('input',()=>setTimeout(resetTop,80));
-  d.addEventListener('change',e=>{if(e.target?.id==='fcFrameworkFilter')setTimeout(resetTop,120)});
+  if(side.dataset.mobileScrollFixReady)return true;
+  side.dataset.mobileScrollFixReady='1';
+
+  // Only reset after actions that replace the list. Never adjust scroll while the user is swiping.
+  ['gpsNotDone','gpsKnown'].forEach(id=>$(id)?.addEventListener('click',()=>setTimeout(resetListTop,70)));
+  $('gpsFind')?.addEventListener('input',()=>setTimeout(resetListTop,40));
+  d.addEventListener('change',e=>{if(e.target?.id==='fcFrameworkFilter')setTimeout(resetListTop,70)});
+
+  // Opening the mobile panel starts at a clean row boundary instead of a half-clipped saved position.
   d.addEventListener('click',e=>{
-    if(e.target?.closest?.('#udListToggle'))setTimeout(settle,40);
-    if(e.target?.closest?.('#gpsOpenFirst'))setTimeout(settle,80);
-  });
-  addEventListener('resize',settle,{passive:true});
-  if(window.visualViewport)visualViewport.addEventListener('resize',settle,{passive:true});
-  new MutationObserver(()=>{if(d.body.classList.contains('ud-list-open'))settle()}).observe(d.body,{attributes:true,attributeFilter:['class']});
-  settle();
+    if(e.target?.closest?.('#udListToggle')&&!d.body.classList.contains('ud-list-open')){
+      setTimeout(resetListTop,60);
+    }
+  },true);
+
   return true;
 }
-function boot(){tries++;if(wire())return;if(tries<200)setTimeout(boot,80)}
+
+function boot(){tries++;if(wire())return;if(tries<240)setTimeout(boot,80)}
 boot();
 })();
