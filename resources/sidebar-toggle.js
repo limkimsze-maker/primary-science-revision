@@ -1,6 +1,6 @@
 (()=>{
 const KEY='psleScience_sidebar_visible_v2';
-const DEBUG_VERSION='20260910j';
+const DEBUG_VERSION='20260910k';
 let tries=0;
 const d=document,$=id=>d.getElementById(id);
 function wanted(){try{return localStorage.getItem(KEY)==='1'}catch(_e){return false}}
