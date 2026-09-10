@@ -1,7 +1,6 @@
 (()=>{
 'use strict';
-const BUILD='20260910p';
-const TARGET_KEY='psleScience_sidebar_target_v4';
+const BUILD='20260910q';
 let tries=0,view='notdone',query='',timer=0;
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -23,51 +22,37 @@ function allItems(){
 }
 function shownItems(){
   let a=allItems();
-  if(query){const q=norm(query);a=a.filter(x=>norm(`${x.kind==='science'?'#'+x.id:'P'+x.id} ${x.topic} ${x.cue} ${x.category}`).includes(q));}
-  else a=a.filter(x=>view==='known'?x.known:!x.known);
+  if(query){
+    const q=norm(query),num=String(query).trim().match(/^#?(\d{1,3})$/),proc=String(query).trim().match(/^p\s*(\d{1,2})$/i);
+    if(num){const n=Number(num[1]);a=a.filter(x=>x.kind==='science'&&Number(x.id)===n)}
+    else if(proc){const n=Number(proc[1]);a=a.filter(x=>x.kind==='process'&&Number(x.id)===n)}
+    else a=a.filter(x=>norm(`${x.kind==='science'?'#'+x.id:'P'+x.id} ${x.topic} ${x.cue} ${x.category}`).includes(q));
+  }else a=a.filter(x=>view==='known'?x.known:!x.known);
   return a;
 }
 function setMessage(t){const m=$('gpsMessage');if(m)m.textContent=t||''}
-function saveTarget(t){try{localStorage.setItem(TARGET_KEY,JSON.stringify(t))}catch(_e){}}
-function reloadForTarget(t){
-  saveTarget(t);setMessage('Opening selected concept…');
-  const url=`trainer180-app.html?v=${BUILD}&nav=${Date.now()}`;
-  try{window.parent.location.replace(url)}catch(_e){location.replace(url)}
-}
-function verifyScience(idx,fallback){
-  const e=BANK[idx];if(!e)return;
-  setTimeout(()=>{
-    const meta=String($('gfMeta')?.textContent||'');
-    if(meta.includes(`Concept ${e.id} `)||meta.includes(`Concept ${e.id} ·`)){
-      setMessage(`Opened #${e.id} ${e.topic||''}.`);renderList();return;
-    }
-    if(fallback)reloadForTarget({kind:'science',id:idx});
-    else setMessage(`Could not open #${e.id}. Please tap it once more.`);
-  },320);
-}
-function openScience(idx,fallback=true){
-  idx=Number(idx);const e=BANK?.[idx];if(!e)return;
-  try{speechSynthesis.cancel()}catch(_e){}
-  if(processActive()){
-    try{api()?.exitToScience?.(idx);verifyScience(idx,fallback);return}catch(_e){}
+
+function parentTrainerUrl(kind,id){
+  try{
+    const u=new URL(window.parent.location.href);
+    const base=u.pathname.replace(/[^/]*$/,'');
+    u.pathname=base+'trainer180-app.html';
+    u.search='';
+    u.searchParams.set('v',BUILD);
+    u.searchParams.set('goto',`${kind}:${id}`);
+    u.searchParams.set('nav',String(Date.now()));
+    u.hash='';
+    return u.href;
+  }catch(_e){
+    return `trainer180-app.html?v=${BUILD}&goto=${encodeURIComponent(kind+':'+id)}&nav=${Date.now()}`;
   }
-  const topic=$('gfTopic'),status=$('gfStatus'),search=$('gfSearch');
-  if(!topic||!status||!search){if(fallback)reloadForTarget({kind:'science',id:idx});return}
-  [topic,status,search].forEach(el=>el.disabled=false);
-  topic.value=e.category||'all';topic.dispatchEvent(new Event('change',{bubbles:true}));
-  status.value='all';status.dispatchEvent(new Event('change',{bubbles:true}));
-  search.value=`${e.id} ${e.topic||''}`.trim();
-  search.dispatchEvent(new Event('input',{bubbles:true}));
-  verifyScience(idx,fallback);
 }
-function openProcess(id,fallback=true){
-  id=Number(id);try{speechSynthesis.cancel()}catch(_e){}
-  try{api()?.enter?.(id);setTimeout(()=>{
-    if(api()?.isActive?.()&&Number(api()?.getCurrentId?.())===id){setMessage(`Opened Process Skill P${id}.`);renderList()}
-    else if(fallback)reloadForTarget({kind:'process',id});
-  },220)}catch(_e){if(fallback)reloadForTarget({kind:'process',id})}
+function openItem(kind,id){
+  const label=kind==='science'?(BANK?.[Number(id)]?`#${BANK[Number(id)].id}`:'concept'):`P${id}`;
+  setMessage(`Opening ${label}…`);
+  const url=parentTrainerUrl(kind,Number(id));
+  try{window.parent.location.assign(url)}catch(_e){location.assign(url)}
 }
-function openItem(kind,id,fallback=true){if(kind==='process')openProcess(id,fallback);else openScience(id,fallback)}
 
 function renderList(){
   const list=$('gpsList');if(!list)return;
@@ -83,7 +68,6 @@ function renderList(){
     html.push(`<button type="button" class="gps-row ${current?'current':''}" data-kind="${x.kind}" data-id="${x.kind==='science'?x.idx:x.id}"><span class="gps-dot">${x.known?'✅':'○'}</span><span class="gps-text"><b>${x.kind==='science'?'#'+x.id:'P'+x.id} ${esc(x.topic)}</b><small>${esc(x.cue)}</small></span><span class="gps-state ${x.known?'known':''}">${x.known?'Known':'Not done'}</span></button>`);
   }
   list.innerHTML=html.join('');
-  list.querySelectorAll('.gps-row').forEach(row=>row.addEventListener('click',e=>{e.preventDefault();openItem(row.dataset.kind,Number(row.dataset.id),true)}));
   requestAnimationFrame(()=>{list.scrollTop=Math.min(oldTop,Math.max(0,list.scrollHeight-list.clientHeight))});
 }
 function install(){
@@ -112,14 +96,14 @@ function install(){
   $('gpsNotDone').onclick=()=>{view='notdone';query='';$('gpsFind').value='';renderList()};
   $('gpsKnown').onclick=()=>{view='known';query='';$('gpsFind').value='';renderList()};
   const searchNow=()=>{query=$('gpsFind').value.trim();renderList()};
-  $('gpsFindGo').onclick=searchNow;$('gpsFind').addEventListener('input',()=>{clearTimeout(timer);timer=setTimeout(searchNow,120)});
-  $('gpsFind').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();searchNow();const first=$('gpsList .gps-row');if(first)first.click()}});
+  $('gpsFindGo').onclick=searchNow;
+  $('gpsFind').addEventListener('input',()=>{clearTimeout(timer);timer=setTimeout(searchNow,120)});
+  $('gpsFind').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();searchNow();const first=$('gpsList .gps-row');if(first)openItem(first.dataset.kind,Number(first.dataset.id))}});
   $('gpsCollapse').onclick=()=>{side.style.display='none';document.getElementById('guidedLayout').style.gridTemplateColumns='minmax(0,1fr)'};
+  $('gpsList').addEventListener('click',e=>{const row=e.target.closest('.gps-row');if(!row)return;e.preventDefault();e.stopPropagation();openItem(row.dataset.kind,Number(row.dataset.id))});
   document.addEventListener('psle-process-progress',()=>{clearTimeout(timer);timer=setTimeout(renderList,80)});
   document.addEventListener('psle-process-mode',()=>{clearTimeout(timer);timer=setTimeout(renderList,80)});
   renderList();
-  let pending=null;try{pending=JSON.parse(localStorage.getItem(TARGET_KEY)||'null');localStorage.removeItem(TARGET_KEY)}catch(_e){}
-  if(pending)setTimeout(()=>openItem(pending.kind,Number(pending.id),false),180);
 }
 function boot(){tries++;if(!$('guidedFlow')||typeof BANK==='undefined'||!Array.isArray(BANK)||BANK.length!==180||!api()){if(tries<240)setTimeout(boot,80);return}install()}
 boot();
