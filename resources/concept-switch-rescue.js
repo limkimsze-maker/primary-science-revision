@@ -1,7 +1,7 @@
 (()=>{
 'use strict';
-if(window.__PSLE_GOTO_ROUTER_V2__)return;
-window.__PSLE_GOTO_ROUTER_V2__=true;
+if(window.__PSLE_GOTO_ROUTER_V3__)return;
+window.__PSLE_GOTO_ROUTER_V3__=true;
 const $=id=>document.getElementById(id);
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const proc=()=>window.PSLE_PROCESS_MERGE||null;
@@ -22,17 +22,19 @@ async function openScience(idx){
   idx=Number(idx);if(!Number.isInteger(idx)||idx<0||!Array.isArray(window.BANK)||idx>=BANK.length)return false;
   const e=BANK[idx];
   if(proc()?.isActive?.())try{proc().exitToScience(idx)}catch(_e){}
-  for(let attempt=0;attempt<18;attempt++){
-    const topic=$('gfTopic'),status=$('gfStatus'),search=$('gfSearch');
+  const exactQuery=`${e.id} ${e.topic||''} ${e.category||''} ${e.phrasePrompt||''}`.trim();
+  for(let attempt=0;attempt<12;attempt++){
+    const topic=$('gfTopic'),status=$('gfStatus'),search=$('gfSearch'),sort=$('gfSort');
     if(topic&&status&&search){
-      topic.disabled=false;status.disabled=false;search.disabled=false;
+      topic.disabled=false;status.disabled=false;search.disabled=false;if(sort)sort.disabled=false;
       topic.value='all';topic.dispatchEvent(new Event('change',{bubbles:true}));
       status.value='all';status.dispatchEvent(new Event('change',{bubbles:true}));
-      search.value=String(e.id);search.dispatchEvent(new Event('input',{bubbles:true}));
-      await sleep(180);
+      if(sort){sort.value='book';sort.dispatchEvent(new Event('change',{bubbles:true}))}
+      search.value=exactQuery;search.dispatchEvent(new Event('input',{bubbles:true}));
+      await sleep(220);
       if(scienceIndex()===idx){message(`Opened #${e.id} ${e.topic||''}.`);return true}
     }
-    await sleep(120);
+    await sleep(100);
   }
   message(`Could not open #${e.id}.`);return false;
 }
