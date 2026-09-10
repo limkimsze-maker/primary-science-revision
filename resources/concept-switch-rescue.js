@@ -1,96 +1,60 @@
 (()=>{
 'use strict';
-if(window.__PSLE_SIDEBAR_DIRECT_OPEN_V1__)return;
-window.__PSLE_SIDEBAR_DIRECT_OPEN_V1__=true;
-
+if(window.__PSLE_GOTO_ROUTER_V2__)return;
+window.__PSLE_GOTO_ROUTER_V2__=true;
 const $=id=>document.getElementById(id);
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const proc=()=>window.PSLE_PROCESS_MERGE||null;
-const nav=()=>window.PSLE_GUIDED_NAV||null;
-let busy=false;
+const scienceIndex=()=>{try{return typeof current==='function'?current():-1}catch(_e){return -1}};
 
-function message(text){const m=$('gpsMessage');if(m)m.textContent=text||''}
-function stage(){return $('guidedFlow')?.dataset?.stage||'flash'}
-function scienceIndex(){try{return typeof current==='function'?current():-1}catch(_e){return -1}}
-
-async function ensureScienceFlash(){
-  const p=proc();
-  if(p?.isActive?.()){
-    try{p.exitToScience?.(scienceIndex()>=0?scienceIndex():0)}catch(_e){}
-    for(let i=0;i<20&&p?.isActive?.();i++)await sleep(30);
-  }
-  if(stage()!=='flash'){
-    try{nav()?.backToFlash?.()}catch(_e){}
-    for(let i=0;i<30&&stage()!=='flash';i++)await sleep(30);
-  }
-  return stage()==='flash'&&!proc()?.isActive?.();
+function getGoto(){
+  try{return new URL(window.parent.location.href).searchParams.get('goto')||''}catch(_e){return ''}
 }
+function clearGoto(){
+  try{
+    const u=new URL(window.parent.location.href);u.searchParams.delete('goto');u.searchParams.delete('nav');
+    window.parent.history.replaceState(null,'',u.pathname+u.search+u.hash);
+  }catch(_e){}
+}
+function message(t){const m=$('gpsMessage');if(m)m.textContent=t||''}
 
 async function openScience(idx){
-  if(!Number.isInteger(idx)||idx<0||!Array.isArray(window.BANK)||idx>=BANK.length)return false;
+  idx=Number(idx);if(!Number.isInteger(idx)||idx<0||!Array.isArray(window.BANK)||idx>=BANK.length)return false;
   const e=BANK[idx];
-  if(!e)return false;
-
-  await ensureScienceFlash();
-
-  const topic=$('gfTopic'),status=$('gfStatus'),search=$('gfSearch');
-  if(!topic||!status||!search)return false;
-  topic.disabled=false;status.disabled=false;search.disabled=false;
-
-  // Use the guided flow's own picker. The combined ID + topic is unique,
-  // so applyPicker(false) must select this exact concept.
-  topic.value='all';
-  topic.dispatchEvent(new Event('change',{bubbles:true}));
-  status.value='all';
-  status.dispatchEvent(new Event('change',{bubbles:true}));
-  search.value=`${e.id} ${e.topic||''}`.trim();
-  search.dispatchEvent(new Event('input',{bubbles:true}));
-
-  for(let i=0;i<20;i++){
-    await sleep(30);
-    if(scienceIndex()===idx){
-      message(`Opened #${e.id} ${e.topic||''}.`);
-      return true;
+  if(proc()?.isActive?.())try{proc().exitToScience(idx)}catch(_e){}
+  for(let attempt=0;attempt<18;attempt++){
+    const topic=$('gfTopic'),status=$('gfStatus'),search=$('gfSearch');
+    if(topic&&status&&search){
+      topic.disabled=false;status.disabled=false;search.disabled=false;
+      topic.value='all';topic.dispatchEvent(new Event('change',{bubbles:true}));
+      status.value='all';status.dispatchEvent(new Event('change',{bubbles:true}));
+      search.value=String(e.id);search.dispatchEvent(new Event('input',{bubbles:true}));
+      await sleep(180);
+      if(scienceIndex()===idx){message(`Opened #${e.id} ${e.topic||''}.`);return true}
     }
+    await sleep(120);
   }
-
-  // Retry once after clearing any stale picker state.
-  search.value='';
-  search.dispatchEvent(new Event('input',{bubbles:true}));
-  await sleep(150);
-  topic.value='all';topic.dispatchEvent(new Event('change',{bubbles:true}));
-  status.value='all';status.dispatchEvent(new Event('change',{bubbles:true}));
-  search.value=`${e.id} ${e.topic||''}`.trim();
-  search.dispatchEvent(new Event('input',{bubbles:true}));
-  await sleep(220);
-  const ok=scienceIndex()===idx;
-  message(ok?`Opened #${e.id} ${e.topic||''}.`:`Could not open #${e.id}.`);
-  return ok;
+  message(`Could not open #${e.id}.`);return false;
 }
-
-async function openTarget(kind,id){
-  if(busy)return;
-  busy=true;
-  try{
-    if(kind==='process'){
-      const p=proc();
-      if(p?.enter){p.enter(id);message(`Opened Process Skill P${id}.`);return}
-    }else{
-      await openScience(id);
+async function openProcess(id){
+  id=Number(id);for(let attempt=0;attempt<15;attempt++){
+    const p=proc();
+    if(p?.enter){
+      try{p.enter(id)}catch(_e){}
+      await sleep(120);
+      if(p.isActive?.()&&Number(p.getCurrentId?.())===id){message(`Opened Process Skill P${id}.`);return true}
     }
-  }finally{busy=false}
+    await sleep(100);
+  }
+  message(`Could not open Process Skill P${id}.`);return false;
 }
 
-// Capture first so no older row handler can override the selection.
-document.addEventListener('click',e=>{
-  const row=e.target?.closest?.('#gpsList .gps-row');
-  if(!row)return;
-  const kind=row.dataset.kind,id=Number(row.dataset.id);
-  if(!kind||!Number.isFinite(id))return;
-  e.preventDefault();
-  e.stopPropagation();
-  if(typeof e.stopImmediatePropagation==='function')e.stopImmediatePropagation();
+async function boot(){
+  const raw=getGoto();if(!raw)return;
+  const m=raw.match(/^(science|process):(\d+)$/);if(!m)return;
   message('Opening selected concept…');
-  openTarget(kind,id);
-},true);
+  const ok=m[1]==='science'?await openScience(Number(m[2])):await openProcess(Number(m[2]));
+  if(ok)clearGoto();
+}
+setTimeout(boot,120);
 })();
