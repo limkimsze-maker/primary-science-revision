@@ -86,7 +86,11 @@ function installDesktop(layout,side,flow){
     #guidedLayout.gps-sidebar-hidden{grid-template-columns:minmax(0,1fr)!important}
     #guidedLayout.gps-sidebar-hidden #guidedProgressSidebar{display:none!important}
     #guidedLayout.gps-sidebar-hidden #guidedFlow{max-width:1100px!important;margin-left:auto!important;margin-right:auto!important;width:100%}
-    @media(max-width:1100px) and (min-width:701px){#gpsMasteryToggle,#gpsDebugToggle{min-height:42px}}
+    @media(min-width:1101px){
+      #guidedProgressSidebar{height:calc(100dvh - 24px)!important;max-height:calc(100dvh - 24px)!important;min-height:560px!important}
+      #guidedProgressSidebar .gps-list{display:block!important;flex:1 1 0!important;min-height:0!important;max-height:none!important;overflow-y:auto!important}
+    }
+    @media(max-width:1100px) and (min-width:701px){#gpsMasteryToggle,#gpsDebugToggle{min-height:42px}#guidedProgressSidebar{height:auto!important;min-height:0!important}}
     @media(max-width:700px){#gpsMasteryToggle{display:none!important}#gpsDebugToggle{min-height:36px;padding:7px 9px;font-size:11px}}
     `;d.head.appendChild(s);
   }
