@@ -6,13 +6,24 @@
 <title>PSLE Science Debug — Progress Editor</title>
 <style>
 :root{--bg:#f4f7fb;--card:#fff;--ink:#172033;--muted:#64748b;--line:#dbe3ee;--accent:#4338ca;--bad:#b91c1c;--ok:#047857}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif}.wrap{max-width:900px;margin:auto;padding:20px 14px 48px}h1{margin:0 0 6px;font-size:clamp(26px,5vw,38px)}.sub{color:var(--muted);line-height:1.5;margin-bottom:16px}.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:0 8px 28px #0f172a0d;margin-bottom:12px}.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}select,input,button{font:inherit;border:1px solid var(--line);border-radius:11px;padding:10px 12px;background:#fff;color:var(--ink)}button{cursor:pointer;font-weight:800}.primary{background:var(--accent);border-color:var(--accent);color:#fff}.danger{background:#fff1f2;border-color:#fecaca;color:#991b1b}.muted{color:var(--muted);font-size:12px;line-height:1.45}.status{margin-top:10px;padding:10px 12px;border-radius:11px;background:#f8fafc;color:#475569;font-size:13px;font-weight:700}.status.ok{background:#ecfdf5;color:#047857}.status.bad{background:#fef2f2;color:#991b1b}.tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}.tabs button.on{background:#4338ca;color:#fff;border-color:#4338ca}.list{display:grid;gap:7px;max-height:56vh;overflow:auto;padding-right:2px}.row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;border:1px solid #e2e8f0;border-radius:12px;padding:10px;background:#fff}.row b{display:block;font-size:13px}.row small{display:block;margin-top:3px;color:#64748b;font-size:11px}.empty{text-align:center;padding:30px 12px;color:#64748b}.warn{border:1px solid #fde68a;background:#fffbeb;color:#92400e;border-radius:12px;padding:11px 12px;font-size:12px;line-height:1.5;margin-top:10px}@media(max-width:600px){.wrap{padding:12px 8px 36px}.row{grid-template-columns:1fr}.row button{width:100%}.controls>*{flex:1 1 150px}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif}.wrap{max-width:920px;margin:auto;padding:20px 14px 48px}h1{margin:0 0 6px;font-size:clamp(26px,5vw,38px)}.sub{color:var(--muted);line-height:1.5;margin-bottom:16px}.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:0 8px 28px #0f172a0d;margin-bottom:12px}.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}select,input,button{font:inherit;border:1px solid var(--line);border-radius:11px;padding:10px 12px;background:#fff;color:var(--ink)}button{cursor:pointer;font-weight:800}.primary{background:var(--accent);border-color:var(--accent);color:#fff}.danger{background:#fff1f2;border-color:#fecaca;color:#991b1b}.goodbtn{background:#ecfdf5;border-color:#a7f3d0;color:#047857}.muted{color:var(--muted);font-size:12px;line-height:1.45}.status{margin-top:10px;padding:10px 12px;border-radius:11px;background:#f8fafc;color:#475569;font-size:13px;font-weight:700}.status.ok{background:#ecfdf5;color:#047857}.status.bad{background:#fef2f2;color:#991b1b}.tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}.tabs button.on{background:#4338ca;color:#fff;border-color:#4338ca}.list{display:grid;gap:7px;max-height:62vh;overflow:auto;padding-right:2px}.row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;border:1px solid #e2e8f0;border-radius:12px;padding:10px;background:#fff}.row b{display:block;font-size:13px}.row small{display:block;margin-top:3px;color:#64748b;font-size:11px}.state{display:inline-block;margin-left:7px;padding:3px 7px;border-radius:999px;font-size:10px;font-weight:900}.state.known{background:#dcfce7;color:#166534}.state.todo{background:#f1f5f9;color:#64748b}.empty{text-align:center;padding:30px 12px;color:#64748b}.warn{border:1px solid #fde68a;background:#fffbeb;color:#92400e;border-radius:12px;padding:11px 12px;font-size:12px;line-height:1.5;margin-top:10px}.gate{max-width:520px;margin:12vh auto 0}.gate input{width:100%;margin-top:8px}.gate .controls{margin-top:10px}.hidden{display:none!important}@media(max-width:600px){.wrap{padding:12px 8px 36px}.row{grid-template-columns:1fr}.row button{width:100%}.controls>*{flex:1 1 150px}}
 </style>
 </head>
 <body>
-<div class="wrap">
+<div id="gate" class="wrap gate">
+  <div class="card">
+    <h1>🔒 Debug access</h1>
+    <div id="gateText" class="sub">Enter the debug password. Password characters are hidden.</div>
+    <input id="pw1" type="password" autocomplete="current-password" placeholder="Debug password" aria-label="Debug password">
+    <input id="pw2" class="hidden" type="password" autocomplete="new-password" placeholder="Confirm password" aria-label="Confirm debug password">
+    <div class="controls"><button id="unlock" class="primary">Unlock</button></div>
+    <div id="gateStatus" class="status">Password is never displayed in plain text.</div>
+  </div>
+</div>
+
+<div id="editor" class="wrap hidden">
   <h1>🛠 Debug Progress Editor</h1>
-  <div class="sub">Teacher/debug tool for correcting progress records. It can change a <b>Known</b> item back to <b>Not done</b> without giving the learner a normal shortcut to alter mastery.</div>
+  <div class="sub">Simple progress correction: <b>Known ↔ Not done</b>. Use the button beside any item to flip its status.</div>
 
   <div class="card">
     <div class="controls">
@@ -20,14 +31,19 @@
       <label><b>Go to item</b><br><input id="jump" inputmode="text" placeholder="#51 or P5" autocomplete="off"></label>
       <button id="go" class="primary">Find</button>
       <button id="refresh">Refresh</button>
+      <button id="backTrainer">← Trainer</button>
     </div>
-    <div class="warn"><b>What this changes:</b> only the mastery evidence that makes the item Known. Existing recall work, manual priority and other saved work are kept. The cleared mastery dates are archived inside the record for debugging rather than discarded.</div>
+    <div class="warn"><b>What changes:</b> only the mastery evidence that determines Known / Not done. Other saved work is kept. When changing Known → Not done, the old mastery dates are archived in the record.</div>
     <div id="status" class="status">Loading…</div>
   </div>
 
   <div class="card">
     <div class="tabs"><button id="scienceTab" class="on">Science concepts</button><button id="processTab">Process Skills</button></div>
-    <div class="controls" style="margin-bottom:10px"><input id="search" type="search" placeholder="Search Known items…" style="flex:1;min-width:220px"><span id="count" class="muted"></span></div>
+    <div class="controls" style="margin-bottom:10px">
+      <input id="search" type="search" placeholder="Search number or topic…" style="flex:1;min-width:220px">
+      <select id="filter"><option value="all">All statuses</option><option value="known">Known only</option><option value="notdone">Not done only</option></select>
+      <span id="count" class="muted"></span>
+    </div>
     <div id="list" class="list"></div>
   </div>
 </div>
@@ -36,42 +52,65 @@
 window.BOOK_BANK=[];
 function addBookItems(category,rows){rows.forEach(r=>window.BOOK_BANK.push({id:window.BOOK_BANK.length+1,topic:r[0]||'Science concept',category}))}
 </script>
-<script src="resources/book180/01-diversity-classification.js?v=20260910a"></script>
-<script src="resources/book180/02-plant-structures-functions.js?v=20260910a"></script>
-<script src="resources/book180/03-life-cycles-reproduction.js?v=20260910a"></script>
-<script src="resources/book180/04-human-animal-systems.js?v=20260910a"></script>
-<script src="resources/book180/05-plant-transport-photosynthesis-respiration.js?v=20260910a"></script>
-<script src="resources/book180/06-ecology-adaptations-environment.js?v=20260910a"></script>
-<script src="resources/book180/07-matter-materials-changes-of-state.js?v=20260910a"></script>
-<script src="resources/book180/08-light.js?v=20260910a"></script>
-<script src="resources/book180/09-heat-thermal-expansion.js?v=20260910a"></script>
-<script src="resources/book180/10-electricity-electromagnets-magnets.js?v=20260910a"></script>
-<script src="resources/book180/11-energy-forces.js?v=20260910a"></script>
-<script src="resources/process-skills.js?v=20260910a"></script>
+<script src="resources/book180/01-diversity-classification.js?v=20260910c"></script>
+<script src="resources/book180/02-plant-structures-functions.js?v=20260910c"></script>
+<script src="resources/book180/03-life-cycles-reproduction.js?v=20260910c"></script>
+<script src="resources/book180/04-human-animal-systems.js?v=20260910c"></script>
+<script src="resources/book180/05-plant-transport-photosynthesis-respiration.js?v=20260910c"></script>
+<script src="resources/book180/06-ecology-adaptations-environment.js?v=20260910c"></script>
+<script src="resources/book180/07-matter-materials-changes-of-state.js?v=20260910c"></script>
+<script src="resources/book180/08-light.js?v=20260910c"></script>
+<script src="resources/book180/09-heat-thermal-expansion.js?v=20260910c"></script>
+<script src="resources/book180/10-electricity-electromagnets-magnets.js?v=20260910c"></script>
+<script src="resources/book180/11-energy-forces.js?v=20260910c"></script>
+<script src="resources/process-skills.js?v=20260910c"></script>
 <script>
-(()=>{
+(async()=>{
 'use strict';
+const HASH_KEY='psleScience_debug_password_hash_v1',SESSION_KEY='psleScience_debug_unlocked_v1';
 const SCI='psleScience180_book_master_v1',PROC='psleScience_process_skills_v1';
 const $=id=>document.getElementById(id),parse=s=>{try{return JSON.parse(s||'{}')||{}}catch(_e){return{}}},uniq=a=>[...new Set(Array.isArray(a)?a:[])];
-let mode='science';
-const rawKey=(base,student)=>`${base}__profile_${student}`;
-const student=()=>$('student').value;
-const sciState=()=>parse(localStorage.getItem(rawKey(SCI,student())));
-const procState=()=>parse(localStorage.getItem(rawKey(PROC,student())));
-const isScienceKnown=(state,i)=>uniq(state?.[i]?.appCorrectDates).length>=1;
-const isProcessKnown=(state,id)=>uniq(state?.items?.[id]?.appDates).length>=1;
-function setStatus(text,type=''){const el=$('status');el.textContent=text;el.className='status'+(type?' '+type:'')}
-function scienceKnownItems(){const st=sciState();return (window.BOOK_BANK||[]).map((e,i)=>({kind:'science',id:e.id,index:i,topic:e.topic,category:e.category,known:isScienceKnown(st,i)})).filter(x=>x.known)}
-function processKnownItems(){const st=procState();return (window.PROCESS_SKILLS||[]).map(e=>({kind:'process',id:e.id,topic:e.topic,category:'Process Skills',known:isProcessKnown(st,e.id)})).filter(x=>x.known)}
-function markScienceNotDone(cardNo){const n=Number(cardNo),idx=(window.BOOK_BANK||[]).findIndex(x=>Number(x.id)===n);if(idx<0)return{ok:false,msg:`Science card #${cardNo} was not found.`};const st=sciState(),r=st[idx]||{},dates=uniq(r.appCorrectDates);if(!dates.length)return{ok:false,msg:`#${n} is already Not done.`};r.debugArchivedAppCorrectDates=uniq([...(r.debugArchivedAppCorrectDates||[]),...dates]);r.appCorrectDates=[];r._syncUpdatedAt=Date.now();r.debugLastChangedToNotDoneAt=Date.now();st[idx]=r;localStorage.setItem(rawKey(SCI,student()),JSON.stringify(st));return{ok:true,msg:`#${n} changed from Known to Not done.`}}
-function markProcessNotDone(id){const n=Number(id);if(!(window.PROCESS_SKILLS||[]).some(x=>Number(x.id)===n))return{ok:false,msg:`Process Skill P${id} was not found.`};const st=procState();st.items=st.items||{};const r=st.items[n]||{},dates=uniq(r.appDates);if(!dates.length)return{ok:false,msg:`P${n} is already Not done.`};r.debugArchivedAppDates=uniq([...(r.debugArchivedAppDates||[]),...dates]);r.appDates=[];r._syncUpdatedAt=Date.now();r.debugLastChangedToNotDoneAt=Date.now();st.items[n]=r;localStorage.setItem(rawKey(PROC,student()),JSON.stringify(st));return{ok:true,msg:`P${n} changed from Known to Not done.`}}
-function changeToNotDone(kind,id){const label=kind==='science'?`Science card #${id}`:`Process Skill P${id}`;if(!confirm(`Change ${label} from Known to Not done?\n\nRecall history and other progress will be kept.`))return;const out=kind==='science'?markScienceNotDone(id):markProcessNotDone(id);setStatus(out.msg,out.ok?'ok':'bad');render()}
-function render(){const q=String($('search').value||'').trim().toLowerCase(),items=(mode==='science'?scienceKnownItems():processKnownItems()).filter(x=>!q||String(x.id).includes(q)||String(x.topic).toLowerCase().includes(q)||String(x.category).toLowerCase().includes(q));$('count').textContent=`${items.length} Known shown`;$('scienceTab').classList.toggle('on',mode==='science');$('processTab').classList.toggle('on',mode==='process');const list=$('list');if(!items.length){list.innerHTML='<div class="empty">No matching Known items.</div>';return}list.innerHTML=items.map(x=>`<div class="row"><div><b>${x.kind==='science'?'#'+x.id:'P'+x.id} ${escapeHtml(x.topic)}</b><small>${escapeHtml(x.category)}</small></div><button class="danger" data-kind="${x.kind}" data-id="${x.id}">Change to Not done</button></div>`).join('');list.querySelectorAll('[data-kind]').forEach(b=>b.onclick=()=>changeToNotDone(b.dataset.kind,Number(b.dataset.id)))}
-function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function findJump(){const raw=String($('jump').value||'').trim();if(!raw){setStatus('Enter a Science card number such as #51 or a Process Skill such as P5.','bad');return}const p=raw.match(/^p\s*(\d{1,2})$/i),s=raw.match(/^#?\s*(\d{1,3})$/);if(p){mode='process';const id=Number(p[1]),known=processKnownItems().some(x=>x.id===id);render();setStatus(known?`P${id} is Known. Use “Change to Not done” below.`:`P${id} is already Not done or has no progress.`,known?'ok':'');$('search').value=String(id);render();return}if(s){mode='science';const id=Number(s[1]),known=scienceKnownItems().some(x=>x.id===id);$('search').value=String(id);render();setStatus(known?`#${id} is Known. Use “Change to Not done” below.`:`#${id} is already Not done or has no progress.`,known?'ok':'');return}setStatus('Use a Science number like #51 or a Process Skill like P5.','bad')}
-$('scienceTab').onclick=()=>{mode='science';$('search').value='';render()};$('processTab').onclick=()=>{mode='process';$('search').value='';render()};$('search').oninput=render;$('refresh').onclick=render;$('go').onclick=findJump;$('jump').onkeydown=e=>{if(e.key==='Enter')findJump()};$('student').onchange=()=>{setStatus(`Editing ${student()==='jerry'?'Jerry':'Javis'}'s progress.`);$('search').value='';render()};
-const active=(localStorage.getItem('psleScience_active_student')||'').toLowerCase();if(['jerry','javis'].includes(active))$('student').value=active;setStatus(`Editing ${student()==='jerry'?'Jerry':'Javis'}'s progress.`);render();
-window.PSLE_DEBUG_PROGRESS={markScienceNotDone,markProcessNotDone,scienceKnownItems,processKnownItems};
+const hex=buf=>Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+async function hash(v){return hex(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(String(v))))}
+function gateStatus(t,bad=false){$('gateStatus').textContent=t;$('gateStatus').className='status'+(bad?' bad':'')}
+function showEditor(){sessionStorage.setItem(SESSION_KEY,'1');$('gate').classList.add('hidden');$('editor').classList.remove('hidden');initEditor()}
+const existingHash=localStorage.getItem(HASH_KEY)||'';
+if(sessionStorage.getItem(SESSION_KEY)==='1'){showEditor();return}
+if(!existingHash){$('gateText').textContent='Set a debug password for this browser/device. Both password boxes are masked.';$('pw2').classList.remove('hidden');$('unlock').textContent='Set password & unlock'}
+$('unlock').onclick=async()=>{
+  const a=$('pw1').value,b=$('pw2').value;
+  if(!a){gateStatus('Enter a password.',true);return}
+  if(existingHash){if(await hash(a)!==existingHash){gateStatus('Incorrect password.',true);return}showEditor();return}
+  if(a.length<2){gateStatus('Use at least 2 characters.',true);return}
+  if(a!==b){gateStatus('The two passwords do not match.',true);return}
+  localStorage.setItem(HASH_KEY,await hash(a));showEditor();
+};
+$('pw1').addEventListener('keydown',e=>{if(e.key==='Enter')$('unlock').click()});
+$('pw2').addEventListener('keydown',e=>{if(e.key==='Enter')$('unlock').click()});
+
+function initEditor(){
+  if(window.__PSLE_DEBUG_EDITOR_READY)return;window.__PSLE_DEBUG_EDITOR_READY=true;
+  let mode='science';
+  const rawKey=(base,student)=>`${base}__profile_${student}`;
+  const student=()=>$('student').value;
+  const sciState=()=>parse(localStorage.getItem(rawKey(SCI,student())));
+  const procState=()=>parse(localStorage.getItem(rawKey(PROC,student())));
+  const isScienceKnown=(state,i)=>uniq(state?.[i]?.appCorrectDates).length>=1;
+  const isProcessKnown=(state,id)=>uniq(state?.items?.[id]?.appDates).length>=1;
+  const today=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
+  function setStatus(text,type=''){const el=$('status');el.textContent=text;el.className='status'+(type?' '+type:'')}
+  function scienceItems(){const st=sciState();return (window.BOOK_BANK||[]).map((e,i)=>({kind:'science',id:e.id,index:i,topic:e.topic,category:e.category,known:isScienceKnown(st,i)}))}
+  function processItems(){const st=procState();return (window.PROCESS_SKILLS||[]).map(e=>({kind:'process',id:e.id,topic:e.topic,category:'Process Skills',known:isProcessKnown(st,e.id)}))}
+  function markScience(cardNo,wantKnown){const n=Number(cardNo),idx=(window.BOOK_BANK||[]).findIndex(x=>Number(x.id)===n);if(idx<0)return{ok:false,msg:`Science card #${cardNo} was not found.`};const st=sciState(),r=st[idx]||{},was=uniq(r.appCorrectDates).length>=1;if(was===wantKnown)return{ok:false,msg:`#${n} is already ${wantKnown?'Known':'Not done'}.`};if(wantKnown){r.appCorrectDates=uniq([...(r.appCorrectDates||[]),today()]);r.debugLastChangedToKnownAt=Date.now()}else{const dates=uniq(r.appCorrectDates);r.debugArchivedAppCorrectDates=uniq([...(r.debugArchivedAppCorrectDates||[]),...dates]);r.appCorrectDates=[];r.debugLastChangedToNotDoneAt=Date.now()}r._syncUpdatedAt=Date.now();st[idx]=r;localStorage.setItem(rawKey(SCI,student()),JSON.stringify(st));return{ok:true,msg:`#${n} changed to ${wantKnown?'Known':'Not done'}.`}}
+  function markProcess(id,wantKnown){const n=Number(id);if(!(window.PROCESS_SKILLS||[]).some(x=>Number(x.id)===n))return{ok:false,msg:`Process Skill P${id} was not found.`};const st=procState();st.items=st.items||{};const r=st.items[n]||{},was=uniq(r.appDates).length>=1;if(was===wantKnown)return{ok:false,msg:`P${n} is already ${wantKnown?'Known':'Not done'}.`};if(wantKnown){r.appDates=uniq([...(r.appDates||[]),today()]);r.debugLastChangedToKnownAt=Date.now()}else{const dates=uniq(r.appDates);r.debugArchivedAppDates=uniq([...(r.debugArchivedAppDates||[]),...dates]);r.appDates=[];r.debugLastChangedToNotDoneAt=Date.now()}r._syncUpdatedAt=Date.now();st.items[n]=r;localStorage.setItem(rawKey(PROC,student()),JSON.stringify(st));return{ok:true,msg:`P${n} changed to ${wantKnown?'Known':'Not done'}.`}}
+  function toggle(kind,id,wantKnown){const label=kind==='science'?`Science card #${id}`:`Process Skill P${id}`;if(!confirm(`Change ${label} to ${wantKnown?'Known':'Not done'}?`))return;const out=kind==='science'?markScience(id,wantKnown):markProcess(id,wantKnown);setStatus(out.msg,out.ok?'ok':'bad');render()}
+  function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+  function render(){const q=String($('search').value||'').trim().toLowerCase(),f=$('filter').value;let items=mode==='science'?scienceItems():processItems();items=items.filter(x=>(f==='all'||(f==='known'&&x.known)||(f==='notdone'&&!x.known))&&(!q||String(x.id).includes(q)||String(x.topic).toLowerCase().includes(q)||String(x.category).toLowerCase().includes(q)));$('count').textContent=`${items.length} shown`;$('scienceTab').classList.toggle('on',mode==='science');$('processTab').classList.toggle('on',mode==='process');const list=$('list');if(!items.length){list.innerHTML='<div class="empty">No matching items.</div>';return}list.innerHTML=items.map(x=>`<div class="row"><div><b>${x.kind==='science'?'#'+x.id:'P'+x.id} ${escapeHtml(x.topic)} <span class="state ${x.known?'known':'todo'}">${x.known?'Known':'Not done'}</span></b><small>${escapeHtml(x.category)}</small></div><button class="${x.known?'danger':'goodbtn'}" data-kind="${x.kind}" data-id="${x.id}" data-want="${x.known?'0':'1'}">Change to ${x.known?'Not done':'Known'}</button></div>`).join('');list.querySelectorAll('[data-kind]').forEach(b=>b.onclick=()=>toggle(b.dataset.kind,Number(b.dataset.id),b.dataset.want==='1'))}
+  function findJump(){const raw=String($('jump').value||'').trim();if(!raw){setStatus('Enter a Science card number such as #51 or a Process Skill such as P5.','bad');return}const p=raw.match(/^p\s*(\d{1,2})$/i),s=raw.match(/^#?\s*(\d{1,3})$/);if(p){mode='process';$('search').value=String(Number(p[1]));$('filter').value='all';render();setStatus(`Showing P${Number(p[1])}.`,'ok');return}if(s){mode='science';$('search').value=String(Number(s[1]));$('filter').value='all';render();setStatus(`Showing #${Number(s[1])}.`,'ok');return}setStatus('Use a Science number like #51 or a Process Skill like P5.','bad')}
+  $('scienceTab').onclick=()=>{mode='science';$('search').value='';render()};$('processTab').onclick=()=>{mode='process';$('search').value='';render()};$('search').oninput=render;$('filter').onchange=render;$('refresh').onclick=render;$('go').onclick=findJump;$('jump').onkeydown=e=>{if(e.key==='Enter')findJump()};$('student').onchange=()=>{setStatus(`Editing ${student()==='jerry'?'Jerry':'Javis'}'s progress.`);$('search').value='';render()};$('backTrainer').onclick=()=>location.href='trainer180-app.html?v=20260910c';
+  const active=(localStorage.getItem('psleScience_active_student')||'').toLowerCase();if(['jerry','javis'].includes(active))$('student').value=active;setStatus(`Editing ${student()==='jerry'?'Jerry':'Javis'}'s progress.`);render();
+  window.PSLE_DEBUG_PROGRESS={markScience,markProcess,scienceItems,processItems};
+}
 })();
 </script>
 </body>
