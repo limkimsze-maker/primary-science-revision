@@ -160,4 +160,14 @@ put(180,[
 ]);
 
 window.PSLE_AUDITED_FRAMEWORK_OVERRIDES={installed:true,version:'20260908-audit1',ids:[1,11,31,33,35,42,46,49,58,61,63,75,77,78,79,82,83,84,85,95,99,100,101,109,113,114,119,128,133,138,139,151,158,160,161,162,164,166,169,180]};
+
+// Debug God Mode loads this file as a parser-inserted script. Load the authored
+// Explain-answer audit synchronously there, before the prelim-bank scripts run.
+// The main trainer loads the same audit explicitly, so no document.write is used there.
+try{
+ if(document.readyState==='loading'){
+  const src=String(document.currentScript?.src||'').replace('audited-framework-overrides.js','authored-explain-answer-audit.js');
+  if(src)document.write('<script src="'+src+'"></script>');
+ }
+}catch(_e){}
 })();
