@@ -53,11 +53,10 @@ function openScience(idx,fallback=true){
   }
   const topic=$('gfTopic'),status=$('gfStatus'),search=$('gfSearch');
   if(!topic||!status||!search){if(fallback)reloadForTarget({kind:'science',id:idx});return}
-  // Try the trainer's own picker first. This works without touching progress.
   [topic,status,search].forEach(el=>el.disabled=false);
-  topic.value='all';topic.dispatchEvent(new Event('change',{bubbles:true}));
+  topic.value=e.category||'all';topic.dispatchEvent(new Event('change',{bubbles:true}));
   status.value='all';status.dispatchEvent(new Event('change',{bubbles:true}));
-  search.value=`${e.id} ${e.topic||''} ${e.phrasePrompt||''}`.trim();
+  search.value=`${e.id} ${e.topic||''}`.trim();
   search.dispatchEvent(new Event('input',{bubbles:true}));
   verifyScience(idx,fallback);
 }
@@ -68,7 +67,7 @@ function openProcess(id,fallback=true){
     else if(fallback)reloadForTarget({kind:'process',id});
   },220)}catch(_e){if(fallback)reloadForTarget({kind:'process',id})}
 }
-function openItem(kind,id){if(kind==='process')openProcess(id,true);else openScience(id,true)}
+function openItem(kind,id,fallback=true){if(kind==='process')openProcess(id,fallback);else openScience(id,fallback)}
 
 function renderList(){
   const list=$('gpsList');if(!list)return;
@@ -84,7 +83,7 @@ function renderList(){
     html.push(`<button type="button" class="gps-row ${current?'current':''}" data-kind="${x.kind}" data-id="${x.kind==='science'?x.idx:x.id}"><span class="gps-dot">${x.known?'✅':'○'}</span><span class="gps-text"><b>${x.kind==='science'?'#'+x.id:'P'+x.id} ${esc(x.topic)}</b><small>${esc(x.cue)}</small></span><span class="gps-state ${x.known?'known':''}">${x.known?'Known':'Not done'}</span></button>`);
   }
   list.innerHTML=html.join('');
-  list.querySelectorAll('.gps-row').forEach(row=>row.addEventListener('click',e=>{e.preventDefault();openItem(row.dataset.kind,Number(row.dataset.id))}));
+  list.querySelectorAll('.gps-row').forEach(row=>row.addEventListener('click',e=>{e.preventDefault();openItem(row.dataset.kind,Number(row.dataset.id),true)}));
   requestAnimationFrame(()=>{list.scrollTop=Math.min(oldTop,Math.max(0,list.scrollHeight-list.clientHeight))});
 }
 function install(){
@@ -120,7 +119,7 @@ function install(){
   document.addEventListener('psle-process-mode',()=>{clearTimeout(timer);timer=setTimeout(renderList,80)});
   renderList();
   let pending=null;try{pending=JSON.parse(localStorage.getItem(TARGET_KEY)||'null');localStorage.removeItem(TARGET_KEY)}catch(_e){}
-  if(pending)setTimeout(()=>openItem(pending.kind,Number(pending.id)),180);
+  if(pending)setTimeout(()=>openItem(pending.kind,Number(pending.id),false),180);
 }
 function boot(){tries++;if(!$('guidedFlow')||typeof BANK==='undefined'||!Array.isArray(BANK)||BANK.length!==180||!api()){if(tries<240)setTimeout(boot,80);return}install()}
 boot();
