@@ -1,6 +1,6 @@
 (()=>{
-const VERSION='20260910d';
-const TARGET_KEY='psleScience_revisit_known_target_v1';
+const VERSION='20260910e';
+const TARGET_KEY='psleScience_revisit_known_target_v2';
 const DRAFT_KEY='psleScience_revisit_drafts_v1';
 let tries=0,observer=null;
 const $=id=>document.getElementById(id);
@@ -20,10 +20,26 @@ function fixKnownReviewFeedback(){if(!currentKnown())return;const box=$('gfAppFe
 function isKnownRow(row){return !!row&&String(row.querySelector('.gps-dot')?.textContent||'').includes('✅')}
 function saveVisibleDraft(){const r=$('gfRecall'),a=$('gfAppAnswer');if(r)saveDraft(r,'recall');if(a)saveDraft(a,'app')}
 function targetFromRow(row){const kind=row?.dataset?.kind,id=Number(row?.dataset?.id);if(!kind||!Number.isFinite(id))return null;return{kind,id,student:student(),at:Date.now()}}
-function hardOpen(target){saveVisibleDraft();sessionStorage.setItem(TARGET_KEY,JSON.stringify(target));try{window.parent.location.replace(`trainer180-app.html?v=${VERSION}&reviewKnown=1&nav=${Date.now()}`)}catch(_e){location.reload()}}
-function captureKnownClick(e){const row=e.target?.closest?.('#gpsList .gps-row');if(!row||!isKnownRow(row))return;const target=targetFromRow(row);if(!target)return;e.preventDefault();e.stopPropagation();if(typeof e.stopImmediatePropagation==='function')e.stopImmediatePropagation();const m=$('gpsMessage');if(m)m.textContent='Opening this exact Known item for review… your mastery progress is preserved.';hardOpen(target)}
-function openTarget(){const t=parse(sessionStorage.getItem(TARGET_KEY),null);if(!t||t.student!==student())return false;sessionStorage.removeItem(TARGET_KEY);if(t.kind==='process'){const a=api();if(a?.enter){a.enter(t.id);const m=$('gpsMessage');if(m)m.textContent=`Reviewing Known Process Skill P${t.id}. Existing mastery remains Known.`;return true}return false}const e=typeof BANK!=='undefined'?BANK[t.id]:null,status=$('gfStatus'),topic=$('gfTopic'),search=$('gfSearch');if(!e||!status||!topic||!search)return false;topic.value='all';topic.dispatchEvent(new Event('change',{bubbles:true}));status.value='known';status.dispatchEvent(new Event('change',{bubbles:true}));search.value=`${e.id} ${e.topic||''}`.trim();search.dispatchEvent(new Event('input',{bubbles:true}));const m=$('gpsMessage');if(m)m.textContent=`Reviewing Known item #${e.id}. Existing mastery remains Known; practise as much as you want.`;return true}
-function enhanceSidebar(){const side=$('guidedProgressSidebar');if(!side)return;const foot=side.querySelector('.gps-foot');if(foot&&!$('gpsReviewKnownNote')){const n=document.createElement('div');n.id='gpsReviewKnownNote';n.style.cssText='margin-top:7px;padding:8px 9px;border-radius:9px;background:#ecfdf5;color:#047857;font-weight:800;line-height:1.35';n.innerHTML='🔁 <b>Known items stay available.</b> Use the finder above to jump to the exact concept you want. Review attempts never remove your Known progress.';foot.appendChild(n)}const known=$('gpsKnown');if(known&&!known.title)known.title='Open this list anytime to revisit mastered concepts'}
+function hardOpen(target){saveVisibleDraft();localStorage.setItem(TARGET_KEY,JSON.stringify(target));try{window.parent.location.replace(`trainer180-app.html?v=${VERSION}&reviewKnown=1&nav=${Date.now()}`)}catch(_e){location.reload()}}
+function directOpenScience(target){
+  const e=typeof BANK!=='undefined'?BANK[target.id]:null,status=$('gfStatus'),topic=$('gfTopic'),search=$('gfSearch'),f=flow();
+  if(!e||!status||!topic||!search||!f)return false;
+  if((f.dataset.stage||'flash')!=='flash'||(f.dataset.reviewReturn||''))return false;
+  try{speechSynthesis.cancel()}catch(_e){}
+  topic.value='all';topic.dispatchEvent(new Event('change',{bubbles:true}));
+  status.value='known';status.dispatchEvent(new Event('change',{bubbles:true}));
+  search.value=`${e.id} ${e.topic||''}`.trim();search.dispatchEvent(new Event('input',{bubbles:true}));
+  const m=$('gpsMessage');if(m)m.textContent=`Opening Known item #${e.id} ${e.topic||''}…`;
+  setTimeout(()=>{
+    const meta=String($('gfMeta')?.textContent||'');
+    if(!meta.includes(`Concept ${e.id} `))hardOpen(target);
+    else if(m)m.textContent=`Reviewing Known item #${e.id}. Tap another Known concept anytime.`;
+  },350);
+  return true;
+}
+function captureKnownClick(e){const row=e.target?.closest?.('#gpsList .gps-row');if(!row||!isKnownRow(row))return;const target=targetFromRow(row);if(!target)return;e.preventDefault();e.stopPropagation();if(typeof e.stopImmediatePropagation==='function')e.stopImmediatePropagation();if(target.kind==='science'&&directOpenScience(target))return;if(target.kind==='process'&&api()?.enter){api().enter(target.id);return}const m=$('gpsMessage');if(m)m.textContent='Opening this exact Known item for review…';hardOpen(target)}
+function openTarget(){const t=parse(localStorage.getItem(TARGET_KEY),null);if(!t||t.student!==student())return false;localStorage.removeItem(TARGET_KEY);if(t.kind==='process'){const a=api();if(a?.enter){a.enter(t.id);const m=$('gpsMessage');if(m)m.textContent=`Reviewing Known Process Skill P${t.id}. Existing mastery remains Known.`;return true}return false}const e=typeof BANK!=='undefined'?BANK[t.id]:null,status=$('gfStatus'),topic=$('gfTopic'),search=$('gfSearch');if(!e||!status||!topic||!search){localStorage.setItem(TARGET_KEY,JSON.stringify(t));return false}topic.value='all';topic.dispatchEvent(new Event('change',{bubbles:true}));status.value='known';status.dispatchEvent(new Event('change',{bubbles:true}));search.value=`${e.id} ${e.topic||''}`.trim();search.dispatchEvent(new Event('input',{bubbles:true}));const m=$('gpsMessage');if(m)m.textContent=`Reviewing Known item #${e.id}. Tap another Known concept anytime.`;return true}
+function enhanceSidebar(){const side=$('guidedProgressSidebar');if(!side)return;const foot=side.querySelector('.gps-foot');if(foot&&!$('gpsReviewKnownNote')){const n=document.createElement('div');n.id='gpsReviewKnownNote';n.style.cssText='margin-top:7px;padding:8px 9px;border-radius:9px;background:#ecfdf5;color:#047857;font-weight:800;line-height:1.35';n.innerHTML='🔁 <b>Known items stay available.</b> Tap any Known concept to move straight to it.';foot.appendChild(n)}const known=$('gpsKnown');if(known&&!known.title)known.title='Tap any Known concept to revisit it'}
 function boot(){tries++;if(!flow()||!$('guidedProgressSidebar')||typeof BANK==='undefined'||!api()){if(tries<240)setTimeout(boot,80);return}document.addEventListener('click',captureKnownClick,true);enhanceSidebar();wireDrafts();fixKnownReviewFeedback();observer=new MutationObserver(()=>{enhanceSidebar();wireDrafts();fixKnownReviewFeedback()});observer.observe(flow(),{childList:true,subtree:true,characterData:true});setTimeout(openTarget,120)}
 boot();
 })();
