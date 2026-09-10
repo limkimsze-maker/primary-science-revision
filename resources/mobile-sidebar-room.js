@@ -1,7 +1,7 @@
 (()=>{
 'use strict';
-if(window.__PSLE_MOBILE_SIDEBAR_ROOM_V5__)return;
-window.__PSLE_MOBILE_SIDEBAR_ROOM_V5__=true;
+if(window.__PSLE_MOBILE_SIDEBAR_ROOM_V6__)return;
+window.__PSLE_MOBILE_SIDEBAR_ROOM_V6__=true;
 const d=document,$=id=>d.getElementById(id);
 let tries=0;
 const mobile=()=>matchMedia('(max-width:700px)').matches;
@@ -29,15 +29,38 @@ function patchRespirationClarity(){
   }catch(_e){}
 }
 
+function installDebugEntry(){
+  const side=$('guidedProgressSidebar');
+  if(!side||$('gpsDebugProgress'))return;
+  const tools=side.querySelector('.gps-tools');
+  if(!tools)return;
+  const btn=d.createElement('button');
+  btn.id='gpsDebugProgress';
+  btn.type='button';
+  btn.textContent='🛠 Debug progress';
+  btn.title='Teacher/debug: change Known items back to Not done';
+  btn.style.marginTop='6px';
+  btn.style.borderColor='#c7d2fe';
+  btn.style.background='#eef2ff';
+  btn.style.color='#3730a3';
+  btn.onclick=e=>{
+    e.preventDefault();
+    e.stopPropagation();
+    try{window.top.location.href='debug.html?v=20260910b'}catch(_e){window.location.href='debug.html?v=20260910b'}
+  };
+  tools.appendChild(btn);
+}
+
 function installStyle(){
-  if($('mobileSidebarRoomStyleV5'))return;
+  if($('mobileSidebarRoomStyleV6'))return;
   const s=d.createElement('style');
-  s.id='mobileSidebarRoomStyleV5';
+  s.id='mobileSidebarRoomStyleV6';
   s.textContent=`
   /* Framework codes stay available in the framework filter/coach, but are never
      rendered beside individual mastery-list rows. Keeping them out of the row
      layout prevents F1/F2 label flicker and reflow while the list is updated. */
   #guidedProgressSidebar .gps-row .fc-tag{display:none!important}
+  #gpsDebugProgress{font-weight:900!important}
 
   @media(max-width:700px){
     #guidedProgressSidebar{
@@ -98,9 +121,10 @@ function wire(){
   const side=$('guidedProgressSidebar'),list=$('gpsList');
   if(!side||!list)return false;
   patchRespirationClarity();
+  installDebugEntry();
   installStyle();
-  if(side.dataset.mobileScrollFixReadyV5)return true;
-  side.dataset.mobileScrollFixReadyV5='1';
+  if(side.dataset.mobileScrollFixReadyV6)return true;
+  side.dataset.mobileScrollFixReadyV6='1';
 
   // Only reset after actions that replace the list. Never adjust scroll while the user is swiping.
   ['gpsNotDone','gpsKnown'].forEach(id=>$(id)?.addEventListener('click',()=>setTimeout(resetListTop,70)));
@@ -117,6 +141,6 @@ function wire(){
   return true;
 }
 
-function boot(){tries++;patchRespirationClarity();if(wire())return;if(tries<240)setTimeout(boot,80)}
+function boot(){tries++;patchRespirationClarity();installDebugEntry();if(wire())return;if(tries<240)setTimeout(boot,80)}
 boot();
 })();
