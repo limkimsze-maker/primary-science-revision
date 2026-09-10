@@ -1,7 +1,7 @@
 (()=>{
 'use strict';
-if(window.__PSLE_MOBILE_SIDEBAR_ROOM_V6__)return;
-window.__PSLE_MOBILE_SIDEBAR_ROOM_V6__=true;
+if(window.__PSLE_MOBILE_SIDEBAR_ROOM_V7__)return;
+window.__PSLE_MOBILE_SIDEBAR_ROOM_V7__=true;
 const d=document,$=id=>d.getElementById(id);
 let tries=0;
 const mobile=()=>matchMedia('(max-width:700px)').matches;
@@ -29,39 +29,12 @@ function patchRespirationClarity(){
   }catch(_e){}
 }
 
-function installDebugEntry(){
-  const side=$('guidedProgressSidebar');
-  if(!side||$('gpsDebugProgress'))return;
-  const tools=side.querySelector('.gps-tools');
-  if(!tools)return;
-  const btn=d.createElement('button');
-  btn.id='gpsDebugProgress';
-  btn.type='button';
-  btn.textContent='🛠 Debug progress';
-  btn.title='Teacher/debug: change Known items back to Not done';
-  btn.style.marginTop='6px';
-  btn.style.borderColor='#c7d2fe';
-  btn.style.background='#eef2ff';
-  btn.style.color='#3730a3';
-  btn.onclick=e=>{
-    e.preventDefault();
-    e.stopPropagation();
-    try{window.top.location.href='debug.html?v=20260910b'}catch(_e){window.location.href='debug.html?v=20260910b'}
-  };
-  tools.appendChild(btn);
-}
-
 function installStyle(){
-  if($('mobileSidebarRoomStyleV6'))return;
+  if($('mobileSidebarRoomStyleV7'))return;
   const s=d.createElement('style');
-  s.id='mobileSidebarRoomStyleV6';
+  s.id='mobileSidebarRoomStyleV7';
   s.textContent=`
-  /* Framework codes stay available in the framework filter/coach, but are never
-     rendered beside individual mastery-list rows. Keeping them out of the row
-     layout prevents F1/F2 label flicker and reflow while the list is updated. */
   #guidedProgressSidebar .gps-row .fc-tag{display:none!important}
-  #gpsDebugProgress{font-weight:900!important}
-
   @media(max-width:700px){
     #guidedProgressSidebar{
       top:max(6px,env(safe-area-inset-top))!important;
@@ -121,26 +94,18 @@ function wire(){
   const side=$('guidedProgressSidebar'),list=$('gpsList');
   if(!side||!list)return false;
   patchRespirationClarity();
-  installDebugEntry();
   installStyle();
-  if(side.dataset.mobileScrollFixReadyV6)return true;
-  side.dataset.mobileScrollFixReadyV6='1';
-
-  // Only reset after actions that replace the list. Never adjust scroll while the user is swiping.
+  if(side.dataset.mobileScrollFixReadyV7)return true;
+  side.dataset.mobileScrollFixReadyV7='1';
   ['gpsNotDone','gpsKnown'].forEach(id=>$(id)?.addEventListener('click',()=>setTimeout(resetListTop,70)));
   $('gpsFind')?.addEventListener('input',()=>setTimeout(resetListTop,40));
   d.addEventListener('change',e=>{if(e.target?.id==='fcFrameworkFilter')setTimeout(resetListTop,70)});
-
-  // Opening the mobile panel starts at the top without touching scroll position during a swipe.
   d.addEventListener('click',e=>{
-    if(e.target?.closest?.('#udListToggle')&&!d.body.classList.contains('ud-list-open')){
-      setTimeout(resetListTop,60);
-    }
+    if(e.target?.closest?.('#udListToggle')&&!d.body.classList.contains('ud-list-open'))setTimeout(resetListTop,60);
   },true);
-
   return true;
 }
 
-function boot(){tries++;patchRespirationClarity();installDebugEntry();if(wire())return;if(tries<240)setTimeout(boot,80)}
+function boot(){tries++;patchRespirationClarity();if(wire())return;if(tries<240)setTimeout(boot,80)}
 boot();
 })();
