@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const BUILD='20260910s';
+const BUILD='20260910t';
 let tries=0,view='notdone',query='',timer=0,busy=false;
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -32,33 +32,27 @@ function shownItems(){
   return a;
 }
 function setMessage(t){const m=$('gpsMessage');if(m)m.textContent=t||''}
-
 function parentTrainerUrl(kind,id){
   try{
-    const u=new URL(window.parent.location.href);
-    const base=u.pathname.replace(/[^/]*$/,'');
-    u.pathname=base+'trainer180-app.html';u.search='';
-    u.searchParams.set('v',BUILD);u.searchParams.set('goto',`${kind}:${id}`);u.searchParams.set('nav',String(Date.now()));u.hash='';
-    return u.href;
+    const u=new URL(window.parent.location.href),base=u.pathname.replace(/[^/]*$/,'');
+    u.pathname=base+'trainer180-app.html';u.search='';u.searchParams.set('v',BUILD);u.searchParams.set('goto',`${kind}:${id}`);u.searchParams.set('nav',String(Date.now()));u.hash='';return u.href;
   }catch(_e){return `trainer180-app.html?v=${BUILD}&goto=${encodeURIComponent(kind+':'+id)}&nav=${Date.now()}`}
 }
-function hardOpen(kind,id){
-  const url=parentTrainerUrl(kind,id);
-  try{window.parent.location.assign(url)}catch(_e){location.assign(url)}
-}
+function hardOpen(kind,id){const u=parentTrainerUrl(kind,id);try{window.parent.location.assign(u)}catch(_e){location.assign(u)}}
+
 async function openScienceDirect(idx){
   idx=Number(idx);if(!Number.isInteger(idx)||idx<0||idx>=BANK.length)return false;
   const e=BANK[idx],flow=$('guidedFlow');
   setMessage(`Opening #${e.id} ${e.topic||''}…`);
   try{speechSynthesis.cancel()}catch(_e){}
 
-  // If a Process Skill is open, return to Science first, then take control of the exact target.
   if(processActive()){
     try{api()?.exitToScience?.(idx)}catch(_e){}
-    await sleep(260);
+    await sleep(220);
   }
 
-  // Mid-Memorise/Application switching needs a clean guided-flow restart; use the exact-target fallback.
+  // The guided flow refuses filter changes while in Memorise/Application. In that case reload once
+  // with the exact target, and concept-switch-rescue.js will land on the selected concept.
   const stage=String(flow?.dataset?.stage||'flash'),review=String(flow?.dataset?.reviewReturn||'');
   if(stage!=='flash'||review){hardOpen('science',idx);return true}
 
@@ -66,37 +60,32 @@ async function openScienceDirect(idx){
   if(!topic||!status||!search||!sort){hardOpen('science',idx);return true}
   topic.disabled=status.disabled=search.disabled=sort.disabled=false;
 
-  // First clear every guided-flow filter. Each control change can rebuild the queue, so do this
-  // before pinning the selected concept into the shared core order/pos state.
+  // This order is deliberate. Search FIRST updates guided-concept-flow's private picker.search
+  // immediately. The following filter changes therefore rebuild around the clicked sidebar item,
+  // rather than around the first concept in the bank.
+  const exact=`${e.id} ${e.topic||''} ${e.category||''} ${e.phrasePrompt||''}`.trim();
+  search.value=exact;search.dispatchEvent(new Event('input',{bubbles:true}));
   topic.value='all';topic.dispatchEvent(new Event('change',{bubbles:true}));
   status.value='all';status.dispatchEvent(new Event('change',{bubbles:true}));
-  search.value='';search.dispatchEvent(new Event('input',{bubbles:true}));
-  await sleep(180);
-
-  // order/pos belong to trainer180.html and are shared with this script. Setting them here makes
-  // current() point at the clicked sidebar concept. The sort change then makes the guided-flow
-  // closure rebuild around that exact current concept and render it in the middle card.
-  try{order=[idx];pos=0}catch(_e){hardOpen('science',idx);return true}
   sort.value='book';sort.dispatchEvent(new Event('change',{bubbles:true}));
-  await sleep(80);
 
-  if(currentScience()!==idx){
-    try{order=[idx];pos=0;sort.dispatchEvent(new Event('change',{bubbles:true}))}catch(_e){}
-    await sleep(80);
-  }
+  await sleep(180);
   const ok=currentScience()===idx&&String($('gfMeta')?.textContent||'').includes(`Concept ${e.id} `);
-  if(ok){
-    setMessage(`Opened #${e.id} ${e.topic||''}.`);
-    renderList();
-    return true;
-  }
+  if(ok){setMessage(`Opened #${e.id} ${e.topic||''}.`);renderList();return true}
+
+  // One exact retry after the search debounce has settled.
+  search.value=exact;search.dispatchEvent(new Event('input',{bubbles:true}));
+  status.value='all';status.dispatchEvent(new Event('change',{bubbles:true}));
+  await sleep(180);
+  if(currentScience()===idx){setMessage(`Opened #${e.id} ${e.topic||''}.`);renderList();return true}
+
   hardOpen('science',idx);return true;
 }
 async function openItem(kind,id){
   if(busy)return;busy=true;
   try{
     if(kind==='process'){
-      const n=Number(id),flow=$('guidedFlow'),stage=String(flow?.dataset?.stage||'flash');
+      const n=Number(id),stage=String($('guidedFlow')?.dataset?.stage||'flash');
       setMessage(`Opening Process Skill P${n}…`);
       if(stage!=='flash'&&!processActive()){hardOpen('process',n);return}
       try{api()?.enter?.(n)}catch(_e){}
@@ -134,7 +123,7 @@ function install(){
     <div class="gps-tabs"><button id="gpsNotDone" type="button"></button><button id="gpsKnown" type="button"></button></div>
     <div id="gpsMessage" class="gps-message">Click any item to open it in the middle card.</div>
     <div id="gpsList" class="gps-list"></div>
-    <div class="gps-foot"><b>180 Science concepts + 12 Process Skills.</b><br>Click a sidebar item and the middle learning card changes to that exact item.</div>`;
+    <div class="gps-foot"><b>180 Science concepts + 12 Process Skills.</b><br>The highlighted sidebar item and middle learning card should always be the same concept.</div>`;
   layout.appendChild(side);
   const style=document.createElement('style');style.id='guidedProgressSidebarStyle';style.textContent=`
   body.gf-on>.wrap{max-width:1380px!important}#guidedLayout{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:14px;max-width:1360px;margin:0 auto 28px;align-items:start}#guidedLayout>#guidedFlow{max-width:none!important;margin:12px 0 0!important}
