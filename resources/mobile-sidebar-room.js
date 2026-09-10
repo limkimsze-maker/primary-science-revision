@@ -1,7 +1,7 @@
 (()=>{
 'use strict';
-if(window.__PSLE_MOBILE_SIDEBAR_ROOM_V7__)return;
-window.__PSLE_MOBILE_SIDEBAR_ROOM_V7__=true;
+if(window.__PSLE_MOBILE_SIDEBAR_ROOM_V8__)return;
+window.__PSLE_MOBILE_SIDEBAR_ROOM_V8__=true;
 const d=document,$=id=>d.getElementById(id);
 let tries=0;
 const mobile=()=>matchMedia('(max-width:700px)').matches;
@@ -30,11 +30,14 @@ function patchRespirationClarity(){
 }
 
 function installStyle(){
-  if($('mobileSidebarRoomStyleV7'))return;
+  if($('mobileSidebarRoomStyleV8'))return;
   const s=d.createElement('style');
-  s.id='mobileSidebarRoomStyleV7';
+  s.id='mobileSidebarRoomStyleV8';
   s.textContent=`
   #guidedProgressSidebar .gps-row .fc-tag{display:none!important}
+  #guidedProgressSidebar .gps-list,
+  #guidedProgressSidebar .gps-row,
+  #guidedProgressSidebar .gps-group{overflow-anchor:none!important}
   @media(max-width:700px){
     #guidedProgressSidebar{
       top:max(6px,env(safe-area-inset-top))!important;
@@ -87,7 +90,37 @@ function installStyle(){
 function resetListTop(){
   const l=$('gpsList');
   if(!mobile()||!l)return;
-  requestAnimationFrame(()=>{l.scrollTop=0;});
+  l.dataset.intentionalScroll='1';
+  requestAnimationFrame(()=>{l.scrollTop=0;requestAnimationFrame(()=>delete l.dataset.intentionalScroll);});
+}
+
+function installScrollGuard(list){
+  if(!list||list.dataset.scrollGuardV8)return;
+  list.dataset.scrollGuardV8='1';
+  let desiredTop=list.scrollTop||0,userUntil=0,restoring=false;
+  const markUser=()=>{userUntil=Date.now()+700};
+  list.addEventListener('wheel',markUser,{passive:true});
+  list.addEventListener('touchstart',markUser,{passive:true});
+  list.addEventListener('touchmove',markUser,{passive:true});
+  list.addEventListener('pointerdown',markUser,{passive:true});
+  list.addEventListener('keydown',e=>{if(['ArrowDown','ArrowUp','PageDown','PageUp','Home','End',' '].includes(e.key))markUser()});
+  list.addEventListener('scroll',()=>{
+    if(restoring)return;
+    if(list.dataset.intentionalScroll==='1'||Date.now()<userUntil){desiredTop=list.scrollTop;return}
+    if(Math.abs(list.scrollTop-desiredTop)>1){
+      restoring=true;
+      list.scrollTop=desiredTop;
+      requestAnimationFrame(()=>{restoring=false});
+    }
+  },{passive:true});
+  new MutationObserver(()=>{
+    if(Date.now()<userUntil||list.dataset.intentionalScroll==='1')return;
+    requestAnimationFrame(()=>{
+      const max=Math.max(0,list.scrollHeight-list.clientHeight);
+      const target=Math.min(desiredTop,max);
+      if(Math.abs(list.scrollTop-target)>1){restoring=true;list.scrollTop=target;requestAnimationFrame(()=>{restoring=false})}
+    });
+  }).observe(list,{childList:true,subtree:true});
 }
 
 function wire(){
@@ -95,8 +128,9 @@ function wire(){
   if(!side||!list)return false;
   patchRespirationClarity();
   installStyle();
-  if(side.dataset.mobileScrollFixReadyV7)return true;
-  side.dataset.mobileScrollFixReadyV7='1';
+  installScrollGuard(list);
+  if(side.dataset.mobileScrollFixReadyV8)return true;
+  side.dataset.mobileScrollFixReadyV8='1';
   ['gpsNotDone','gpsKnown'].forEach(id=>$(id)?.addEventListener('click',()=>setTimeout(resetListTop,70)));
   $('gpsFind')?.addEventListener('input',()=>setTimeout(resetListTop,40));
   d.addEventListener('change',e=>{if(e.target?.id==='fcFrameworkFilter')setTimeout(resetListTop,70)});
