@@ -21,7 +21,12 @@ function vv(i){return BANK[i].applicationVariants[vi(i)]}
 function ensurePaperBadge(){if($('paperProfileTag'))return;const strip=document.querySelector('.teacher-strip > div:first-child');if(!strip)return;const s=document.createElement('span');s.id='paperProfileTag';s.className='small';s.style.marginLeft='10px';s.style.fontWeight='700';strip.appendChild(s)}
 function updatePaperBadge(){ensurePaperBadge();let i=current(),id=BANK[i].id,t=$('paperProfileTag');if(!t)return;if(PAPER_GREEN.has(id)){t.textContent=`📄 Past paper/remediation: Strong (${PAPER_EVIDENCE[id]||''})`;t.style.color='#166534'}else if(PAPER_RED.has(id)){t.textContent=`📄 Past paper: Focus (${PAPER_EVIDENCE[id]||''})`;t.style.color='#991b1b'}else{t.textContent='📄 Past paper: Not specifically assessed';t.style.color='#64748b'}}
 const oldRender=render;
-function ui(){let i=current(),e=BANK[i],v=vv(i),q=$('appQuestion'),n=$('variantNote'),src=$('appBookSource');if(q)q.textContent=v.question;if(n){const paper=v.source?` · ${v.source}`:'';n.textContent=`Question ${vi(i)+1} of ${e.applicationVariants.length} · ${v.kind}${paper}`}if(src)src.textContent=`📘 Audited science core: ${e.bookRef}`;updatePaperBadge();if(window.AUDIT180_UI)window.AUDIT180_UI()}
+function ui(){let i=current(),e=BANK[i],v=vv(i),q=$('appQuestion'),n=$('variantNote'),src=$('appBookSource');
+ // Keep the exact question and exact model answer paired everywhere, including AI marking.
+ // ai-marker.js reads BANK[current()].modelApplicationAnswer, so update it whenever the variant changes.
+ e.modelApplicationAnswer=v.modelApplicationAnswer||e.phrase||'';
+ e.currentApplicationVariant=v;
+ if(q)q.textContent=v.question;if(n){const paper=v.source?` · ${v.source}`:'';n.textContent=`Question ${vi(i)+1} of ${e.applicationVariants.length} · ${v.kind}${paper}`}if(src)src.textContent=`📘 Audited science core: ${e.bookRef}`;updatePaperBadge();if(window.AUDIT180_UI)window.AUDIT180_UI()}
 render=function(){let i=current();if(i!==last){fresh(i);last=i}let r=oldRender.apply(this,arguments);ui();return r};
 function newQ(){let i=current();fresh(i);$('appAnswer').value='';$('appFeedback').className='fb hide';$('rubricBox').classList.add('hide');$('modelAppBox').classList.add('hide');$('rubricBtn').textContent='Show Key Ideas';$('modelAppBtn').textContent='Show Science Core';ui();$('appAnswer').focus()}
 function rubric(){let v=vv(current()),b=$('rubricBox');if(b.classList.contains('hide')){b.innerHTML='<b>Key ideas</b><ul>'+v.rubric.map(x=>`<li>${esc(x)}</li>`).join('')+'</ul>';b.classList.remove('hide');$('rubricBtn').textContent='Hide Key Ideas'}else{b.classList.add('hide');$('rubricBtn').textContent='Show Key Ideas'}}
