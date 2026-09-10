@@ -1,7 +1,7 @@
 (()=>{
 'use strict';
-if(window.__PSLE_GOTO_ROUTER_V4__)return;
-window.__PSLE_GOTO_ROUTER_V4__=true;
+if(window.__PSLE_GOTO_ROUTER_V5__)return;
+window.__PSLE_GOTO_ROUTER_V5__=true;
 const $=id=>document.getElementById(id);
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const proc=()=>window.PSLE_PROCESS_MERGE||null;
@@ -15,22 +15,27 @@ async function openScience(idx){
   const e=BANK[idx];
   if(proc()?.isActive?.()){
     try{proc().exitToScience(idx)}catch(_e){}
-    await sleep(260);
+    await sleep(220);
   }
-  for(let attempt=0;attempt<4;attempt++){
+  for(let attempt=0;attempt<5;attempt++){
     const topic=$('gfTopic'),status=$('gfStatus'),search=$('gfSearch'),sort=$('gfSort');
     if(!topic||!status||!search||!sort){await sleep(100);continue}
     topic.disabled=status.disabled=search.disabled=sort.disabled=false;
+
+    // IMPORTANT: put the exact target into the guided-flow search FIRST.
+    // The input handler updates its private picker.search synchronously. Any later filter rebuild
+    // therefore rebuilds around this exact concept instead of defaulting to Concept 1.
+    const exact=`${e.id} ${e.topic||''} ${e.category||''} ${e.phrasePrompt||''}`.trim();
+    search.value=exact;search.dispatchEvent(new Event('input',{bubbles:true}));
     topic.value='all';topic.dispatchEvent(new Event('change',{bubbles:true}));
     status.value='all';status.dispatchEvent(new Event('change',{bubbles:true}));
-    search.value='';search.dispatchEvent(new Event('input',{bubbles:true}));
-    await sleep(180);
-    try{order=[idx];pos=0}catch(_e){return false}
     sort.value='book';sort.dispatchEvent(new Event('change',{bubbles:true}));
-    await sleep(90);
+
+    await sleep(180);
     if(scienceIndex()===idx&&String($('gfMeta')?.textContent||'').includes(`Concept ${e.id} `)){
       message(`Opened #${e.id} ${e.topic||''}.`);return true;
     }
+    await sleep(120);
   }
   message(`Could not open #${e.id}.`);return false;
 }
