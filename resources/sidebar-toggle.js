@@ -1,5 +1,6 @@
 (()=>{
 const KEY='psleScience_sidebar_visible_v2';
+const DEBUG_VERSION='20260910i';
 let tries=0;
 const d=document,$=id=>d.getElementById(id);
 function wanted(){try{return localStorage.getItem(KEY)==='1'}catch(_e){return false}}
@@ -77,14 +78,16 @@ function installDesktop(layout,side,flow){
   if(!$('gpsSidebarToggleStyle')){
     const s=d.createElement('style');s.id='gpsSidebarToggleStyle';s.textContent=`
     #gfClassic{display:none!important}
-    #gpsMasteryToggle{border:1px solid #c7d2fe;border-radius:11px;background:#fff;color:#3730a3;padding:8px 11px;min-height:40px;font:900 12px Arial;cursor:pointer;white-space:nowrap;box-shadow:0 3px 10px #0f172a0b}
-    #gpsMasteryToggle:hover{background:#eef2ff}
+    #gpsMasteryToggle,#gpsDebugToggle{border:1px solid #c7d2fe;border-radius:11px;background:#fff;color:#3730a3;padding:8px 11px;min-height:40px;font:900 12px Arial;cursor:pointer;white-space:nowrap;box-shadow:0 3px 10px #0f172a0b}
+    #gpsMasteryToggle:hover,#gpsDebugToggle:hover{background:#eef2ff}
     #gpsMasteryToggle[aria-expanded="true"]{background:#4338ca;color:#fff;border-color:#4338ca}
+    #gpsDebugToggle{background:#f8fafc;border-color:#cbd5e1;color:#334155}
+    #gpsDebugToggle:hover{background:#eef2ff;color:#3730a3;border-color:#c7d2fe}
     #guidedLayout.gps-sidebar-hidden{grid-template-columns:minmax(0,1fr)!important}
     #guidedLayout.gps-sidebar-hidden #guidedProgressSidebar{display:none!important}
     #guidedLayout.gps-sidebar-hidden #guidedFlow{max-width:1100px!important;margin-left:auto!important;margin-right:auto!important;width:100%}
-    @media(max-width:1100px) and (min-width:701px){#gpsMasteryToggle{min-height:42px}}
-    @media(max-width:700px){#gpsMasteryToggle{display:none!important}}
+    @media(max-width:1100px) and (min-width:701px){#gpsMasteryToggle,#gpsDebugToggle{min-height:42px}}
+    @media(max-width:700px){#gpsMasteryToggle{display:none!important}#gpsDebugToggle{min-height:36px;padding:7px 9px;font-size:11px}}
     `;d.head.appendChild(s);
   }
   if(!$('gpsMasteryToggle')){
@@ -96,6 +99,14 @@ function installDesktop(layout,side,flow){
       const show=layout.classList.contains('gps-sidebar-hidden');
       setDesktop(layout,show);save(show);
       if(show)setTimeout(()=>$('gpsFind')?.focus(),80);
+    };
+  }
+  if(!$('gpsDebugToggle')){
+    const b=d.createElement('button');b.id='gpsDebugToggle';b.type='button';b.textContent='🛠 Debug';b.title='Open Debug God Mode';b.setAttribute('aria-label','Open Debug God Mode');
+    const mastery=$('gpsMasteryToggle'),classic=$('gfClassic'),top=flow.querySelector('.gf-top');
+    if(mastery)mastery.insertAdjacentElement('beforebegin',b);else if(classic)classic.insertAdjacentElement('beforebegin',b);else top?.appendChild(b);
+    b.onclick=()=>{
+      try{window.parent.location.href=`debug.html?v=${DEBUG_VERSION}`}catch(_e){window.location.href=`../debug.html?v=${DEBUG_VERSION}`}
     };
   }
   const collapse=$('gpsCollapse');
