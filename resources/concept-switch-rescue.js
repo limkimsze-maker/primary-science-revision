@@ -1,6 +1,6 @@
 (()=>{
-const VERSION='20260910g';
-const TARGET_KEY='psleScience_exact_sidebar_target_v2';
+const VERSION='20260910h';
+const TARGET_KEY='psleScience_exact_sidebar_target_v3';
 let tries=0,busy=false;
 const $=id=>document.getElementById(id);
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
@@ -24,14 +24,44 @@ function captureSidebarClick(e){
 }
 async function openScience(i){
   if(!Number.isInteger(i)||i<0||typeof BANK==='undefined'||i>=BANK.length)return false;
-  const e=BANK[i],topic=$('gfTopic'),status=$('gfStatus'),search=$('gfSearch');
-  if(!e||!topic||!status||!search)return false;
+  const e=BANK[i],topic=$('gfTopic'),status=$('gfStatus'),search=$('gfSearch'),sort=$('gfSort');
+  if(!e||!topic||!status||!search||!sort)return false;
+
+  // First synchronise the guided flow's own picker state.
+  topic.disabled=status.disabled=search.disabled=sort.disabled=false;
   topic.value='all';topic.dispatchEvent(new Event('change',{bubbles:true}));
   status.value=knownScience(i)?'known':'notdone';status.dispatchEvent(new Event('change',{bubbles:true}));
   search.value=`${e.id} ${e.topic||''}`.trim();search.dispatchEvent(new Event('input',{bubbles:true}));
+
+  // Search is debounced by 120 ms in guided-concept-flow-v5.
   await sleep(220);
+
   let ok=false;try{ok=typeof current==='function'&&current()===i}catch(_e){}
-  if(ok){setMessage(`Opened #${e.id} ${e.topic||''}. Tap any other concept to switch.`);return true}
+  if(!ok){
+    try{
+      // The core trainer keeps the current concept in shared order/pos.
+      // Set those directly, then trigger Sort so the guided flow runs its
+      // private applyPicker(true) + render() on the exact same concept.
+      order=[i];pos=0;
+      sort.dispatchEvent(new Event('change',{bubbles:true}));
+      await sleep(70);
+      ok=typeof current==='function'&&current()===i;
+    }catch(_e){ok=false}
+  }
+
+  const meta=String($('gfMeta')?.textContent||'');
+  if(ok&&!meta.includes(`Concept ${e.id} `)){
+    try{sort.dispatchEvent(new Event('change',{bubbles:true}));await sleep(50)}catch(_e){}
+  }
+  try{ok=typeof current==='function'&&current()===i&&String($('gfMeta')?.textContent||'').includes(`Concept ${e.id} `)}catch(_e){ok=false}
+
+  if(ok){
+    setMessage(`Opened #${e.id} ${e.topic||''}. Tap any other concept to switch.`);
+    // Leave the mastery sidebar on the same list, so Known → Known works immediately.
+    const tab=$(knownScience(i)?'gpsKnown':'gpsNotDone');
+    if(tab&&!tab.classList.contains('on'))tab.click();
+    return true;
+  }
   setMessage(`Could not open #${e.id}. Tap it again.`);return false;
 }
 async function openPending(){
