@@ -1,8 +1,8 @@
 (()=>{
-if(window.__PSLE_NEXT_CONCEPT_RESCUE__)return;
-window.__PSLE_NEXT_CONCEPT_RESCUE__=true;
-const d=document,$=id=>d.getElementById(id),KEY='psleScience_next_concept_target_v1';
-const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+'use strict';
+if(window.__PSLE_NEXT_CONCEPT_RESCUE_V2__)return;
+window.__PSLE_NEXT_CONCEPT_RESCUE_V2__=true;
+const d=document,$=id=>d.getElementById(id),BUILD='20260910u';
 function visibleScienceIndex(){
   try{
     const pill=[...d.querySelectorAll('#gfBody .gf-pill')].find(x=>/^#\d+$/.test(String(x.textContent||'').trim()));
@@ -14,49 +14,58 @@ function visibleScienceIndex(){
 function isKnown(i){try{return i>=0&&new Set(rec(i)?.appCorrectDates||[]).size>=1}catch(_e){return false}}
 function nextNotDone(cur){
   if(!Array.isArray(BANK)||!BANK.length)return -1;
-  for(let n=1;n<=BANK.length;n++){const i=(cur+n)%BANK.length;if(!isKnown(i))return i}
+  for(let n=1;n<=BANK.length;n++){
+    const i=(cur+n)%BANK.length;
+    if(!isKnown(i))return i;
+  }
   return -1;
 }
-function saveTarget(i){try{sessionStorage.setItem(KEY,String(i))}catch(_e){}}
-function getTarget(){try{const x=Number(sessionStorage.getItem(KEY));return Number.isInteger(x)&&x>=0?x:-1}catch(_e){return -1}}
-function clearTarget(){try{sessionStorage.removeItem(KEY)}catch(_e){}}
-async function openTarget(i){
-  if(i<0||!BANK?.[i]){clearTarget();return false}
-  for(let n=0;n<30;n++){
-    const flow=$('guidedFlow'),status=$('gfStatus'),topic=$('gfTopic'),search=$('gfSearch');
-    if(flow&&status&&topic&&search){
-      // A fresh page starts on Recall, where the guided filters are allowed to move concepts.
-      topic.value='all';topic.dispatchEvent(new Event('change',{bubbles:true}));
-      status.value=isKnown(i)?'known':'notdone';status.dispatchEvent(new Event('change',{bubbles:true}));
-      search.value=`${BANK[i].id} ${BANK[i].topic||''}`.trim();
-      search.dispatchEvent(new Event('input',{bubbles:true}));
-      await sleep(260);
-      if(visibleScienceIndex()===i){clearTarget();return true}
-    }
-    await sleep(100);
+function outerUrl(target){
+  try{
+    const u=new URL(window.parent.location.href);
+    const base=u.pathname.replace(/[^/]*$/,'');
+    u.pathname=base+'trainer180-app.html';
+    u.search='';
+    u.searchParams.set('v',BUILD);
+    u.searchParams.set('goto',`science:${target}`);
+    u.searchParams.set('nav',String(Date.now()));
+    u.hash='';
+    return u.href;
+  }catch(_e){
+    return `trainer180-app.html?v=${BUILD}&goto=${encodeURIComponent('science:'+target)}&nav=${Date.now()}`;
   }
-  return false;
 }
-async function recoverPending(){const target=getTarget();if(target>=0)await openTarget(target)}
+function go(target){
+  const e=BANK?.[target],btn=$('gfNextConcept'),msg=$('gpsMessage');
+  if(btn){btn.disabled=true;btn.textContent='Opening next Not done…'}
+  if(msg&&e)msg.textContent=`Opening next Not done: #${e.id} ${e.topic||''}…`;
+  const url=outerUrl(target);
+  try{
+    if(window.parent&&window.parent!==window)window.parent.location.replace(url);
+    else window.location.replace(url);
+  }catch(_e){window.location.href=url}
+}
 
 d.addEventListener('click',e=>{
-  const btn=e.target?.closest?.('#gfNextConcept');if(!btn)return;
-  const flow=$('guidedFlow');if(flow?.dataset?.processMode==='1')return;
-  const before=visibleScienceIndex(),target=nextNotDone(before);
-  if(target<0){clearTarget();return}
-  saveTarget(target);
-  // Let the normal guided-flow handler run first. Only intervene if it genuinely stayed put.
-  setTimeout(()=>{
-    const now=visibleScienceIndex(),stillOnCompletion=!!$('gfNextConcept');
-    if(now!==before&&!stillOnCompletion){clearTarget();return}
-    try{
-      // Reload the outer trainer only as a fallback. Saved progress is already persisted,
-      // and the pending target is reopened automatically on the fresh Recall screen.
-      if(window.parent&&window.parent!==window)window.parent.location.reload();
-      else window.location.reload();
-    }catch(_e){window.location.reload()}
-  },550);
-},true);
+  const btn=e.target?.closest?.('#gfNextConcept');
+  if(!btn)return;
+  const flow=$('guidedFlow');
+  if(flow?.dataset?.processMode==='1')return;
 
-setTimeout(recoverPending,220);
+  // The sidebar can open a concept by putting an exact-match search into the guided picker.
+  // If the normal advance() runs with that search still active, the current concept is the only
+  // match and the trainer appears to stay put. Intercept the completion button and explicitly
+  // choose the next Science concept that is still Not done, in book order, wrapping at #180.
+  e.preventDefault();
+  e.stopPropagation();
+  e.stopImmediatePropagation();
+  const cur=visibleScienceIndex(),target=nextNotDone(cur);
+  if(target<0){
+    btn.disabled=true;
+    btn.textContent='All Science concepts Known ✓';
+    const msg=$('gpsMessage');if(msg)msg.textContent='All 180 Science concepts are Known.';
+    return;
+  }
+  go(target);
+},true);
 })();
