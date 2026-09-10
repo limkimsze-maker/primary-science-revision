@@ -10,18 +10,20 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#f4f7fb;fon
 #boot{position:fixed;inset:0;z-index:99999;display:grid;place-items:center;background:#f4f7fbcc}
 #bootCard{background:#fff;border:1px solid #dbe3ee;border-radius:16px;padding:18px 22px;box-shadow:0 8px 30px #0f172a18;text-align:center;line-height:1.5;min-width:min(420px,calc(100vw - 32px))}
 #bootMsg{font-weight:800}.small{font-size:12px;color:#64748b;margin-top:4px}#errorBox{display:none;margin-top:10px;padding:10px;border-radius:10px;background:#fef2f2;color:#991b1b;font-size:12px;text-align:left}
-#switchStudent{position:fixed;top:max(10px,env(safe-area-inset-top));right:max(12px,env(safe-area-inset-right));z-index:99998;border:1px solid #cbd5e1;border-radius:11px;background:#fff;color:#475569;padding:8px 11px;font:800 12px Arial;box-shadow:0 4px 14px #0f172a18;cursor:pointer}#switchStudent:hover{background:#f8fafc}
-@media(max-width:700px){#switchStudent{top:max(6px,env(safe-area-inset-top));right:max(7px,env(safe-area-inset-right));padding:7px 9px;font-size:11px}}
+#switchStudent,#debugBtn{position:fixed;top:max(10px,env(safe-area-inset-top));z-index:99998;border:1px solid #cbd5e1;border-radius:11px;background:#fff;color:#475569;padding:8px 11px;font:800 12px Arial;box-shadow:0 4px 14px #0f172a18;cursor:pointer}#switchStudent{right:max(12px,env(safe-area-inset-right))}#debugBtn{right:max(126px,calc(env(safe-area-inset-right) + 126px));background:#eef2ff;color:#3730a3;border-color:#c7d2fe}#switchStudent:hover,#debugBtn:hover{background:#f8fafc}
+@media(max-width:700px){#switchStudent,#debugBtn{top:max(6px,env(safe-area-inset-top));padding:7px 9px;font-size:11px}#switchStudent{right:max(7px,env(safe-area-inset-right))}#debugBtn{right:max(108px,calc(env(safe-area-inset-right) + 108px))}}
 </style>
 </head>
 <body>
 <iframe id="trainerFrame" title="PSLE Science Structured Mastery"></iframe>
+<button id="debugBtn" type="button">🔒 Debug</button>
 <button id="switchStudent" type="button">👤 Jerry / Javis</button>
 <div id="boot"><div id="bootCard"><div id="bootMsg">Loading Science trainer…</div><div class="small">192 items · Recall → Memorise → Apply</div><div id="errorBox"></div></div></div>
 <script>
 (async()=>{
- const V='20260909h';
+ const V='20260910c';
  document.getElementById('switchStudent').onclick=()=>location.replace('signin.html?v='+V);
+ document.getElementById('debugBtn').onclick=()=>location.replace('debug.html?v='+V);
  const student=(localStorage.getItem('psleScience_active_student')||'').toLowerCase();
  if(!['jerry','javis'].includes(student)){location.replace('signin.html?v='+V);return}
  const frame=document.getElementById('trainerFrame'),boot=document.getElementById('boot'),msg=document.getElementById('bootMsg'),errBox=document.getElementById('errorBox');
